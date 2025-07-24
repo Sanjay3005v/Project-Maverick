@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award } from "lucide-react";
+import Link from "next/link";
 
 const progressItems = [
   { text: "Update Profile", completed: true },
@@ -71,54 +72,62 @@ export default function TraineeDashboard() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:border-primary transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-headline">Daily Quiz</CardTitle>
-              <BookOpenCheck className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">Completed</p>
-            <p className="text-sm text-muted-foreground">Score: 95%</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:border-primary transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-headline">Coding Challenges</CardTitle>
-              <Code2 className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">3 / 5</p>
-            <p className="text-sm text-muted-foreground">Completed</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:border-primary transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-headline">Assignments</CardTitle>
-              <FileText className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">2 Submitted</p>
-            <p className="text-sm text-muted-foreground">1 Pending Feedback</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:border-primary transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-headline">Certifications</CardTitle>
-              <Award className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">1 / 2</p>
-            <p className="text-sm text-muted-foreground">In Progress</p>
-          </CardContent>
-        </Card>
+        <Link href="/trainee/quiz">
+          <Card className="hover:border-primary transition-colors h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-headline">Daily Quiz</CardTitle>
+                <BookOpenCheck className="h-6 w-6 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">Ready</p>
+              <p className="text-sm text-muted-foreground">Test your knowledge now</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/trainee/challenges">
+          <Card className="hover:border-primary transition-colors h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-headline">Coding Challenges</CardTitle>
+                <Code2 className="h-6 w-6 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">3 / 5</p>
+              <p className="text-sm text-muted-foreground">Completed</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/trainee/assignments">
+          <Card className="hover:border-primary transition-colors h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-headline">Assignments</CardTitle>
+                <FileText className="h-6 w-6 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">2 Submitted</p>
+              <p className="text-sm text-muted-foreground">1 Pending Feedback</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/trainee/certifications">
+          <Card className="hover:border-primary transition-colors h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-headline">Certifications</CardTitle>
+                <Award className="h-6 w-6 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">1 / 2</p>
+              <p className="text-sm text-muted-foreground">In Progress</p>
+            </CardContent>
+          </Card>
+        </Link>
       </section>
     </div>
   );
