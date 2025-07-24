@@ -31,6 +31,8 @@ export function Header() {
     }
   };
 
+  const isUserAdmin = user?.email?.includes('admin');
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center">
@@ -41,18 +43,21 @@ export function Header() {
         <nav className="flex items-center gap-4">
           {!loading && user && (
             <>
-              <Link href="/trainee/dashboard" passHref>
-                <Button variant="ghost" className="hidden sm:inline-flex">
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Trainee
-                </Button>
-              </Link>
-              <Link href="/admin/dashboard" passHref>
-                <Button variant="ghost" className="hidden sm:inline-flex">
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Admin
-                </Button>
-              </Link>
+              {isUserAdmin ? (
+                  <Link href="/admin/dashboard" passHref>
+                    <Button variant="ghost" className="hidden sm:inline-flex">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+              ) : (
+                  <Link href="/trainee/dashboard" passHref>
+                    <Button variant="ghost" className="hidden sm:inline-flex">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Trainee
+                    </Button>
+                  </Link>
+              )}
               <Button onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
