@@ -27,22 +27,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(user);
       setLoading(false);
       
-      const isAdminLogin = pathname === '/admin/login';
-      const isTraineeLogin = pathname === '/trainee/login';
+      const isLoginPage = pathname.endsWith('/login');
       const isAdminRoute = pathname.startsWith('/admin');
       const isTraineeRoute = pathname.startsWith('/trainee');
-
+      
       if (user) {
-        // If the user is logged in and on a login page, redirect them to the correct dashboard.
-        if (isAdminLogin) {
-            router.push('/admin/dashboard');
-        } else if (isTraineeLogin) {
-            router.push('/trainee/dashboard');
+        const isUserAdmin = user.email?.includes('admin');
+        
+        // Redirect on login
+        if (isLoginPage) {
+          router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
         }
+
+        // Enforce route access
+        if (isAdminRoute && !isUserAdmin) {
+          router.push('/trainee/dashboard');
+        } else if (isTraineeRoute && isUserAdmin) {
+          router.push('/admin/dashboard');
+        }
+        
       } else {
-        // If the user is not logged in and trying to access a protected route, redirect to the appropriate login page.
-        if ((isAdminRoute && !isAdminLogin) || (isTraineeRoute && !isTraineeLogin)) {
-          router.push(isAdminRoute ? '/admin/login' : '/trainee/login');
+        // If not logged in, and trying to access a protected route, redirect to the home page.
+        // The individual login pages will handle their own redirects if needed.
+        if (isAdminRoute || isTraineeRoute) {
+            if (!isLoginPage) {
+                 router.push('/');
+            }
         }
       }
     });
@@ -52,5 +62,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value = { user, loading };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Render children only when loading is false to avoid flashes of unauthenticated content
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
