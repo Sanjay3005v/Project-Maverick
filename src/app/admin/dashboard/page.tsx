@@ -24,8 +24,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, AlertTriangle, Timer, Search, Download, Wand2 } from "lucide-react";
+import { Users, TrendingUp, AlertTriangle, Timer, Search, Wand2 } from "lucide-react";
 import Link from "next/link";
+import { ReportDialog } from "@/components/report-dialog";
 
 const freshers = [
   { id: 1, name: "Alice Johnson", department: "Engineering", progress: 75, status: "On Track" },
@@ -112,13 +113,10 @@ export default function AdminDashboard() {
                 <Link href="/admin/onboarding-plan" className="w-full md:w-auto">
                     <Button variant="outline" className="w-full">
                         <Wand2 className="mr-2 h-4 w-4" />
-                        Generate Plan
+                        Onboarding Planner
                     </Button>
                 </Link>
-                <Button className="w-full md:w-auto">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Report
-                </Button>
+                <ReportDialog trainees={freshers} />
               </div>
             </div>
             <div className="border rounded-lg">
