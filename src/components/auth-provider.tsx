@@ -27,17 +27,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(user);
       setLoading(false);
       
+      const isAdminLogin = pathname === '/admin/login';
+      const isTraineeLogin = pathname === '/trainee/login';
       const isAdminRoute = pathname.startsWith('/admin');
       const isTraineeRoute = pathname.startsWith('/trainee');
-      const isLoginPage = pathname.endsWith('/login');
 
       if (user) {
-        if (isLoginPage) {
-            router.push(isAdminRoute ? '/admin/dashboard' : '/trainee/dashboard');
+        // If the user is logged in and on a login page, redirect them to the correct dashboard.
+        if (isAdminLogin) {
+            router.push('/admin/dashboard');
+        } else if (isTraineeLogin) {
+            router.push('/trainee/dashboard');
         }
       } else {
-        if ((isAdminRoute || isTraineeRoute) && !isLoginPage) {
-            router.push(isAdminRoute ? '/admin/login' : '/trainee/login');
+        // If the user is not logged in and trying to access a protected route, redirect to the appropriate login page.
+        if ((isAdminRoute && !isAdminLogin) || (isTraineeRoute && !isTraineeLogin)) {
+          router.push(isAdminRoute ? '/admin/login' : '/trainee/login');
         }
       }
     });
