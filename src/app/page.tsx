@@ -1,9 +1,18 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Rocket, Users, User, ArrowRight } from 'lucide-react';
 
 export default function Home() {
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <header className="text-center mb-12">
@@ -69,7 +78,7 @@ export default function Home() {
       </main>
 
       <footer className="mt-12 text-center text-muted-foreground text-sm">
-        <p>&copy; {new Date().getFullYear()} Maverick Mindset. All Rights Reserved.</p>
+        <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>
       </footer>
     </div>
   );
