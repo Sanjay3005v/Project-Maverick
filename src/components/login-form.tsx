@@ -24,10 +24,13 @@ export function LoginForm({ userType }: LoginFormProps) {
     e.preventDefault();
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const loggedInUser = userCredential.user;
+      const finalUserType = loggedInUser.email?.includes('admin') ? 'Admin' : 'Trainee';
+      
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${userType}!`,
+        description: `Welcome back, ${finalUserType}!`,
       });
       // Redirect is handled by AuthProvider
     } catch (error: any) {
