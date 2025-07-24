@@ -35,9 +35,9 @@ export default function Home() {
             <p className="mb-6 text-muted-foreground">
               Access your personalized onboarding plan, track your progress through quizzes, coding challenges, and more.
             </p>
-            <Link href="/trainee/dashboard" passHref>
+            <Link href="/trainee/login" passHref>
               <Button className="w-full" variant="outline">
-                Go to Trainee Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                Trainee Login <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
@@ -59,9 +59,9 @@ export default function Home() {
             <p className="mb-6 text-muted-foreground">
               Monitor trainee progress, generate reports, and create AI-powered onboarding plans for your new hires.
             </p>
-            <Link href="/admin/dashboard" passHref>
+            <Link href="/admin/login" passHref>
               <Button className="w-full">
-                Go to Admin Console <ArrowRight className="ml-2 h-4 w-4" />
+                Admin Login <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
