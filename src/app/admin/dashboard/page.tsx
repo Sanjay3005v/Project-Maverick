@@ -13,22 +13,31 @@ import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader
 import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
+type TraineeWithCompletion = Trainee & { certificationCompleted?: boolean };
+
+// Function to generate a random completion status for demonstration
+const generateRandomCompletion = () => Math.random() > 0.5;
+
 export default function AdminDashboard() {
-  const [allFreshers, setAllFreshers] = useState<Trainee[]>([]);
+  const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTrainees = async () => {
       setLoading(true);
       const trainees = await getAllTrainees();
-      setAllFreshers(trainees);
+      const traineesWithCompletion = trainees.map(t => ({
+        ...t,
+        certificationCompleted: generateRandomCompletion(),
+      }));
+      setAllFreshers(traineesWithCompletion);
       setLoading(false);
     };
     fetchTrainees();
   }, []);
 
   const totalTrainees = allFreshers.length;
-  const completedCount = allFreshers.filter(f => f.progress === 100).length;
+  const completedCount = allFreshers.filter(f => f.certificationCompleted).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   const averageProgress = 78;
   
