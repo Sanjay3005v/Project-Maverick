@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -38,6 +38,7 @@ export default function AdminDashboard() {
   const [filteredFreshers, setFilteredFreshers] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string | null>(null);
+  const traineeManagementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -69,6 +70,11 @@ export default function AdminDashboard() {
     setFilteredFreshers(allFreshers);
     setFilter(null);
   }
+  
+  const handleShowAllTrainees = () => {
+    handleClearFilter();
+    traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   if (loading) {
       return (
@@ -87,7 +93,7 @@ export default function AdminDashboard() {
       </header>
       
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card onClick={handleClearFilter} className="cursor-pointer hover:border-primary transition-colors">
+        <Card onClick={handleShowAllTrainees} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trainees</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -129,7 +135,7 @@ export default function AdminDashboard() {
         </Card>
       </section>
 
-      <section>
+      <section ref={traineeManagementRef}>
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
