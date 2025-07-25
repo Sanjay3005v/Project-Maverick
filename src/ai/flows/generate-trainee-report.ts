@@ -46,7 +46,7 @@ const prompt = ai.definePrompt({
 
 The report should include:
 1.  A brief overall summary of the cohort's performance.
-2.  Identification of top-performing trainees (those with 'Exceeding' status or high progress).
+2.  Identification of top-performing trainees (those with 'On Track' status or high progress).
 3.  Identification of trainees who are 'At Risk' or 'Need Attention' and might require support.
 4.  A concluding remark.
 
