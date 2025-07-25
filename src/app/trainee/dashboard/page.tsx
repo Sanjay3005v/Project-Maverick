@@ -64,7 +64,7 @@ export default function TraineeDashboard() {
     )
   }
 
-  const overallProgress = trainee.progress;
+  const overallProgress = typeof trainee.progress === 'number' ? trainee.progress : 0;
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   }
