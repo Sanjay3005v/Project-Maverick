@@ -93,7 +93,7 @@ export default function CertificationCompletionPage() {
                                 In Progress
                             </Badge>
                         ) : (
-                             <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+                             <Badge variant="secondary" className="gap-1.5 bg-gray-400 text-gray-900 hover:bg-gray-500">
                                 <Circle className="h-3.5 w-3.5" />
                                 Not Started
                             </Badge>
