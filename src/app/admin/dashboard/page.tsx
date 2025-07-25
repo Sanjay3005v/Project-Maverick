@@ -24,7 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, AlertTriangle, Timer, Search, Wand2 } from "lucide-react";
+import { Users, TrendingUp, AlertTriangle, Timer, Search, Wand2, UserCog } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 
@@ -126,7 +126,8 @@ export default function AdminDashboard() {
                     <TableHead>Name</TableHead>
                     <TableHead>Department</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Progress</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -141,16 +142,29 @@ export default function AdminDashboard() {
                           'destructive'
                         }>{fresher.status}</Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-3">
-                           <span className="text-sm text-muted-foreground w-8">{fresher.progress}%</span>
+                       <TableCell>
+                        <div className="flex items-center gap-3">
                            <Progress value={fresher.progress} className="w-32" />
+                           <span className="text-sm text-muted-foreground w-8">{fresher.progress}%</span>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/admin/trainees?id=${fresher.id}`}>
+                           <Button variant="ghost" size="icon">
+                                <UserCog className="h-4 w-4" />
+                                <span className="sr-only">Manage</span>
+                           </Button>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            <div className="flex justify-end mt-6">
+                <Link href="/admin/trainees">
+                    <Button>Add New Trainee</Button>
+                </Link>
             </div>
           </CardContent>
         </Card>
