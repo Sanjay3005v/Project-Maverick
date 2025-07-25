@@ -6,30 +6,37 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, CircleDotDashed } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-export default function CompletionStatusPage() {
-  const [trainees, setTrainees] = useState<Trainee[]>([]);
+// Function to generate a random completion status for demonstration
+const generateRandomCompletion = () => Math.random() > 0.5;
+
+export default function CertificationCompletionPage() {
+  const [trainees, setTrainees] = useState<(Trainee & { certificationCompleted: boolean })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTrainees = async () => {
+    const fetchAndProcessTrainees = async () => {
       setLoading(true);
       const fetchedTrainees = await getAllTrainees();
-      setTrainees(fetchedTrainees);
+      const traineesWithCompletion = fetchedTrainees.map(t => ({
+        ...t,
+        certificationCompleted: generateRandomCompletion(),
+      }));
+      setTrainees(traineesWithCompletion);
       setLoading(false);
     };
 
-    fetchTrainees();
+    fetchAndProcessTrainees();
   }, []);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading Completion Status...</p>
+        <p className="ml-4">Loading Certification Status...</p>
       </div>
     );
   }
@@ -37,14 +44,14 @@ export default function CompletionStatusPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-headline font-bold">Trainee Completion Status</h1>
-        <p className="text-muted-foreground">A detailed view of each trainee's onboarding completion status.</p>
+        <h1 className="text-4xl font-headline font-bold">Trainee Certification Status</h1>
+        <p className="text-muted-foreground">A detailed view of each trainee's certification completion status.</p>
       </header>
       <Card>
         <CardHeader>
           <CardTitle>All Trainees Status</CardTitle>
           <CardDescription>
-            This list shows whether each trainee has completed their onboarding (100% progress).
+            This list shows whether each trainee has completed their certification. Note: Status is currently dummy data.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +61,7 @@ export default function CompletionStatusPage() {
                 <TableRow>
                   <TableHead>Trainee Name</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead className="text-right">Completion Status</TableHead>
+                  <TableHead className="text-right">Certification Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -63,15 +70,15 @@ export default function CompletionStatusPage() {
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.department}</TableCell>
                     <TableCell className="text-right">
-                        {trainee.progress === 100 ? (
-                            <Badge variant="default" className="gap-1.5">
+                        {trainee.certificationCompleted ? (
+                            <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-700">
                                 <CheckCircle className="h-3.5 w-3.5" />
                                 Completed
                             </Badge>
                         ) : (
                             <Badge variant="secondary" className="gap-1.5">
-                                <CircleDotDashed className="h-3.5 w-3.5 animate-spin" />
-                                In Progress
+                                <XCircle className="h-3.5 w-3.5" />
+                                Not Completed
                             </Badge>
                         )}
                     </TableCell>
