@@ -54,6 +54,21 @@ export default function TraineeManagementPage() {
     setFilteredFreshers(allFreshers);
     setFilter(null);
   }
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+        case 'On Track':
+            return <Badge className="bg-green-500 hover:bg-green-600 text-white">{status}</Badge>;
+        case 'At Risk':
+            return <Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900">{status}</Badge>;
+        case 'Need Attention':
+            return <Badge variant="destructive">{status}</Badge>;
+        case 'Exceeding':
+            return <Badge variant="default">{status}</Badge>;
+        default:
+            return <Badge variant="secondary">{status}</Badge>;
+    }
+  }
 
   if (loading) {
       return (
@@ -138,11 +153,7 @@ export default function TraineeManagementPage() {
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.department}</TableCell>
                       <TableCell>
-                        <Badge variant={
-                          fresher.status === 'On Track' ? 'secondary' :
-                          fresher.progress === 100 || fresher.status === 'Exceeding' ? 'default' :
-                          'destructive'
-                        }>{fresher.status}</Badge>
+                        {getStatusBadge(fresher.status)}
                       </TableCell>
                        <TableCell>
                         <div className="flex items-center gap-3">
