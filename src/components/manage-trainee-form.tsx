@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Link from "next/link";
@@ -23,6 +23,7 @@ interface ManageTraineeFormProps {
 
 export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
   const [name, setName] = useState(trainee?.name || "");
+  const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
   const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
   const [loading, setLoading] = useState(false);
@@ -47,12 +48,14 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
         if(isEditing && trainee.id) {
             await updateTrainee(trainee.id, { 
                 name, 
+                email,
                 department, 
                 dob: format(dob, 'yyyy-MM-dd')
             });
         } else {
             await addTrainee({
                 name,
+                email,
                 department,
                 dob: format(dob, 'yyyy-MM-dd'),
                 progress: 0,
@@ -95,6 +98,21 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="trainee@example.com"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="grid gap-2">
@@ -159,5 +177,3 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
     </Card>
   );
 }
-
-    

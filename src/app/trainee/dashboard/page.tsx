@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -7,9 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award, Route } from "lucide-react";
+import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award, Route, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from '@/hooks/use-auth';
+import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 
 const progressItems = [
   { text: "Update Profile", completed: true },
@@ -19,9 +24,52 @@ const progressItems = [
   { text: "Complete Certification", completed: false },
 ];
 
-const overallProgress = (progressItems.filter(item => item.completed).length / progressItems.length) * 100;
-
 export default function TraineeDashboard() {
+  const { user } = useAuth();
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.email) {
+      const fetchTrainee = async () => {
+        setLoading(true);
+        const traineeData = await getTraineeByEmail(user.email);
+        setTrainee(traineeData);
+        setLoading(false);
+      }
+      fetchTrainee();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+        <div className="flex justify-center items-center h-screen">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-4">Loading Your Dashboard...</p>
+        </div>
+    )
+  }
+
+  if (!trainee) {
+    return (
+       <div className="container mx-auto p-4 md:p-8 text-center">
+         <Card>
+            <CardContent className="pt-6">
+                <p>Welcome! Your trainee profile has not been set up by an administrator yet. Please check back later.</p>
+            </CardContent>
+         </Card>
+       </div>
+    )
+  }
+
+  const overallProgress = trainee.progress;
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('');
+  }
+
+
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8">
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -29,11 +77,11 @@ export default function TraineeDashboard() {
           <CardHeader className="flex flex-row items-center gap-4 space-y-0">
             <Avatar className="h-16 w-16">
               <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="person portrait" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="font-headline text-2xl">Welcome, Jane Doe!</CardTitle>
-              <CardDescription>Trainee, Engineering Department</CardDescription>
+              <CardTitle className="font-headline text-2xl">Welcome, {trainee.name}!</CardTitle>
+              <CardDescription>Trainee, {trainee.department} Department</CardDescription>
             </div>
           </CardHeader>
           <CardContent>
