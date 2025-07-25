@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,7 @@ function SubmitButton() {
 export function OnboardingPlanForm() {
   const { toast } = useToast();
   const initialState = { success: false, message: '', data: undefined };
-  const [state, dispatch] = useFormState(createOnboardingPlan, initialState);
+  const [state, dispatch] = useActionState(createOnboardingPlan, initialState);
 
   useEffect(() => {
     if (state && !state.success && state.message) {

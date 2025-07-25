@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ export function TraineeOnboardingPlan() {
     return createOnboardingPlan(prevState, newFormData);
   };
   
-  const [state, dispatch] = useFormState(createOnboardingPlanWithData, initialState);
+  const [state, dispatch] = useActionState(createOnboardingPlanWithData, initialState);
 
   useEffect(() => {
     if (state && !state.success && state.message) {
