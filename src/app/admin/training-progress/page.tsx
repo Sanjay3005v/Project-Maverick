@@ -6,18 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock, ListChecks } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, ListChecks, Circle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
+type TrainingStatus = 'Completed' | 'In Progress' | 'Not Started';
+
 // Function to generate a *consistent* random completion status for demonstration
-const generateConsistentCompletion = (id: string) => {
+const generateConsistentCompletion = (id: string): TrainingStatus => {
   const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  return (numericId % 3) === 0; // Create some variation
+  const statusIndex = numericId % 3;
+  if (statusIndex === 0) return 'Completed';
+  if (statusIndex === 1) return 'In Progress';
+  return 'Not Started';
 };
 
 export default function TrainingProgressPage() {
-  const [trainees, setTrainees] = useState<(Trainee & { trainingCompleted: boolean })[]>([]);
+  const [trainees, setTrainees] = useState<(Trainee & { trainingStatus: TrainingStatus })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +31,7 @@ export default function TrainingProgressPage() {
       const fetchedTrainees = await getAllTrainees();
       const traineesWithCompletion = fetchedTrainees.map(t => ({
         ...t,
-        trainingCompleted: generateConsistentCompletion(t.id),
+        trainingStatus: generateConsistentCompletion(t.id),
       }));
       setTrainees(traineesWithCompletion);
       setLoading(false);
@@ -78,15 +83,20 @@ export default function TrainingProgressPage() {
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.department}</TableCell>
                     <TableCell className="text-right">
-                        {trainee.trainingCompleted ? (
+                        {trainee.trainingStatus === 'Completed' ? (
                              <Badge variant="default" className="gap-1.5 bg-green-500 text-white hover:bg-green-600">
                                 <CheckCircle className="h-3.5 w-3.5" />
                                 Completed
                             </Badge>
-                        ) : (
+                        ) : trainee.trainingStatus === 'In Progress' ? (
                             <Badge variant="secondary" className="gap-1.5 bg-yellow-400 text-yellow-900 hover:bg-yellow-500">
                                 <Clock className="h-3.5 w-3.5" />
                                 In Progress
+                            </Badge>
+                        ) : (
+                            <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+                                <Circle className="h-3.5 w-3.5" />
+                                Not Started
                             </Badge>
                         )}
                     </TableCell>
