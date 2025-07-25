@@ -10,6 +10,7 @@ export interface Trainee {
     progress: number;
     status: string;
     dob: string | Date; 
+    assessmentScore?: number;
 }
 
 const traineesCollection = collection(db, 'trainees');
@@ -59,6 +60,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
         dob: new Date(traineeData.dob as string),
+        assessmentScore: traineeData.assessmentScore || null,
     });
     return docRef.id;
 }

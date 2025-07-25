@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, AlertTriangle, CheckCircle, Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2 } from "lucide-react";
+import { Users, TrendingUp, CheckCircle, Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -52,17 +52,10 @@ export default function AdminDashboard() {
   }, []);
 
   const totalTrainees = allFreshers.length;
-  const traineesNeedingAttention = allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
   const completedCount = allFreshers.filter(f => f.progress === 100).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   const averageProgress = totalTrainees > 0 ? Math.round(allFreshers.reduce((acc, f) => acc + f.progress, 0) / totalTrainees) : 0;
   
-  const handleFilterNeedingAttention = () => {
-    setFilteredFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
-    setFilter("Needs Attention");
-    traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }
-
   const handleFilterCompleted = () => {
     setFilteredFreshers(allFreshers.filter(f => f.progress === 100));
     setFilter("Completed");
@@ -75,6 +68,11 @@ export default function AdminDashboard() {
   }
   
   const handleShowAllTrainees = () => {
+    handleClearFilter();
+    traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const handleShowAverageProgress = () => {
     handleClearFilter();
     traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -106,7 +104,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Click to see all trainees</p>
           </CardContent>
         </Card>
-        <Card onClick={handleShowAllTrainees} className="cursor-pointer hover:border-primary transition-colors">
+        <Card onClick={handleShowAverageProgress} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -116,16 +114,18 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Overall progress of the cohort</p>
           </CardContent>
         </Card>
-        <Card onClick={handleFilterNeedingAttention} className="cursor-pointer hover:border-primary transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Needs Attention</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{traineesNeedingAttention}</div>
-            <p className="text-xs text-muted-foreground">"At Risk" or "Needs Attention"</p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/assessment-scores">
+            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Assessment Scores</CardTitle>
+                <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">View Scores</div>
+                <p className="text-xs text-muted-foreground">Check trainee assessment results</p>
+              </CardContent>
+            </Card>
+        </Link>
         <Card onClick={handleFilterCompleted} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
