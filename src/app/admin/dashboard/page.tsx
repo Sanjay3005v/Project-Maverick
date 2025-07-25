@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -28,42 +28,55 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, AlertTriangle, CheckCircle, Search, Wand2, UserCog, FilterX, BookOpenCheck } from "lucide-react";
+import { Users, TrendingUp, AlertTriangle, CheckCircle, Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
-
-const allFreshers = [
-  { id: 1, name: "Alice Johnson", department: "Engineering", progress: 75, status: "On Track" },
-  { id: 2, name: "Bob Williams", department: "Engineering", progress: 45, status: "Needs Attention" },
-  { id: 3, name: "Charlie Brown", department: "Product", progress: 90, status: "Exceeding" },
-  { id: 4, name: "Diana Miller", department: "Design", progress: 60, status: "On Track" },
-  { id: 5, name: "Ethan Davis", department: "Engineering", progress: 20, status: "At Risk" },
-  { id: 6, name: "Fiona Green", department: "Product", progress: 100, status: "Exceeding" },
-  { id: 7, name: "George Hill", department: "Design", progress: 100, status: "Exceeding" },
-];
+import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
 export default function AdminDashboard() {
-  const [freshers, setFreshers] = useState(allFreshers);
+  const [allFreshers, setAllFreshers] = useState<Trainee[]>([]);
+  const [filteredFreshers, setFilteredFreshers] = useState<Trainee[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTrainees = async () => {
+      setLoading(true);
+      const trainees = await getAllTrainees();
+      setAllFreshers(trainees);
+      setFilteredFreshers(trainees);
+      setLoading(false);
+    };
+    fetchTrainees();
+  }, []);
 
   const totalTrainees = allFreshers.length;
   const traineesNeedingAttention = allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
   const completedCount = allFreshers.filter(f => f.progress === 100).length;
-  const onboardingCompletionRate = Math.round((completedCount / totalTrainees) * 100);
+  const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   
   const handleFilterNeedingAttention = () => {
-    setFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
+    setFilteredFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
     setFilter("Needs Attention");
   }
 
   const handleFilterCompleted = () => {
-    setFreshers(allFreshers.filter(f => f.progress === 100));
+    setFilteredFreshers(allFreshers.filter(f => f.progress === 100));
     setFilter("Completed");
   }
 
   const handleClearFilter = () => {
-    setFreshers(allFreshers);
+    setFilteredFreshers(allFreshers);
     setFilter(null);
+  }
+
+  if (loading) {
+      return (
+          <div className="flex justify-center items-center h-screen">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <p className="ml-4">Loading Trainee Data...</p>
+          </div>
+      )
   }
 
   return (
@@ -176,7 +189,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {freshers.map((fresher) => (
+                  {filteredFreshers.map((fresher) => (
                     <TableRow key={fresher.id}>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.department}</TableCell>
@@ -217,3 +230,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    

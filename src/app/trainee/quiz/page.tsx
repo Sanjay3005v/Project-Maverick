@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { quizData, Quiz } from '@/lib/quiz-data';
+import { getDailyQuiz, Quiz } from '@/services/quiz-service';
 
 export default function DailyQuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -19,29 +19,30 @@ export default function DailyQuizPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you'd fetch this from a DB.
-    // Here, we find the quiz marked as isDailyQuiz.
-    const todayQuiz = quizData.find(q => q.isDailyQuiz) || null;
-    
-    // Check if the user has already taken this quiz today
-    const lastTaken = localStorage.getItem('dailyQuizTaken');
-    const lastQuizId = localStorage.getItem('lastQuizId');
-    const today = new Date().toISOString().split('T')[0];
+    const fetchQuiz = async () => {
+        setLoading(true);
+        const todayQuiz = await getDailyQuiz();
+        setDailyQuiz(todayQuiz);
 
-    if(todayQuiz) {
-        if(lastTaken === today && lastQuizId === todayQuiz.id) {
-            setSubmitted(true);
-            const savedAnswers = JSON.parse(localStorage.getItem('lastQuizAnswers') || '{}');
-            setAnswers(savedAnswers);
-        } else {
-             localStorage.removeItem('dailyQuizTaken');
-             localStorage.removeItem('lastQuizId');
-             localStorage.removeItem('lastQuizAnswers');
+        if (todayQuiz) {
+            const lastTaken = localStorage.getItem('dailyQuizTaken');
+            const lastQuizId = localStorage.getItem('lastQuizId');
+            const today = new Date().toISOString().split('T')[0];
+
+            if (lastTaken === today && lastQuizId === todayQuiz.id) {
+                setSubmitted(true);
+                const savedAnswers = JSON.parse(localStorage.getItem('lastQuizAnswers') || '{}');
+                setAnswers(savedAnswers);
+            } else {
+                localStorage.removeItem('dailyQuizTaken');
+                localStorage.removeItem('lastQuizId');
+                localStorage.removeItem('lastQuizAnswers');
+            }
         }
-    }
-    
-    setDailyQuiz(todayQuiz);
-    setLoading(false);
+        setLoading(false);
+    };
+
+    fetchQuiz();
   }, []);
 
   const handleAnswerChange = (questionIndex: number, value: string) => {
@@ -61,7 +62,6 @@ export default function DailyQuizPage() {
       return;
     }
     
-    // Save submission state to localStorage
     const today = new Date().toISOString().split('T')[0];
     localStorage.setItem('dailyQuizTaken', today);
     localStorage.setItem('lastQuizId', dailyQuiz.id);
@@ -178,3 +178,5 @@ export default function DailyQuizPage() {
     </div>
   );
 }
+
+    

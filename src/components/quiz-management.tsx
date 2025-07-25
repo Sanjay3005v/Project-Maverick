@@ -1,18 +1,19 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { quizData as initialQuizData, Quiz, Question } from '@/lib/quiz-data';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Trash2, X } from 'lucide-react';
+import { PlusCircle, Trash2, X, Loader2 } from 'lucide-react';
+import { Quiz, Question, getAllQuizzes, setDailyQuiz, addQuiz } from '@/services/quiz-service';
 
 export function QuizManagement() {
-  const [quizzes, setQuizzes] = useState<Quiz[]>(initialQuizData);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newQuiz, setNewQuiz] = useState<Omit<Quiz, 'id' | 'isDailyQuiz'>>({
     title: '',
     topic: '',
@@ -20,18 +21,35 @@ export function QuizManagement() {
   });
   const { toast } = useToast();
 
-  const handleSetDailyQuiz = (quizId: string) => {
-    const updatedQuizzes = quizzes.map(quiz => ({
-      ...quiz,
-      isDailyQuiz: quiz.id === quizId,
-    }));
-    setQuizzes(updatedQuizzes);
-    toast({
-        title: 'Daily Quiz Updated',
-        description: `"${updatedQuizzes.find(q => q.id === quizId)?.title}" is now the daily quiz.`,
-    })
-    // In a real application, this change would be persisted to a database.
-    console.log("Updated quizzes data:", updatedQuizzes);
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      setLoading(true);
+      const allQuizzes = await getAllQuizzes();
+      setQuizzes(allQuizzes);
+      setLoading(false);
+    };
+    fetchQuizzes();
+  }, []);
+
+  const handleSetDailyQuiz = async (quizId: string) => {
+    try {
+      await setDailyQuiz(quizId);
+      const updatedQuizzes = quizzes.map(quiz => ({
+        ...quiz,
+        isDailyQuiz: quiz.id === quizId,
+      }));
+      setQuizzes(updatedQuizzes);
+      toast({
+          title: 'Daily Quiz Updated',
+          description: `"${updatedQuizzes.find(q => q.id === quizId)?.title}" is now the daily quiz.`,
+      })
+    } catch(error) {
+       toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: `Failed to set daily quiz.`,
+      })
+    }
   };
 
   const handleAddQuestion = () => {
@@ -65,19 +83,37 @@ export function QuizManagement() {
     setNewQuiz(prev => ({...prev, questions: updatedQuestions}));
   }
 
-  const handleCreateQuiz = (e: React.FormEvent) => {
+  const handleCreateQuiz = async (e: React.FormEvent) => {
       e.preventDefault();
-      const newQuizData: Quiz = {
-          id: `quiz-${Date.now()}`,
+      try {
+        const newQuizId = await addQuiz(newQuiz);
+        const newlyCreatedQuiz: Quiz = {
+          id: newQuizId,
           isDailyQuiz: false,
           ...newQuiz
-      }
-      setQuizzes(prev => [...prev, newQuizData]);
-      setNewQuiz({ title: '', topic: '', questions: [{ question: '', options: ['', '', '', ''], answer: '' }] });
-      toast({
-          title: 'Quiz Created!',
-          description: `The quiz "${newQuizData.title}" has been successfully created.`
+        }
+        setQuizzes(prev => [...prev, newlyCreatedQuiz]);
+        setNewQuiz({ title: '', topic: '', questions: [{ question: '', options: ['', '', '', ''], answer: '' }] });
+        toast({
+            title: 'Quiz Created!',
+            description: `The quiz "${newQuiz.title}" has been successfully created.`
+        })
+      } catch (error) {
+         toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: `Failed to create quiz.`,
       })
+      }
+  }
+
+  if (loading) {
+      return (
+          <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <p className="ml-4">Loading Quizzes...</p>
+          </div>
+      )
   }
 
   return (
@@ -166,3 +202,5 @@ export function QuizManagement() {
     </div>
   );
 }
+
+    

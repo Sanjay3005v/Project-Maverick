@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,15 +13,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Calendar } from "./ui/calendar";
-
-interface Trainee {
-  id: number;
-  name: string;
-  department: string;
-  dob: string;
-}
+import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
@@ -29,7 +24,7 @@ interface ManageTraineeFormProps {
 export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
   const [name, setName] = useState(trainee?.name || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
-  const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? new Date(trainee.dob) : undefined);
+  const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -38,17 +33,47 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!dob) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please select a date of birth.",
+        });
+        return;
+    }
     setLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    toast({
-      title: isEditing ? "Trainee Updated" : "Trainee Added",
-      description: `The details for ${name} have been successfully saved.`,
-    });
-    setLoading(false);
-    router.push('/admin/dashboard');
+    try {
+        if(isEditing && trainee.id) {
+            await updateTrainee(trainee.id, { 
+                name, 
+                department, 
+                dob: format(dob, 'yyyy-MM-dd')
+            });
+        } else {
+            await addTrainee({
+                name,
+                department,
+                dob: format(dob, 'yyyy-MM-dd'),
+                progress: 0,
+                status: 'On Track',
+            });
+        }
+        toast({
+            title: isEditing ? "Trainee Updated" : "Trainee Added",
+            description: `The details for ${name} have been successfully saved.`,
+        });
+        router.push('/admin/dashboard');
+        router.refresh(); // To show the updated data on the dashboard
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "An unexpected error occurred while saving the trainee.",
+        })
+    } finally {
+        setLoading(false);
+    }
   };
 
   return (
@@ -131,3 +156,5 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
     </Card>
   );
 }
+
+    

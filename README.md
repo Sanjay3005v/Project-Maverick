@@ -12,22 +12,24 @@ This project is built with a modern, robust, and scalable technology stack:
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
 - **Authentication:** [Firebase Authentication](https://firebase.google.com/docs/auth)
+- **Database:** [Firebase Firestore](https://firebase.google.com/docs/firestore)
 - **AI/Generative:** [Genkit (Google's Generative AI Toolkit)](https://firebase.google.com/docs/genkit)
 - **Deployment:** [Firebase App Hosting](https://firebase.google.com/docs/hosting)
 
 ## Features
 
 ### For Administrators (`/admin/dashboard`)
-- **Trainee Management:** View a list of all trainees, their progress, and status.
+- **Trainee Management:** View a list of all trainees, their progress, and status from a central database.
 - **Progress Monitoring:** At-a-glance dashboard with key metrics like total trainees and average progress.
 - **AI-Powered Reporting:** Generate comprehensive performance reports for the entire trainee cohort with a single click.
 - **AI Onboarding Planner:** Create personalized onboarding plans for new freshers by providing their profile and a training schedule.
+- **Dynamic Quiz Management:** Create and manage quizzes, and designate a "daily quiz" for trainees.
 
 ### For Trainees (`/trainee/dashboard`)
 - **Personalized Dashboard:** A central hub to view overall progress and access learning modules.
 - **AI-Generated Onboarding Plan:** Generate a personalized learning plan tailored to individual skills and company schedules.
 - **Interactive Modules:**
-    - **Daily Quiz:** Test knowledge with interactive quizzes.
+    - **Daily Quiz:** Test knowledge with interactive daily quizzes set by the admin.
     - **Coding Challenges:** Sharpen skills with practical coding exercises.
     - **Assignments:** Submit work and track feedback.
     - **Certifications:** View and download earned certificates.
@@ -60,8 +62,17 @@ Follow these instructions to get a copy of the project up and running on your lo
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="YOUR_MEASUREMENT_ID"
     ```
 
-7.  In the Firebase Console, go to **Authentication** > **Sign-in method** and enable the **Email/Password** provider.
+7.  **Enable Authentication:** In the Firebase Console, go to **Authentication** > **Sign-in method** and enable the **Email/Password** provider.
 8.  Create at least one admin user (e.g., `admin@example.com`) and one trainee user (e.g., `trainee@example.com`).
+
+9.  **Enable Firestore:** In the Firebase Console, go to the **Firestore Database** section and click **Create database**.
+    - Start in **test mode** for initial development. This will allow open access to your database.
+    - **Important:** For a production application, you will need to set up [security rules](https://firebase.google.com/docs/firestore/security/get-started) to protect your data.
+
+10. **Add Sample Data (Optional):**
+    - Go to your Firestore Database.
+    - Create a collection named `trainees`. Add a few documents with fields like `name` (string), `department` (string), `dob` (timestamp), `progress` (number), and `status` (string).
+    - Create a collection named `quizzes`. Add documents with fields like `title` (string), `topic` (string), `isDailyQuiz` (boolean), and `questions` (array of objects).
 
 ### Genkit (AI) Configuration
 
@@ -103,3 +114,5 @@ Follow these instructions to get a copy of the project up and running on your lo
 ## Deployment
 
 This application is configured for easy deployment to **Firebase App Hosting**. Once you have the [Firebase CLI](https://firebase.google.com/docs/cli) installed and configured, you can deploy the application by running the deploy command from your project's root directory.
+
+    
