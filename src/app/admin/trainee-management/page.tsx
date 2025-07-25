@@ -74,12 +74,20 @@ export default function TraineeManagementPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
                 <CardTitle className="font-headline">All Trainees</CardTitle>
-              {filter && (
-                 <Button variant="ghost" onClick={handleClearFilter}>
-                    <FilterX className="mr-2 h-4 w-4" />
-                    Clear Filter ({filter})
-                </Button>
-              )}
+                <div className="flex items-center gap-2">
+                    {filter && (
+                        <Button variant="ghost" onClick={handleClearFilter}>
+                            <FilterX className="mr-2 h-4 w-4" />
+                            Clear Filter ({filter})
+                        </Button>
+                    )}
+                    <ReportDialog trainees={allFreshers}>
+                       <Button>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Generate Report
+                        </Button>
+                    </ReportDialog>
+                </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -111,12 +119,6 @@ export default function TraineeManagementPage() {
                         Manage Quizzes
                     </Button>
                 </Link>
-                <ReportDialog trainees={allFreshers}>
-                   <Button>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Generate Report
-                    </Button>
-                </ReportDialog>
               </div>
             </div>
             <div className="border rounded-lg">
