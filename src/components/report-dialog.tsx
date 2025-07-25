@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Loader2, FileText, Wand2 } from 'lucide-react';
+import { Loader2, FileText, Wand2, Download } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
 
 interface ReportDialogProps {
@@ -51,6 +52,21 @@ export function ReportDialog({ trainees }: ReportDialogProps) {
       setLoading(false);
     }
   };
+
+  const handleDownloadReport = () => {
+    if (!report) return;
+
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `trainee-performance-report-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -89,23 +105,33 @@ export function ReportDialog({ trainees }: ReportDialogProps) {
             </div>
           )}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Close
-          </Button>
-          <Button onClick={handleGenerateReport} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Regenerating...
-              </>
-            ) : (
-              <>
-                <Wand2 className="mr-2 h-4 w-4" />
-                {report ? 'Regenerate Report' : 'Generate Report'}
-              </>
-            )}
-          </Button>
+        <DialogFooter className="sm:justify-between gap-2">
+            <div>
+              {report && !loading && (
+                  <Button variant="secondary" onClick={handleDownloadReport}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Report
+                  </Button>
+              )}
+            </div>
+            <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setIsOpen(false)}>
+                    Close
+                </Button>
+                <Button onClick={handleGenerateReport} disabled={loading}>
+                    {loading ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Regenerating...
+                    </>
+                    ) : (
+                    <>
+                        <Wand2 className="mr-2 h-4 w-4" />
+                        {report ? 'Regenerate Report' : 'Generate Report'}
+                    </>
+                    )}
+                </Button>
+            </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
