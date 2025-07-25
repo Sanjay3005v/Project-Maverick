@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -65,7 +66,7 @@ export function Header() {
             </>
           )}
            {!loading && !user && (
-            <Link href="/admin/login" passHref>
+            <Link href="/login" passHref>
               <Button>
                 <LogIn className="mr-2 h-4 w-4" />
                 Get Started

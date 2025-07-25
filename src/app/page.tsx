@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -44,9 +45,9 @@ export default function Home() {
             <p className="mb-6 text-muted-foreground">
               Access your personalized onboarding plan, track your progress through quizzes, coding challenges, and more.
             </p>
-            <Link href="/trainee/login" passHref>
+            <Link href="/login" passHref>
               <Button className="w-full" variant="outline">
-                Trainee Login <ArrowRight className="ml-2 h-4 w-4" />
+                Login <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
@@ -68,9 +69,9 @@ export default function Home() {
             <p className="mb-6 text-muted-foreground">
               Monitor trainee progress, generate reports, and create AI-powered onboarding plans for your new hires.
             </p>
-            <Link href="/admin/login" passHref>
+            <Link href="/login" passHref>
               <Button className="w-full">
-                Admin Login <ArrowRight className="ml-2 h-4 w-4" />
+                Login <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>

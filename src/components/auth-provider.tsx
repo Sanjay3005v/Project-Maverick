@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
@@ -48,11 +49,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
       } else {
         // If not logged in, and trying to access a protected route, redirect to the home page.
-        // The individual login pages will handle their own redirects if needed.
         if (isAdminRoute || isTraineeRoute) {
-            if (!isLoginPage) {
-                 router.push('/');
-            }
+            router.push('/');
         }
       }
     });
