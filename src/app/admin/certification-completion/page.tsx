@@ -10,8 +10,12 @@ import { Loader2, CheckCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-// Function to generate a random completion status for demonstration
-const generateRandomCompletion = () => Math.random() > 0.5;
+// Function to generate a *consistent* random completion status for demonstration
+const generateConsistentCompletion = (id: string) => {
+  // Use the trainee's ID to create a stable "random" value
+  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
+  return (numericId % 2) === 0; // Even IDs are completed, odd are in progress
+};
 
 export default function CertificationCompletionPage() {
   const [trainees, setTrainees] = useState<(Trainee & { certificationCompleted: boolean })[]>([]);
@@ -23,7 +27,7 @@ export default function CertificationCompletionPage() {
       const fetchedTrainees = await getAllTrainees();
       const traineesWithCompletion = fetchedTrainees.map(t => ({
         ...t,
-        certificationCompleted: generateRandomCompletion(),
+        certificationCompleted: generateConsistentCompletion(t.id),
       }));
       setTrainees(traineesWithCompletion);
       setLoading(false);
@@ -97,5 +101,3 @@ export default function CertificationCompletionPage() {
     </div>
   );
 }
-
-    

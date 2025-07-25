@@ -15,8 +15,12 @@ import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
 type TraineeWithCompletion = Trainee & { certificationCompleted?: boolean };
 
-// Function to generate a random completion status for demonstration
-const generateRandomCompletion = () => Math.random() > 0.5;
+// Function to generate a *consistent* random completion status for demonstration
+const generateConsistentCompletion = (id: string) => {
+  // Use the trainee's ID to create a stable "random" value
+  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
+  return (numericId % 2) === 0; // Even IDs are completed, odd are in progress
+};
 
 export default function AdminDashboard() {
   const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
@@ -28,7 +32,7 @@ export default function AdminDashboard() {
       const trainees = await getAllTrainees();
       const traineesWithCompletion = trainees.map(t => ({
         ...t,
-        certificationCompleted: generateRandomCompletion(),
+        certificationCompleted: generateConsistentCompletion(t.id),
       }));
       setAllFreshers(traineesWithCompletion);
       setLoading(false);
@@ -102,7 +106,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{onboardingCompletionRate}%</div>
-                <p className="text-xs text-muted-foreground">{completedCount} trainees certified</p>
+                <p className="text-xs text-muted-foreground">{completedCount} of {totalTrainees} trainees certified</p>
             </CardContent>
             </Card>
         </Link>
