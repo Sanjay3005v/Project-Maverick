@@ -78,12 +78,12 @@ export default function CertificationCompletionPage() {
                     <TableCell>{trainee.department}</TableCell>
                     <TableCell className="text-right">
                         {trainee.certificationCompleted ? (
-                            <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-700">
+                            <Badge variant="default" className="gap-1.5 bg-green-500 text-white hover:bg-green-600">
                                 <CheckCircle className="h-3.5 w-3.5" />
                                 Completed
                             </Badge>
                         ) : (
-                            <Badge variant="secondary" className="gap-1.5">
+                            <Badge variant="secondary" className="gap-1.5 bg-yellow-400 text-yellow-900 hover:bg-yellow-500">
                                 <Clock className="h-3.5 w-3.5" />
                                 In Progress
                             </Badge>
