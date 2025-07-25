@@ -46,14 +46,14 @@ export function Header() {
             <>
               {isUserAdmin ? (
                   <Link href="/admin/dashboard" passHref>
-                    <Button variant="ghost" className="hidden sm:inline-flex">
+                    <Button variant="ghost">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       Admin
                     </Button>
                   </Link>
               ) : (
                   <Link href="/trainee/dashboard" passHref>
-                    <Button variant="ghost" className="hidden sm:inline-flex">
+                    <Button variant="ghost">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       Trainee
                     </Button>
@@ -66,7 +66,7 @@ export function Header() {
             </>
           )}
            {!loading && !user && (
-            <Link href="/login" passHref>
+            <Link href="/" passHref>
               <Button>
                 <LogIn className="mr-2 h-4 w-4" />
                 Get Started

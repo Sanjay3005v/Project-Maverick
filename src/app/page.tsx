@@ -2,10 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Rocket, Users, User, ArrowRight } from 'lucide-react';
+import { Rocket } from 'lucide-react';
+import { LoginForm } from '@/components/login-form';
 
 export default function Home() {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -28,54 +26,8 @@ export default function Home() {
         </p>
       </header>
       
-      <main className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-        <Card className="hover:shadow-xl hover:scale-105 transition-all duration-300">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <User className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="font-headline text-2xl">For Trainees</CardTitle>
-                <CardDescription>Your personal journey starts here.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-6 text-muted-foreground">
-              Access your personalized onboarding plan, track your progress through quizzes, coding challenges, and more.
-            </p>
-            <Link href="/login" passHref>
-              <Button className="w-full" variant="outline">
-                Login <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-xl hover:scale-105 transition-all duration-300">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="font-headline text-2xl">For Admins</CardTitle>
-                <CardDescription>Oversee and manage your talent pool.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-6 text-muted-foreground">
-              Monitor trainee progress, generate reports, and create AI-powered onboarding plans for your new hires.
-            </p>
-            <Link href="/login" passHref>
-              <Button className="w-full">
-                Login <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <main className="w-full max-w-sm">
+        <LoginForm />
       </main>
 
       <footer className="mt-12 text-center text-muted-foreground text-sm">

@@ -28,7 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(user);
       setLoading(false);
       
-      const isLoginPage = pathname.endsWith('/login');
+      const isHomePage = pathname === '/';
       const isAdminRoute = pathname.startsWith('/admin');
       const isTraineeRoute = pathname.startsWith('/trainee');
       
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const isUserAdmin = user.email?.includes('admin');
         
         // Redirect on login
-        if (isLoginPage) {
+        if (isHomePage) {
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
         }
 
