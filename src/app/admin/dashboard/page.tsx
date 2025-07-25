@@ -121,7 +121,7 @@ export default function AdminDashboard() {
             </Card>
         </Link>
         <Link href="/admin/certification-completion">
-            <Card className="cursor-pointer hover:border-primary transition-colors">
+            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Certification Completion</CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
@@ -235,3 +235,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
