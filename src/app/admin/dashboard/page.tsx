@@ -55,15 +55,18 @@ export default function AdminDashboard() {
   const traineesNeedingAttention = allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
   const completedCount = allFreshers.filter(f => f.progress === 100).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
+  const averageProgress = totalTrainees > 0 ? Math.round(allFreshers.reduce((acc, f) => acc + f.progress, 0) / totalTrainees) : 0;
   
   const handleFilterNeedingAttention = () => {
     setFilteredFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
     setFilter("Needs Attention");
+    traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
   }
 
   const handleFilterCompleted = () => {
     setFilteredFreshers(allFreshers.filter(f => f.progress === 100));
     setFilter("Completed");
+    traineeManagementRef.current?.scrollIntoView({ behavior: 'smooth' });
   }
 
   const handleClearFilter = () => {
@@ -103,14 +106,14 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Click to see all trainees</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card onClick={handleShowAllTrainees} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">68%</div>
-            <p className="text-xs text-muted-foreground">+5% from last week</p>
+            <div className="text-2xl font-bold">{averageProgress}%</div>
+            <p className="text-xs text-muted-foreground">Overall progress of the cohort</p>
           </CardContent>
         </Card>
         <Card onClick={handleFilterNeedingAttention} className="cursor-pointer hover:border-primary transition-colors">
