@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { Pie, PieChart, Cell } from 'recharts';
 import type { ChartConfig } from '@/components/ui/chart';
@@ -20,11 +20,6 @@ const generateConsistentCompletion = (id: string) => {
 const assessmentChartConfig = {
   passed: { label: 'Passed', color: 'hsl(var(--chart-1))' },
   failed: { label: 'Failed', color: 'hsl(var(--chart-2))' },
-} satisfies ChartConfig;
-
-const participationChartConfig = {
-  completed: { label: 'Completed', color: 'hsl(var(--chart-1))' },
-  inProgress: { label: 'In Progress', color: 'hsl(var(--chart-3))' },
 } satisfies ChartConfig;
 
 
@@ -50,21 +45,25 @@ export default function ViewAnalysisPage() {
   }, []);
   
   const analysisData = useMemo(() => {
+    if (trainees.length === 0) {
+        return {
+            assessmentData: [],
+            completedTraining: 0,
+            participationRate: 0,
+        }
+    }
     const passCount = trainees.filter(t => (t.assessmentScore || 0) >= 70).length;
     const failCount = trainees.length - passCount;
     
     const completedTraining = trainees.filter(t => (t as any).trainingCompleted).length;
-    const inProgressTraining = trainees.length - completedTraining;
 
     return {
       assessmentData: [
         { name: 'Passed', value: passCount, fill: 'hsl(var(--chart-1))' },
         { name: 'Failed', value: failCount, fill: 'hsl(var(--chart-2))' },
       ],
-      participationData: [
-        { name: 'Completed', value: completedTraining, fill: 'hsl(var(--chart-1))'},
-        { name: 'In Progress', value: inProgressTraining, fill: 'hsl(var(--chart-3))'},
-      ]
+      completedTraining,
+      participationRate: Math.round((completedTraining / trainees.length) * 100),
     };
   }, [trainees]);
 
@@ -107,22 +106,21 @@ export default function ViewAnalysisPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Training Participation Rate</CardTitle>
             <CardDescription>Trainees who have completed their training.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={participationChartConfig} className="mx-auto aspect-square max-h-[300px]">
-                <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="value" />} />
-                    <Pie data={analysisData.participationData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                        {analysisData.participationData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                    </Pie>
-                </PieChart>
-            </ChartContainer>
+          <CardContent className="flex flex-col items-center justify-center flex-grow">
+            <div className="flex items-baseline gap-2">
+                <span className="text-6xl font-bold">{analysisData.completedTraining}</span>
+                <span className="text-2xl text-muted-foreground">/ {trainees.length}</span>
+            </div>
+            <p className="text-muted-foreground mt-2">Trainees Completed</p>
+            <div className="mt-8 text-3xl font-bold text-primary">
+                {analysisData.participationRate}%
+            </div>
+             <p className="text-muted-foreground">Completion Rate</p>
           </CardContent>
         </Card>
       </div>
