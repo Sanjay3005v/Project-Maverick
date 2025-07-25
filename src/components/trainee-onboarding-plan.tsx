@@ -4,10 +4,11 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Wand2, Loader2, Clock, CheckCircle } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Badge } from './ui/badge';
 
 // Pre-filled data for the trainee and schedule
 const fresherProfile = "Recent computer science graduate with strong JavaScript skills and a passion for frontend development. Eager to learn React, Next.js, and Tailwind CSS. Prefers hands-on, project-based learning and has completed several personal projects, including a weather app and a to-do list application.";
@@ -57,7 +58,7 @@ export function TraineeOnboardingPlan() {
   }, [state, toast]);
 
   return (
-    <div className="grid md:grid-cols-3 gap-8">
+    <div className="grid md:grid-cols-3 gap-8 items-start">
         <div className="md:col-span-1 space-y-4">
             <Card>
                 <CardHeader>
@@ -85,16 +86,36 @@ export function TraineeOnboardingPlan() {
             </CardHeader>
             <CardContent className="flex-grow">
             {state?.success && state.data ? (
-                <Alert variant="default" className="bg-primary/5 border-primary/20 h-full">
-                <Wand2 className="h-4 w-4 !text-primary" />
-                <AlertTitle className="font-headline text-primary">Your Personalized Plan is Ready!</AlertTitle>
-                <AlertDescription className="prose prose-sm whitespace-pre-wrap text-foreground">
-                    {state.data.personalizedPlan}
-                </AlertDescription>
-                </Alert>
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">Week</TableHead>
+                                <TableHead>Topic</TableHead>
+                                <TableHead>Tasks</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {state.data.personalizedPlan.map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell className="font-medium">{item.week}</TableCell>
+                                    <TableCell>{item.topic}</TableCell>
+                                    <TableCell className="text-sm">{item.tasks}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
+                                            <Clock className="h-3 w-3" />
+                                            {item.status}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             ) : (
                 <div className="flex items-center justify-center h-full border-2 border-dashed rounded-lg bg-muted/50">
-                <p className="text-muted-foreground">Click the button to generate your plan</p>
+                    <p className="text-muted-foreground">Click the button to generate your plan</p>
                 </div>
             )}
             </CardContent>

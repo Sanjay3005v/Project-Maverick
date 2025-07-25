@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Wand2, Loader2, CheckCircle, Clock } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Badge } from './ui/badge';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -46,7 +47,7 @@ export function OnboardingPlanForm() {
   }, [state, toast]);
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-cols-2 gap-8 items-start">
       <Card className="shadow-lg">
         <form action={dispatch}>
           <CardHeader>
@@ -86,17 +87,37 @@ export function OnboardingPlanForm() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
-          <CardDescription>The AI-generated plan will appear here.</CardDescription>
+          <CardDescription>The AI-generated plan will appear here in a structured table.</CardDescription>
         </CardHeader>
         <CardContent>
           {state?.success && state.data ? (
-            <Alert variant="default" className="bg-primary/5 border-primary/20">
-              <Wand2 className="h-4 w-4 !text-primary" />
-              <AlertTitle className="font-headline text-primary">Personalized Plan Ready!</AlertTitle>
-              <AlertDescription className="prose prose-sm whitespace-pre-wrap text-foreground">
-                {state.data.personalizedPlan}
-              </AlertDescription>
-            </Alert>
+            <div className="border rounded-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[100px]">Week</TableHead>
+                            <TableHead>Topic</TableHead>
+                            <TableHead>Tasks</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {state.data.personalizedPlan.map((item, index) => (
+                            <TableRow key={index}>
+                                <TableCell className="font-medium">{item.week}</TableCell>
+                                <TableCell>{item.topic}</TableCell>
+                                <TableCell className="text-sm">{item.tasks}</TableCell>
+                                <TableCell>
+                                    <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
+                                        <Clock className="h-3 w-3" />
+                                        {item.status}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
           ) : (
             <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-muted/50">
               <p className="text-muted-foreground">Waiting for input...</p>

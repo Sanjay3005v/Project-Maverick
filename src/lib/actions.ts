@@ -1,6 +1,6 @@
 'use server';
 
-import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanInput, type GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
+import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput, type OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { z } from 'zod';
 
