@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText, Users } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -86,7 +86,10 @@ export default function TraineeManagementPage() {
        <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-                <CardTitle className="font-headline">All Trainees</CardTitle>
+                <CardTitle>
+                  <Users className="mr-2 h-6 w-6" />
+                  All Trainees
+                </CardTitle>
                 <div className="flex items-center gap-2">
                     {filter && (
                         <Button variant="ghost" onClick={handleClearFilter}>
