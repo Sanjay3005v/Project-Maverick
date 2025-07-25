@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award } from "lucide-react";
+import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award, Route } from "lucide-react";
 import Link from "next/link";
 
 const progressItems = [
@@ -72,6 +72,20 @@ export default function TraineeDashboard() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Link href="/trainee/onboarding-plan">
+            <Card className="hover:border-primary transition-colors h-full">
+                <CardHeader>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-headline">My Onboarding Plan</CardTitle>
+                    <Route className="h-6 w-6 text-muted-foreground" />
+                </div>
+                </CardHeader>
+                <CardContent>
+                <p className="text-2xl font-bold">Ready to Generate</p>
+                <p className="text-sm text-muted-foreground">Get your personalized plan</p>
+                </CardContent>
+            </Card>
+        </Link>
         <Link href="/trainee/quiz">
           <Card className="hover:border-primary transition-colors h-full">
             <CardHeader>
