@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -9,34 +9,40 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
-
-const quizQuestions = [
-  {
-    question: 'What is the primary purpose of a "key" prop in a list of React components?',
-    options: [
-      'To provide a unique style to the component.',
-      'To identify which items have changed, are added, or are removed.',
-      'To link to another route in the application.',
-      'To set the component\'s accessibility label.',
-    ],
-    answer: 'To identify which items have changed, are added, or are removed.',
-  },
-  {
-    question: 'Which hook would you use to perform side effects in a function component?',
-    options: ['useState', 'useReducer', 'useEffect', 'useContext'],
-    answer: 'useEffect',
-  },
-  {
-    question: 'What does CSS stand for?',
-    options: ['Creative Style Sheets', 'Computer Style Sheets', 'Cascading Style Sheets', 'Colorful Style Sheets'],
-    answer: 'Cascading Style Sheets',
-  },
-];
+import { quizData, Quiz } from '@/lib/quiz-data';
 
 export default function DailyQuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [dailyQuiz, setDailyQuiz] = useState<Quiz | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // In a real app, you'd fetch this from a DB.
+    // Here, we find the quiz marked as isDailyQuiz.
+    const todayQuiz = quizData.find(q => q.isDailyQuiz) || null;
+    
+    // Check if the user has already taken this quiz today
+    const lastTaken = localStorage.getItem('dailyQuizTaken');
+    const lastQuizId = localStorage.getItem('lastQuizId');
+    const today = new Date().toISOString().split('T')[0];
+
+    if(todayQuiz) {
+        if(lastTaken === today && lastQuizId === todayQuiz.id) {
+            setSubmitted(true);
+            const savedAnswers = JSON.parse(localStorage.getItem('lastQuizAnswers') || '{}');
+            setAnswers(savedAnswers);
+        } else {
+             localStorage.removeItem('dailyQuizTaken');
+             localStorage.removeItem('lastQuizId');
+             localStorage.removeItem('lastQuizAnswers');
+        }
+    }
+    
+    setDailyQuiz(todayQuiz);
+    setLoading(false);
+  }, []);
 
   const handleAnswerChange = (questionIndex: number, value: string) => {
     setAnswers(prev => ({ ...prev, [questionIndex]: value }));
@@ -44,7 +50,9 @@ export default function DailyQuizPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.keys(answers).length !== quizQuestions.length) {
+    if (!dailyQuiz) return;
+    
+    if (Object.keys(answers).length !== dailyQuiz.questions.length) {
       toast({
         variant: 'destructive',
         title: 'Incomplete Quiz',
@@ -52,9 +60,45 @@ export default function DailyQuizPage() {
       });
       return;
     }
+    
+    // Save submission state to localStorage
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem('dailyQuizTaken', today);
+    localStorage.setItem('lastQuizId', dailyQuiz.id);
+    localStorage.setItem('lastQuizAnswers', JSON.stringify(answers));
+
     setSubmitted(true);
   };
 
+  if(loading) {
+    return (
+        <div className="container mx-auto p-4 md:p-8 text-center">
+            <p>Loading daily quiz...</p>
+        </div>
+    )
+  }
+  
+  if (!dailyQuiz) {
+      return (
+        <div className="container mx-auto p-4 md:p-8 text-center">
+             <header className="mb-8">
+                <h1 className="text-4xl font-headline font-bold">Daily Quiz</h1>
+             </header>
+             <Card>
+                <CardContent className="pt-6">
+                    <p>No daily quiz has been assigned by the administrator yet. Please check back later.</p>
+                </CardContent>
+             </Card>
+             <div className="text-center mt-12">
+                 <Link href="/trainee/dashboard">
+                    <Button variant="outline">Back to Dashboard</Button>
+                </Link>
+            </div>
+        </div>
+      )
+  }
+
+  const quizQuestions = dailyQuiz.questions;
   const score = quizQuestions.reduce((total, question, index) => {
     return total + (answers[index] === question.answer ? 1 : 0);
   }, 0);
@@ -62,8 +106,8 @@ export default function DailyQuizPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-headline font-bold">Daily Quiz</h1>
-        <p className="text-muted-foreground">Test your knowledge on core concepts.</p>
+        <h1 className="text-4xl font-headline font-bold">Daily Quiz: {dailyQuiz.title}</h1>
+        <p className="text-muted-foreground">{dailyQuiz.topic}</p>
       </header>
       
       {!submitted ? (
@@ -124,9 +168,7 @@ export default function DailyQuizPage() {
                 </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-                <Button onClick={() => { setSubmitted(false); setAnswers({}); }}>
-                    Try Again
-                </Button>
+                <p className="text-sm text-muted-foreground">You have completed the daily quiz. A new quiz will be available tomorrow.</p>
                  <Link href="/trainee/dashboard">
                     <Button variant="outline">Back to Dashboard</Button>
                 </Link>
