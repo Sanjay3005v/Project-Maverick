@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
@@ -77,8 +77,8 @@ export default function CertificationCompletionPage() {
                             </Badge>
                         ) : (
                             <Badge variant="secondary" className="gap-1.5">
-                                <XCircle className="h-3.5 w-3.5" />
-                                Not Completed
+                                <Clock className="h-3.5 w-3.5" />
+                                In Progress
                             </Badge>
                         )}
                     </TableCell>
