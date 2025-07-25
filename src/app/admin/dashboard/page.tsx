@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, Award, Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, ClipboardCheck } from "lucide-react";
+import { Users, TrendingUp, Award, Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, ClipboardCheck, ListChecks, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                   <SelectItem value="design">Design</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-2 w-full md:w-auto md:flex-wrap">
+              <div className="flex gap-2 w-full flex-wrap md:w-auto md:flex-nowrap">
                 <Link href="/admin/onboarding-plan" className="w-full md:w-auto">
                     <Button variant="outline" className="w-full">
                         <Wand2 className="mr-2 h-4 w-4" />
@@ -177,6 +177,18 @@ export default function AdminDashboard() {
                     <Button variant="outline" className="w-full">
                         <BookOpenCheck className="mr-2 h-4 w-4" />
                         Manage Quizzes
+                    </Button>
+                </Link>
+                <Link href="/admin/training-progress" className="w-full md:w-auto">
+                    <Button variant="outline" className="w-full">
+                        <ListChecks className="mr-2 h-4 w-4" />
+                        Training Progress
+                    </Button>
+                </Link>
+                 <Link href="/admin/view-analysis" className="w-full md:w-auto">
+                    <Button variant="outline" className="w-full">
+                        <BarChart2 className="mr-2 h-4 w-4" />
+                        View Analysis
                     </Button>
                 </Link>
                 <ReportDialog trainees={allFreshers} />
@@ -235,5 +247,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-    
