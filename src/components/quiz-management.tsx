@@ -8,8 +8,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Trash2, X, Loader2 } from 'lucide-react';
-import { Quiz, Question, getAllQuizzes, setDailyQuiz, addQuiz } from '@/services/quiz-service';
+import { PlusCircle, X, Loader2, Edit, Trash2 } from 'lucide-react';
+import { Quiz, Question, getAllQuizzes, setDailyQuiz, addQuiz, deleteQuiz } from '@/services/quiz-service';
+import { EditQuizDialog } from './edit-quiz-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 export function QuizManagement() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -21,27 +23,24 @@ export function QuizManagement() {
   });
   const { toast } = useToast();
 
+  const fetchQuizzes = async () => {
+    setLoading(true);
+    const allQuizzes = await getAllQuizzes();
+    setQuizzes(allQuizzes);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchQuizzes = async () => {
-      setLoading(true);
-      const allQuizzes = await getAllQuizzes();
-      setQuizzes(allQuizzes);
-      setLoading(false);
-    };
     fetchQuizzes();
   }, []);
 
   const handleSetDailyQuiz = async (quizId: string) => {
     try {
       await setDailyQuiz(quizId);
-      const updatedQuizzes = quizzes.map(quiz => ({
-        ...quiz,
-        isDailyQuiz: quiz.id === quizId,
-      }));
-      setQuizzes(updatedQuizzes);
+      fetchQuizzes(); // Refetch to update UI state
       toast({
           title: 'Daily Quiz Updated',
-          description: `"${updatedQuizzes.find(q => q.id === quizId)?.title}" is now the daily quiz.`,
+          description: `The daily quiz has been successfully updated.`,
       })
     } catch(error) {
        toast({
@@ -51,6 +50,23 @@ export function QuizManagement() {
       })
     }
   };
+
+  const handleDeleteQuiz = async (quizId: string, quizTitle: string) => {
+    try {
+        await deleteQuiz(quizId);
+        fetchQuizzes(); // Refetch
+        toast({
+            title: "Quiz Deleted",
+            description: `The quiz "${quizTitle}" has been deleted.`,
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to delete quiz.",
+        });
+    }
+  }
 
   const handleAddQuestion = () => {
     setNewQuiz(prev => ({
@@ -86,13 +102,8 @@ export function QuizManagement() {
   const handleCreateQuiz = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        const newQuizId = await addQuiz(newQuiz);
-        const newlyCreatedQuiz: Quiz = {
-          id: newQuizId,
-          isDailyQuiz: false,
-          ...newQuiz
-        }
-        setQuizzes(prev => [...prev, newlyCreatedQuiz]);
+        await addQuiz(newQuiz);
+        fetchQuizzes();
         setNewQuiz({ title: '', topic: '', questions: [{ question: '', options: ['', '', '', ''], answer: '' }] });
         toast({
             title: 'Quiz Created!',
@@ -128,17 +139,40 @@ export function QuizManagement() {
           </CardHeader>
           <CardContent className="space-y-4">
             {quizzes.map(quiz => (
-              <div key={quiz.id} className="p-4 border rounded-lg flex justify-between items-center">
+              <div key={quiz.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h4 className="font-bold">{quiz.title}</h4>
                   <p className="text-sm text-muted-foreground">{quiz.topic} - {quiz.questions.length} questions</p>
                 </div>
-                <Button 
-                    onClick={() => handleSetDailyQuiz(quiz.id)}
-                    disabled={quiz.isDailyQuiz}
-                >
-                  {quiz.isDailyQuiz ? 'Active Daily Quiz' : 'Set as Daily'}
-                </Button>
+                <div className="flex gap-2 shrink-0">
+                    <EditQuizDialog quiz={quiz} onQuizUpdated={fetchQuizzes} />
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon"><Trash2 /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the quiz "{quiz.title}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteQuiz(quiz.id, quiz.title)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <Button 
+                        onClick={() => handleSetDailyQuiz(quiz.id)}
+                        disabled={quiz.isDailyQuiz}
+                        variant={quiz.isDailyQuiz ? "secondary" : "default"}
+                    >
+                      {quiz.isDailyQuiz ? 'Active Daily' : 'Set as Daily'}
+                    </Button>
+                </div>
               </div>
             ))}
           </CardContent>
@@ -166,7 +200,7 @@ export function QuizManagement() {
                 {newQuiz.questions.map((q, qIndex) => (
                     <div key={qIndex} className="space-y-4 p-4 border rounded-md relative">
                          {newQuiz.questions.length > 1 && (
-                            <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => handleRemoveQuestion(qIndex)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => handleRemoveQuestion(qIndex)}>
                                 <X className="h-4 w-4" />
                             </Button>
                          )}
@@ -203,4 +237,3 @@ export function QuizManagement() {
   );
 }
 
-    
