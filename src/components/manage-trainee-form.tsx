@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Percent } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Link from "next/link";
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
+import { Slider } from "./ui/slider";
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
@@ -26,6 +27,7 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
   const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
   const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
+  const [progress, setProgress] = useState(trainee?.progress || 0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -50,7 +52,8 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                 name, 
                 email,
                 department, 
-                dob: format(dob, 'yyyy-MM-dd')
+                dob: format(dob, 'yyyy-MM-dd'),
+                progress,
             });
         } else {
             await addTrainee({
@@ -58,15 +61,15 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                 email,
                 department,
                 dob: format(dob, 'yyyy-MM-dd'),
-                progress: 0,
-                status: 'On Track',
+                progress,
+                status: '', // Status will be set by the service
             });
         }
         toast({
             title: isEditing ? "Trainee Updated" : "Trainee Added",
             description: `The details for ${name} have been successfully saved.`,
         });
-        router.push('/admin/dashboard');
+        router.push('/admin/trainee-management');
         router.refresh(); // To show the updated data on the dashboard
     } catch (error) {
         toast({
@@ -84,7 +87,7 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
         <CardHeader>
             <CardTitle className="text-2xl font-headline">{isEditing ? "Edit Trainee" : "Add New Trainee"}</CardTitle>
             <CardDescription>
-                {isEditing ? `You are editing personal details for ${trainee.name}. Progress and status are updated automatically based on trainee activity.` : "Enter the personal details for the new trainee."}
+                {isEditing ? `You are editing personal details for ${trainee.name}. The status is updated automatically based on progress.` : "Enter the personal details for the new trainee."}
             </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -157,9 +160,26 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                         </Popover>
                     </div>
                 </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="progress">Progress</Label>
+                    <div className="flex items-center gap-4">
+                        <Slider 
+                            id="progress"
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={[progress]}
+                            onValueChange={(value) => setProgress(value[0])}
+                        />
+                        <div className="flex items-center gap-2 font-bold text-primary w-20">
+                            {progress}%
+                            <Percent className="h-4 w-4" />
+                        </div>
+                    </div>
+                </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-                <Link href="/admin/dashboard">
+                <Link href="/admin/trainee-management">
                     <Button variant="outline">Cancel</Button>
                 </Link>
                 <Button type="submit" disabled={loading}>

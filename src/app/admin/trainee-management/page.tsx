@@ -63,8 +63,6 @@ export default function TraineeManagementPage() {
             return <Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900">{status}</Badge>;
         case 'Need Attention':
             return <Badge variant="destructive">{status}</Badge>;
-        case 'Exceeding':
-            return <Badge variant="default">{status}</Badge>;
         default:
             return <Badge variant="secondary">{status}</Badge>;
     }
