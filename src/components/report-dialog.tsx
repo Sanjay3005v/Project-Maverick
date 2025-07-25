@@ -20,9 +20,10 @@ import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-rep
 
 interface ReportDialogProps {
   trainees: GenerateTraineeReportInput['trainees'];
+  children: React.ReactNode;
 }
 
-export function ReportDialog({ trainees }: ReportDialogProps) {
+export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,10 +72,7 @@ export function ReportDialog({ trainees }: ReportDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <FileText className="mr-2 h-4 w-4" />
-          Generate Report
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>

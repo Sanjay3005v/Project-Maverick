@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2 } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -111,7 +111,12 @@ export default function TraineeManagementPage() {
                         Manage Quizzes
                     </Button>
                 </Link>
-                <ReportDialog trainees={allFreshers} />
+                <ReportDialog trainees={allFreshers}>
+                   <Button>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Report
+                    </Button>
+                </ReportDialog>
               </div>
             </div>
             <div className="border rounded-lg">
