@@ -11,18 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, BookOpenCheck, Code2, FileText, Award, Route, Loader2 } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
-
-const progressItems = [
-  { text: "Update Profile", completed: true },
-  { text: "Daily Quiz", completed: true },
-  { text: "Coding Challenge #1", completed: true },
-  { text: "Submit Assignment", completed: false },
-  { text: "Complete Certification", completed: false },
-];
 
 export default function TraineeDashboard() {
   const { user } = useAuth();
@@ -94,27 +86,16 @@ export default function TraineeDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="font-headline">Your Onboarding Progress</CardTitle>
-            <CardDescription>Complete all items to finish your onboarding.</CardDescription>
+            <CardDescription>This reflects your overall progress through the onboarding program.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
               <Progress value={overallProgress} className="h-3" />
               <span className="font-bold text-lg text-primary">{Math.round(overallProgress)}%</span>
             </div>
-            <ul className="space-y-3">
-              {progressItems.map((item, index) => (
-                <li key={index} className="flex items-center gap-3 text-sm">
-                  {item.completed ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground" />
-                  )}
-                  <span className={item.completed ? "line-through text-muted-foreground" : ""}>
-                    {item.text}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm text-muted-foreground mt-4">
+                Your progress is automatically updated as you complete quizzes, assignments, and other activities.
+            </p>
           </CardContent>
         </Card>
       </section>
