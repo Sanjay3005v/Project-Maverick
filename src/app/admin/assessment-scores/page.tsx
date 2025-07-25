@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ClipboardCheck } from 'lucide-react';
 import Link from 'next/link';
 
 // Function to generate a random score for demonstration
@@ -48,7 +48,10 @@ export default function AssessmentScoresPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>All Trainees</CardTitle>
+          <CardTitle>
+            <ClipboardCheck className="mr-2 h-6 w-6" />
+            All Trainees
+          </CardTitle>
           <CardDescription>
             This list shows the assessment scores for each trainee. Note: Scores are currently dummy data.
           </CardDescription>

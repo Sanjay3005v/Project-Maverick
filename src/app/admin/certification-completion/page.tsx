@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, Award } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
@@ -53,7 +53,10 @@ export default function CertificationCompletionPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>All Trainees Status</CardTitle>
+          <CardTitle>
+            <Award className="mr-2 h-6 w-6" />
+            All Trainees Status
+          </CardTitle>
           <CardDescription>
             This list shows whether each trainee has completed their certification. Note: Status is currently dummy data.
           </CardDescription>
