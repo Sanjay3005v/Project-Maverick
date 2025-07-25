@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Monitor and manage trainee onboarding.</p>
       </header>
       
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card onClick={handleShowAllTrainees} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trainees</CardTitle>
@@ -131,6 +131,30 @@ export default function AdminDashboard() {
                 <p className="text-xs text-muted-foreground">{completedCount} trainees certified</p>
             </CardContent>
             </Card>
+        </Link>
+        <Link href="/admin/training-progress">
+          <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Training Progress</CardTitle>
+              <ListChecks className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Track Details</div>
+              <p className="text-xs text-muted-foreground">View course and module progress</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/view-analysis">
+          <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">View Analysis</CardTitle>
+              <BarChart2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Visualize Data</div>
+              <p className="text-xs text-muted-foreground">See performance charts and graphs</p>
+            </CardContent>
+          </Card>
         </Link>
       </section>
 
@@ -177,18 +201,6 @@ export default function AdminDashboard() {
                     <Button variant="outline" className="w-full">
                         <BookOpenCheck className="mr-2 h-4 w-4" />
                         Manage Quizzes
-                    </Button>
-                </Link>
-                <Link href="/admin/training-progress" className="w-full md:w-auto">
-                    <Button variant="outline" className="w-full">
-                        <ListChecks className="mr-2 h-4 w-4" />
-                        Training Progress
-                    </Button>
-                </Link>
-                 <Link href="/admin/view-analysis" className="w-full md:w-auto">
-                    <Button variant="outline" className="w-full">
-                        <BarChart2 className="mr-2 h-4 w-4" />
-                        View Analysis
                     </Button>
                 </Link>
                 <ReportDialog trainees={allFreshers} />
