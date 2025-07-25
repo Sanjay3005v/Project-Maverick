@@ -9,6 +9,7 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   const { user, loading } = useAuth();
@@ -42,6 +43,7 @@ export function Header() {
           <span className="font-headline text-xl font-bold">Maverick Mindset</span>
         </Link>
         <nav className="flex items-center gap-4">
+           <ThemeToggle />
           {!loading && user && (
             <>
               {isUserAdmin ? (
