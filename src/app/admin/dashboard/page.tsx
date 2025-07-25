@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -24,11 +28,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Users, TrendingUp, AlertTriangle, CheckCircle, Search, Wand2, UserCog } from "lucide-react";
+import { Users, TrendingUp, AlertTriangle, CheckCircle, Search, Wand2, UserCog, FilterX } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 
-const freshers = [
+const allFreshers = [
   { id: 1, name: "Alice Johnson", department: "Engineering", progress: 75, status: "On Track" },
   { id: 2, name: "Bob Williams", department: "Engineering", progress: 45, status: "Needs Attention" },
   { id: 3, name: "Charlie Brown", department: "Product", progress: 90, status: "Exceeding" },
@@ -36,11 +40,23 @@ const freshers = [
   { id: 5, name: "Ethan Davis", department: "Engineering", progress: 20, status: "At Risk" },
 ];
 
-const traineesNeedingAttention = freshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
-const onboardingCompletionRate = freshers.filter(f => f.progress === 100).length / freshers.length * 100;
-
-
 export default function AdminDashboard() {
+  const [freshers, setFreshers] = useState(allFreshers);
+  const [filter, setFilter] = useState<string | null>(null);
+
+  const traineesNeedingAttention = allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
+  const onboardingCompletionRate = allFreshers.filter(f => f.progress === 100).length / allFreshers.length * 100;
+  
+  const handleFilterNeedingAttention = () => {
+    setFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
+    setFilter("Needs Attention");
+  }
+
+  const handleClearFilter = () => {
+    setFreshers(allFreshers);
+    setFilter(null);
+  }
+
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8">
       <header>
@@ -69,7 +85,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">+5% from last week</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card onClick={handleFilterNeedingAttention} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Needs Attention</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -94,8 +110,18 @@ export default function AdminDashboard() {
       <section>
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Trainee Management</CardTitle>
-            <CardDescription>Search, filter, and view progress of all trainees.</CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="font-headline">Trainee Management</CardTitle>
+                <CardDescription>Search, filter, and view progress of all trainees.</CardDescription>
+              </div>
+              {filter && (
+                 <Button variant="ghost" onClick={handleClearFilter}>
+                    <FilterX className="mr-2 h-4 w-4" />
+                    Clear Filter ({filter})
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
@@ -120,7 +146,7 @@ export default function AdminDashboard() {
                         Onboarding Planner
                     </Button>
                 </Link>
-                <ReportDialog trainees={freshers} />
+                <ReportDialog trainees={allFreshers} />
               </div>
             </div>
             <div className="border rounded-lg">
