@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc } from 'firebase/firestore';
 
 export interface Trainee {
     id: string;
@@ -40,23 +40,32 @@ const dummyTrainees: Omit<Trainee, 'id'>[] = [
 ];
 
 async function seedTrainees() {
-    const batch = writeBatch(db);
+    console.log("Seeding trainees...");
+    const existingTraineesSnapshot = await getDocs(traineesCollection);
+    const deleteBatch = writeBatch(db);
+    existingTraineesSnapshot.docs.forEach(doc => {
+        deleteBatch.delete(doc.ref);
+    });
+    await deleteBatch.commit();
+
+    const addBatch = writeBatch(db);
     dummyTrainees.forEach(trainee => {
-        const docRef = doc(traineesCollection);
-        batch.set(docRef, {
+        const docRef = doc(collection(db, 'trainees')); // Create a new doc reference
+        addBatch.set(docRef, {
             ...trainee,
             dob: new Date(trainee.dob as string),
             assessmentScore: Math.floor(Math.random() * 41) + 60,
         });
     });
-    await batch.commit();
+    await addBatch.commit();
+    console.log("Seeding complete.");
 }
 
 
 export async function getAllTrainees(): Promise<Trainee[]> {
     let traineeSnapshot = await getDocs(traineesCollection);
 
-    if (traineeSnapshot.empty) {
+    if (traineeSnapshot.empty || traineeSnapshot.docs.length < dummyTrainees.length) {
         await seedTrainees();
         traineeSnapshot = await getDocs(traineesCollection);
     }
