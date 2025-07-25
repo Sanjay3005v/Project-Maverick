@@ -5,19 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Slider } from "./ui/slider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar } from "./ui/calendar";
 
 interface Trainee {
   id: number;
   name: string;
   department: string;
-  progress: number;
-  status: string;
+  dob: string;
 }
 
 interface ManageTraineeFormProps {
@@ -27,8 +29,7 @@ interface ManageTraineeFormProps {
 export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
   const [name, setName] = useState(trainee?.name || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
-  const [status, setStatus] = useState(trainee?.status || "On Track");
-  const [progress, setProgress] = useState(trainee?.progress || 0);
+  const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? new Date(trainee.dob) : undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -55,7 +56,7 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
         <CardHeader>
             <CardTitle className="text-2xl font-headline">{isEditing ? "Edit Trainee" : "Add New Trainee"}</CardTitle>
             <CardDescription>
-                {isEditing ? `You are editing the profile for ${trainee.name}.` : "Enter the details for the new trainee."}
+                {isEditing ? `You are editing personal details for ${trainee.name}. Progress and status are updated automatically based on trainee activity.` : "Enter the personal details for the new trainee."}
             </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -85,30 +86,30 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                         </Select>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
-                        <Select onValueChange={setStatus} value={status}>
-                            <SelectTrigger id="status">
-                                <SelectValue placeholder="Select a status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="On Track">On Track</SelectItem>
-                                <SelectItem value="Exceeding">Exceeding</SelectItem>
-                                <SelectItem value="Needs Attention">Needs Attention</SelectItem>
-                                <SelectItem value="At Risk">At Risk</SelectItem>
-                            </SelectContent>
-                        </Select>
+                       <Label htmlFor="dob">Date of Birth</Label>
+                       <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !dob && "text-muted-foreground"
+                                )}
+                                >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {dob ? format(dob, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                mode="single"
+                                selected={dob}
+                                onSelect={setDob}
+                                initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="progress">Progress ({progress}%)</Label>
-                    <Slider
-                        id="progress"
-                        min={0}
-                        max={100}
-                        step={5}
-                        value={[progress]}
-                        onValueChange={(value) => setProgress(value[0])}
-                    />
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between">

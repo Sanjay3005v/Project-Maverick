@@ -1,11 +1,11 @@
 import { ManageTraineeForm } from "@/components/manage-trainee-form";
 
 const freshers = [
-  { id: 1, name: "Alice Johnson", department: "Engineering", progress: 75, status: "On Track" },
-  { id: 2, name: "Bob Williams", department: "Engineering", progress: 45, status: "Needs Attention" },
-  { id: 3, name: "Charlie Brown", department: "Product", progress: 90, status: "Exceeding" },
-  { id: 4, name: "Diana Miller", department: "Design", progress: 60, status: "On Track" },
-  { id: 5, name: "Ethan Davis", department: "Engineering", progress: 20, status: "At Risk" },
+  { id: 1, name: "Alice Johnson", department: "Engineering", dob: "1998-07-15" },
+  { id: 2, name: "Bob Williams", department: "Engineering", dob: "1999-02-20" },
+  { id: 3, name: "Charlie Brown", department: "Product", dob: "1997-11-30" },
+  { id: 4, name: "Diana Miller", department: "Design", dob: "2000-05-25" },
+  { id: 5, name: "Ethan Davis", department: "Engineering", dob: "1999-09-01" },
 ];
 
 export default function ManageTraineesPage({
@@ -17,7 +17,7 @@ export default function ManageTraineesPage({
   const trainee = traineeId ? freshers.find(f => f.id === traineeId) : null;
   const pageTitle = trainee ? `Edit Trainee: ${trainee.name}` : "Add New Trainee";
   const pageDescription = trainee
-    ? "Update the details for the selected trainee."
+    ? "Update the personal details for the selected trainee."
     : "Fill out the form below to add a new trainee to the system.";
   
   return (
