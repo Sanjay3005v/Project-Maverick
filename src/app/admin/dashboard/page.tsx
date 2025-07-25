@@ -38,18 +38,27 @@ const allFreshers = [
   { id: 3, name: "Charlie Brown", department: "Product", progress: 90, status: "Exceeding" },
   { id: 4, name: "Diana Miller", department: "Design", progress: 60, status: "On Track" },
   { id: 5, name: "Ethan Davis", department: "Engineering", progress: 20, status: "At Risk" },
+  { id: 6, name: "Fiona Green", department: "Product", progress: 100, status: "Exceeding" },
+  { id: 7, name: "George Hill", department: "Design", progress: 100, status: "Exceeding" },
 ];
 
 export default function AdminDashboard() {
   const [freshers, setFreshers] = useState(allFreshers);
   const [filter, setFilter] = useState<string | null>(null);
 
+  const totalTrainees = allFreshers.length;
   const traineesNeedingAttention = allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk").length;
-  const onboardingCompletionRate = allFreshers.filter(f => f.progress === 100).length / allFreshers.length * 100;
+  const completedCount = allFreshers.filter(f => f.progress === 100).length;
+  const onboardingCompletionRate = Math.round((completedCount / totalTrainees) * 100);
   
   const handleFilterNeedingAttention = () => {
     setFreshers(allFreshers.filter(f => f.status === "Needs Attention" || f.status === "At Risk"));
     setFilter("Needs Attention");
+  }
+
+  const handleFilterCompleted = () => {
+    setFreshers(allFreshers.filter(f => f.progress === 100));
+    setFilter("Completed");
   }
 
   const handleClearFilter = () => {
@@ -65,14 +74,14 @@ export default function AdminDashboard() {
       </header>
       
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card onClick={handleClearFilter} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trainees</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">125</div>
-            <p className="text-xs text-muted-foreground">+10 from last month</p>
+            <div className="text-2xl font-bold">{totalTrainees}</div>
+            <p className="text-xs text-muted-foreground">Click to see all trainees</p>
           </CardContent>
         </Card>
         <Card>
@@ -92,17 +101,17 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{traineesNeedingAttention}</div>
-            <p className="text-xs text-muted-foreground">Trainees marked as "At Risk" or "Needs Attention"</p>
+            <p className="text-xs text-muted-foreground">"At Risk" or "Needs Attention"</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card onClick={handleFilterCompleted} className="cursor-pointer hover:border-primary transition-colors">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{onboardingCompletionRate}%</div>
-            <p className="text-xs text-muted-foreground">Trainees who completed onboarding</p>
+            <p className="text-xs text-muted-foreground">{completedCount} trainees completed</p>
           </CardContent>
         </Card>
       </section>
@@ -168,7 +177,7 @@ export default function AdminDashboard() {
                       <TableCell>
                         <Badge variant={
                           fresher.status === 'On Track' ? 'secondary' :
-                          fresher.status === 'Exceeding' ? 'default' :
+                          fresher.progress === 100 || fresher.status === 'Exceeding' ? 'default' :
                           'destructive'
                         }>{fresher.status}</Badge>
                       </TableCell>
