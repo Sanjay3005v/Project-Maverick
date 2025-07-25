@@ -1,11 +1,14 @@
+
 "use client"
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import { DayPicker, DropdownProps } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
+import { ScrollArea } from "./scroll-area"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
@@ -24,6 +27,7 @@ function Calendar({
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
+        caption_dropdowns: "flex justify-center gap-1",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -60,11 +64,66 @@ function Calendar({
         IconRight: ({ className, ...props }) => (
           <ChevronRight className={cn("h-4 w-4", className)} {...props} />
         ),
+        Dropdown: (props: DropdownProps) => {
+           const { fromYear, fromMonth, fromDate, toYear, toMonth, toDate } =
+            useDayPicker();
+
+          const options: { label: string; value: string }[] = [];
+          if (props.name === "months") {
+            options.push(
+              ...Array.from({ length: 12 }, (_, i) => ({
+                value: i.toString(),
+                label: format(setMonth(new Date(), i), "MMM"),
+              }))
+            );
+          } else if (props.name === "years") {
+            const earliestYear =
+              fromYear || fromMonth?.getFullYear() || fromDate?.getFullYear();
+            const latestYear =
+              toYear || toMonth?.getFullYear() || toDate?.getFullYear();
+
+            if (earliestYear && latestYear) {
+              const years = [];
+              for (let i = earliestYear; i <= latestYear; i++) {
+                years.push({ label: i.toString(), value: i.toString() });
+              }
+              options.push(...years);
+            }
+          }
+
+          const selectValue = props.value?.toString() ?? "";
+          return (
+            <Select
+              onValueChange={(newValue) => {
+                const changeEvent = {
+                  target: { value: newValue },
+                } as React.ChangeEvent<HTMLSelectElement>;
+                props.onChange?.(changeEvent);
+              }}
+              value={selectValue}
+            >
+              <SelectTrigger>{props.caption}</SelectTrigger>
+              <SelectContent>
+                 <ScrollArea className="h-80">
+                    {options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                        </SelectItem>
+                    ))}
+                </ScrollArea>
+              </SelectContent>
+            </Select>
+          );
+        },
       }}
       {...props}
     />
   )
 }
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
+
+import { useDayPicker, DateFormatter } from "react-day-picker";
+import { format, setMonth } from "date-fns";
+
 
 export { Calendar }

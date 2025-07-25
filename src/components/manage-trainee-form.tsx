@@ -127,10 +127,13 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
-                                mode="single"
-                                selected={dob}
-                                onSelect={setDob}
-                                initialFocus
+                                    mode="single"
+                                    selected={dob}
+                                    onSelect={setDob}
+                                    initialFocus
+                                    captionLayout="dropdown-buttons"
+                                    fromYear={new Date().getFullYear() - 100}
+                                    toYear={new Date().getFullYear()}
                                 />
                             </PopoverContent>
                         </Popover>
