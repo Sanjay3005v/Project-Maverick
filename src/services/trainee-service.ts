@@ -18,25 +18,25 @@ const traineesCollection = collection(db, 'trainees');
 // Dummy data for seeding
 const dummyTrainees: Omit<Trainee, 'id'>[] = [
     { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Engineering', progress: 85, status: 'On Track', dob: '1998-05-15' },
-    { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Product', progress: 100, status: 'Exceeding', dob: '1999-02-20' },
+    { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Product', progress: 100, status: 'On Track', dob: '1999-02-20' },
     { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Design', progress: 60, status: 'On Track', dob: '2000-11-30' },
     { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Engineering', progress: 40, status: 'At Risk', dob: '1997-07-22' },
-    { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', progress: 95, status: 'Exceeding', dob: '1998-09-01' },
+    { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', progress: 95, status: 'On Track', dob: '1998-09-01' },
     { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Design', progress: 75, status: 'On Track', dob: '1999-03-12' },
     { name: 'George Costanza', email: 'george.c@example.com', department: 'Engineering', progress: 50, status: 'Need Attention', dob: '1996-08-19' },
     { name: 'Hannah Montana', email: 'hannah.m@example.com', department: 'Product', progress: 88, status: 'On Track', dob: '2001-01-05' },
-    { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 100, status: 'Exceeding', dob: '1995-06-10' },
+    { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 100, status: 'On Track', dob: '1995-06-10' },
     { name: 'Jack Sparrow', email: 'jack.s@example.com', department: 'Engineering', progress: 20, status: 'At Risk', dob: '1997-12-25' },
     { name: 'Kate Austen', email: 'kate.a@example.com', department: 'Product', progress: 92, status: 'On Track', dob: '1999-04-18' },
     { name: 'Leo DiCaprio', email: 'leo.d@example.com', department: 'Design', progress: 78, status: 'On Track', dob: '1998-08-25' },
-    { name: 'Monica Geller', email: 'monica.g@example.com', department: 'Engineering', progress: 98, status: 'Exceeding', dob: '1997-11-03' },
+    { name: 'Monica Geller', email: 'monica.g@example.com', department: 'Engineering', progress: 98, status: 'On Track', dob: '1997-11-03' },
     { name: 'Neo Anderson', email: 'neo.a@example.com', department: 'Product', progress: 35, status: 'At Risk', dob: '2000-01-15' },
     { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 81, status: 'On Track', dob: '1996-09-12' },
     { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', progress: 65, status: 'On Track', dob: '2001-07-30' },
     { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Product', progress: 72, status: 'On Track', dob: '1999-10-21' },
     { name: 'Rachel Green', email: 'rachel.g@example.com', department: 'Design', progress: 55, status: 'Need Attention', dob: '1998-02-14' },
     { name: 'trainee@example.com', email: 'trainee@example.com', department: 'Engineering', progress: 75, status: 'On Track', dob: '1999-01-01' },
-    { name: 'admin@example.com', email: 'admin@example.com', department: 'Administration', progress: 100, status: 'Exceeding', dob: '1990-01-01' },
+    { name: 'admin@example.com', email: 'admin@example.com', department: 'Administration', progress: 100, status: 'On Track', dob: '1990-01-01' },
 ];
 
 async function seedTrainees() {
