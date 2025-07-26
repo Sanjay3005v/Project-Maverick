@@ -24,43 +24,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-      
-      const isLoginPage = pathname === '/login';
-      const isHomePage = pathname === '/';
-      const isAdminRoute = pathname.startsWith('/admin');
-      const isTraineeRoute = pathname.startsWith('/trainee');
-      
-      if (user) {
-        const isUserAdmin = user.email?.includes('admin');
-        
-        // Redirect on login
-        if (isLoginPage || isHomePage) {
-          router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
-        }
-
-        // Enforce route access
-        if (isAdminRoute && !isUserAdmin) {
-          router.push('/trainee/dashboard');
-        } else if (isTraineeRoute && isUserAdmin) {
-          router.push('/admin/dashboard');
-        }
-        
-      } else {
-        // If not logged in, and trying to access a protected route, redirect to the login page.
-        if (isAdminRoute || isTraineeRoute) {
-            router.push('/login');
-        }
-      }
     });
 
     return () => unsubscribe();
-  }, [pathname, router]);
+  }, []);
+
+  useEffect(() => {
+    if (loading) {
+      return; // Wait until user status is resolved
+    }
+
+    const isLoginPage = pathname === '/login';
+    const isHomePage = pathname === '/';
+    const isAdminRoute = pathname.startsWith('/admin');
+    const isTraineeRoute = pathname.startsWith('/trainee');
+
+    if (user) {
+      const isUserAdmin = user.email?.includes('admin');
+      
+      // If user is on a page that doesn't match their role, redirect them.
+      if (isAdminRoute && !isUserAdmin) {
+        router.replace('/trainee/dashboard');
+        return;
+      }
+      
+      if (isTraineeRoute && isUserAdmin) {
+        router.replace('/admin/dashboard');
+        return;
+      }
+
+      // If user is on the login or home page, redirect them to their dashboard.
+      if (isLoginPage || isHomePage) {
+        router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+        return;
+      }
+    } else {
+      // If no user is logged in, redirect any protected route access to the login page.
+      if (isAdminRoute || isTraineeRoute) {
+        router.replace('/login');
+        return;
+      }
+    }
+  }, [user, loading, pathname, router]);
 
   const value = { user, loading };
 
-  // Render children only when loading is false to avoid flashes of unauthenticated content
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -13,6 +13,7 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (user) {
+        // The AuthProvider will handle redirection, this is a fallback.
         const isUserAdmin = user.email?.includes('admin');
         router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
       } else {
