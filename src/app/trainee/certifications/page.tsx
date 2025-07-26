@@ -42,13 +42,6 @@ export default function CertificationsPage() {
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("Hexaware", 15, 20);
-    
-    // Maverick Mindset Logo Placeholder (Top Right)
-    doc.setFillColor(224, 224, 224); // Light grey box as placeholder
-    doc.rect(pageWidth - 45, 15, 30, 10, 'F');
-    doc.setFontSize(8);
-    doc.text("Logo", pageWidth - 30, 21, {align: 'center'});
-
 
     // Main Header
     doc.setFontSize(30);
