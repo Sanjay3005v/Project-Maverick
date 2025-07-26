@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader2 } from "lucide-react";
+import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader2, UserCog } from "lucide-react";
 import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Monitor and manage trainee onboarding.</p>
       </header>
       
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/total-trainees">
             <Card className="cursor-pointer hover:border-primary transition-colors h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -77,12 +77,12 @@ export default function AdminDashboard() {
          <Link href="/admin/trainee-management">
             <Card className="cursor-pointer hover:border-primary transition-colors h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Trainee Management</CardTitle>
+                <UserCog className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{averageProgress}%</div>
-                <p className="text-xs text-muted-foreground">Overall progress of the cohort</p>
+                <div className="text-2xl font-bold">Manage</div>
+                <p className="text-xs text-muted-foreground">Add, edit, and track trainees</p>
             </CardContent>
             </Card>
         </Link>
@@ -134,6 +134,16 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+         <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{averageProgress}%</div>
+                <p className="text-xs text-muted-foreground">Overall progress of the cohort</p>
+            </CardContent>
+        </Card>
       </section>
     </div>
   );
