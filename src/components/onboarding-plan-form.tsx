@@ -8,11 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2, CheckCircle, Clock } from 'lucide-react';
+import { Wand2, Loader2, CheckCircle, Clock, FileDown } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -47,6 +50,26 @@ export function OnboardingPlanForm() {
       });
     }
   }, [state, toast]);
+
+  const handleDownloadPDF = () => {
+    if (!state.data?.personalizedPlan) return;
+    const doc = new jsPDF();
+    doc.text("Personalized Onboarding Plan", 14, 16);
+    autoTable(doc, {
+      head: [['Week', 'Topic', 'Tasks', 'Status']],
+      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks, item.status]),
+      startY: 20,
+    });
+    doc.save('onboarding-plan.pdf');
+  };
+
+  const handleDownloadExcel = () => {
+    if (!state.data?.personalizedPlan) return;
+    const worksheet = XLSX.utils.json_to_sheet(state.data.personalizedPlan);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Onboarding Plan");
+    XLSX.writeFile(workbook, 'onboarding-plan.xlsx');
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -88,8 +111,24 @@ export function OnboardingPlanForm() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
-          <CardDescription>The AI-generated plan will appear here in a structured table.</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
+              <CardDescription>The AI-generated plan will appear here in a structured table.</CardDescription>
+            </div>
+            {state?.success && state.data && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                  <FileDown className="mr-2" />
+                  PDF
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleDownloadExcel}>
+                  <FileDown className="mr-2" />
+                  Excel
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {state?.success && state.data ? (
