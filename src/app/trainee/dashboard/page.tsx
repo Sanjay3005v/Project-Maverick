@@ -15,6 +15,7 @@ import { BookOpenCheck, Code2, FileText, Award, Route, Loader2 } from "lucide-re
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
+import { challenges } from '@/lib/challenges-data';
 
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -60,6 +61,8 @@ export default function TraineeDashboard() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   }
+  const completedChallenges = 3; // This would typically come from user data
+  const totalChallenges = challenges.length;
 
 
   return (
@@ -138,7 +141,7 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">3 / 5</p>
+              <p className="text-2xl font-bold">{completedChallenges} / {totalChallenges}</p>
               <p className="text-sm text-muted-foreground">Completed</p>
             </CardContent>
           </Card>
