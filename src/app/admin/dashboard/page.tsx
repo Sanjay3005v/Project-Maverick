@@ -62,7 +62,7 @@ export default function AdminDashboard() {
       </header>
       
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Link href="/admin/trainee-management">
+        <Link href="/admin/total-trainees">
             <Card className="cursor-pointer hover:border-primary transition-colors h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Trainees</CardTitle>
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalTrainees}</div>
-                <p className="text-xs text-muted-foreground">Click to manage all trainees</p>
+                <p className="text-xs text-muted-foreground">Click to view all trainees</p>
               </CardContent>
             </Card>
         </Link>
