@@ -10,13 +10,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogIn } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("trainee");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -25,12 +23,19 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const isUserAdmin = user.email?.includes('admin');
+
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${role === 'admin' ? 'Admin' : 'Trainee'}!`,
+        description: `Welcome back, ${isUserAdmin ? 'Admin' : 'Trainee'}!`,
       });
-      router.push(role === "admin" ? "/admin/dashboard" : "/trainee/dashboard");
+      
+      // The AuthProvider will handle the redirect, but we can push them
+      // to the right place immediately for a faster UX.
+      router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
+
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -72,18 +77,6 @@ export function LoginForm() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="role">Role</Label>
-                     <Select onValueChange={setRole} defaultValue={role}>
-                        <SelectTrigger id="role">
-                            <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="trainee">Trainee</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
             </CardContent>
             <CardFooter>
