@@ -35,8 +35,8 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', progress: 65, dob: '2001-07-30' },
     { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Product', progress: 72, dob: '1999-10-21' },
     { name: 'Rachel Green', email: 'rachel.g@example.com', department: 'Design', progress: 55, dob: '1998-02-14' },
-    { name: 'trainee@example.com', email: 'trainee@example.com', department: 'Engineering', progress: 75, dob: '1999-01-01' },
-    { name: 'admin@example.com', email: 'admin@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
+    { name: 'Sam Wilson', email: 'trainee@example.com', department: 'Engineering', progress: 75, dob: '1999-01-01' },
+    { name: 'Nick Fury', email: 'admin@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
 ];
 
 const getStatusForProgress = (progress: number) => {
