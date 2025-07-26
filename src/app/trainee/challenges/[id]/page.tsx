@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -49,8 +50,9 @@ const challenges: Record<string, { title: string; description: string; testCases
   },
 };
 
-export default function ChallengePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function ChallengePage() {
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : '';
   const [challenge, setChallenge] = useState<{ title: string; description: string, testCases: string[] } | null>(null);
   const [language, setLanguage] = useState('javascript');
   const [code, setCode] = useState('');
@@ -89,14 +91,14 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
       setResult(evaluation);
       if (evaluation.status === 'Passed') {
         toast({
-            title: 'Congratulations!',
-            description: "Good work, keep it up!",
+            title: 'Congratulations! Good work, keep it up!',
+            description: evaluation.feedback,
         })
       } else {
         toast({
             variant: 'destructive',
-            title: 'Not Quite...',
-            description: "Better luck next time. Check the feedback for a hint.",
+            title: 'Not Quite... Better luck next time.',
+            description: "Check the feedback for a hint.",
         })
       }
 
@@ -223,3 +225,5 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    
