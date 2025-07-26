@@ -12,6 +12,7 @@ import {
 import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader2, UserCog, Bell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
+import { useAuth } from "@/hooks/use-auth";
 
 type TraineeWithCompletion = Trainee & { certificationCompleted?: boolean };
 
@@ -24,18 +25,20 @@ const generateConsistentCompletion = (id: string) => {
 
 export default function AdminDashboard() {
   const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading: authLoading } = useAuth();
+  const [dataLoading, setDataLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchTrainees = async () => {
-      setLoading(true);
+      setDataLoading(true);
       const trainees = await getAllTrainees();
       const traineesWithCompletion = trainees.map(t => ({
         ...t,
         certificationCompleted: generateConsistentCompletion(t.id),
       }));
       setAllFreshers(traineesWithCompletion);
-      setLoading(false);
+      setDataLoading(false);
     };
     fetchTrainees();
   }, []);
@@ -49,7 +52,7 @@ export default function AdminDashboard() {
     ? allFreshers.reduce((max, trainee) => trainee.progress > max.progress ? trainee : max, allFreshers[0])
     : null;
   
-  if (loading) {
+  if (authLoading || dataLoading) {
       return (
           <div className="flex justify-center items-center h-screen">
               <Loader2 className="h-8 w-8 animate-spin" />

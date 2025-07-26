@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Rocket, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { Rocket, LayoutDashboard, LogOut, LogIn, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
@@ -44,7 +44,9 @@ export function Header() {
         </Link>
         <nav className="ml-auto flex items-center gap-4">
            <ThemeToggle />
-          {!loading && user && (
+          {loading ? (
+             <Loader2 className="h-5 w-5 animate-spin" />
+          ) : user ? (
             <>
               {isUserAdmin ? (
                   <Link href="/admin/dashboard" passHref>
@@ -66,8 +68,7 @@ export function Header() {
                 Sign Out
               </Button>
             </>
-          )}
-           {!loading && !user && (
+          ) : (
             <Link href="/login" passHref>
               <Button>
                 <LogIn className="mr-2 h-4 w-4" />
