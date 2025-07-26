@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Pie, PieChart, Cell } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, Cell, XAxis, YAxis } from 'recharts';
 import type { ChartConfig } from '@/components/ui/chart';
 
 const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // 60-100
@@ -20,6 +20,13 @@ const generateConsistentCompletion = (id: string) => {
 const assessmentChartConfig = {
   passed: { label: 'Passed', color: 'hsl(var(--chart-1))' },
   failed: { label: 'Failed', color: 'hsl(var(--chart-2))' },
+} satisfies ChartConfig;
+
+const departmentChartConfig = {
+  progress: { label: 'Avg. Progress' },
+  Engineering: { label: 'Engineering', color: 'hsl(var(--chart-1))' },
+  Product: { label: 'Product', color: 'hsl(var(--chart-3))' },
+  Design: { label: 'Design', color: 'hsl(var(--chart-5))' },
 } satisfies ChartConfig;
 
 
@@ -50,12 +57,33 @@ export default function ViewAnalysisPage() {
             assessmentData: [],
             completedTraining: 0,
             participationRate: 0,
+            departmentProgress: [],
         }
     }
     const passCount = trainees.filter(t => (t.assessmentScore || 0) >= 70).length;
     const failCount = trainees.length - passCount;
     
     const completedTraining = trainees.filter(t => (t as any).trainingCompleted).length;
+
+    const departmentData: { [key: string]: { totalProgress: number; count: number } } = {
+        Engineering: { totalProgress: 0, count: 0 },
+        Product: { totalProgress: 0, count: 0 },
+        Design: { totalProgress: 0, count: 0 },
+    };
+
+    trainees.forEach(trainee => {
+        if(departmentData[trainee.department]) {
+            departmentData[trainee.department].totalProgress += trainee.progress;
+            departmentData[trainee.department].count += 1;
+        }
+    });
+
+    const departmentProgress = Object.entries(departmentData).map(([name, data]) => ({
+        name,
+        progress: data.count > 0 ? Math.round(data.totalProgress / data.count) : 0,
+        fill: `var(--color-${name})`
+    }));
+
 
     return {
       assessmentData: [
@@ -64,6 +92,7 @@ export default function ViewAnalysisPage() {
       ],
       completedTraining,
       participationRate: Math.round((completedTraining / trainees.length) * 100),
+      departmentProgress,
     };
   }, [trainees]);
 
@@ -86,30 +115,28 @@ export default function ViewAnalysisPage() {
         </p>
       </header>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Assessment Pass/Fail Rate</CardTitle>
-            <CardDescription>Based on a 70% passing score.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={assessmentChartConfig} className="mx-auto aspect-square max-h-[300px]">
-                <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="value" />} />
-                    <Pie data={analysisData.assessmentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                       {analysisData.assessmentData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                    </Pie>
-                </PieChart>
-            </ChartContainer>
-          </CardContent>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Department Performance</CardTitle>
+                <CardDescription>Average training progress by department.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={departmentChartConfig} className="w-full h-[300px]">
+                    <BarChart data={analysisData.departmentProgress} margin={{ top: 20, right: 20, left: -10, bottom: 5 }} accessibilityLayer>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                        <YAxis domain={[0, 100]} unit="%" />
+                        <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                        <Bar dataKey="progress" radius={4} />
+                    </BarChart>
+                </ChartContainer>
+            </CardContent>
         </Card>
-        
         <Card className="flex flex-col">
           <CardHeader>
-            <CardTitle>Training Participation Rate</CardTitle>
-            <CardDescription>Trainees who have completed their training.</CardDescription>
+            <CardTitle>Training Participation</CardTitle>
+            <CardDescription>Trainees who have completed all training modules.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center flex-grow">
             <div className="flex items-baseline gap-2">
@@ -123,6 +150,25 @@ export default function ViewAnalysisPage() {
              <p className="text-muted-foreground">Completion Rate</p>
           </CardContent>
         </Card>
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Assessment Pass/Fail Rate</CardTitle>
+            <CardDescription>Based on a 70% passing score for the final assessment.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <ChartContainer config={assessmentChartConfig} className="mx-auto aspect-square max-h-[300px]">
+                <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} />
+                    <Pie data={analysisData.assessmentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                       {analysisData.assessmentData.map((entry) => (
+                          <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                        ))}
+                    </Pie>
+                </PieChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        
       </div>
       
        <div className="text-center mt-12">
