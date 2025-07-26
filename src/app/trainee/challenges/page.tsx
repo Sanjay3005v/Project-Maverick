@@ -1,22 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Code2, ExternalLink } from "lucide-react";
+import { Code2 } from "lucide-react";
 import Link from "next/link";
 
 const challenges = [
   {
+    id: "css-flexbox-layout",
     title: "CSS Flexbox Layout",
     description: "Recreate a complex layout using only CSS Flexbox. Focus on responsiveness and alignment.",
     difficulty: "Easy",
     tags: ["CSS", "Frontend"],
   },
   {
+    id: "api-data-fetching",
     title: "API Data Fetching",
     description: "Fetch data from a public API and display it in a list format. Handle loading and error states.",
     difficulty: "Medium",
     tags: ["JavaScript", "API"],
   },
   {
+    id: "state-management-with-hooks",
     title: "State Management with Hooks",
     description: "Build a simple counter application using React's useState and useEffect hooks.",
     difficulty: "Medium",
@@ -47,9 +50,11 @@ export default function CodingChallengesPage() {
                 </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">
-                <Code2 className="mr-2 h-4 w-4" /> Start Challenge
-              </Button>
+              <Link href={`/trainee/challenges/${challenge.id}`} className="w-full">
+                <Button className="w-full">
+                  <Code2 className="mr-2 h-4 w-4" /> Start Challenge
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}
