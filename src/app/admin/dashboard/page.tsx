@@ -25,23 +25,25 @@ const generateConsistentCompletion = (id: string) => {
 
 export default function AdminDashboard() {
   const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
-  const { loading: authLoading } = useAuth();
+  const { user, loading } = useAuth();
   const [dataLoading, setDataLoading] = useState(true);
 
 
   useEffect(() => {
-    const fetchTrainees = async () => {
-      setDataLoading(true);
-      const trainees = await getAllTrainees();
-      const traineesWithCompletion = trainees.map(t => ({
-        ...t,
-        certificationCompleted: generateConsistentCompletion(t.id),
-      }));
-      setAllFreshers(traineesWithCompletion);
-      setDataLoading(false);
-    };
-    fetchTrainees();
-  }, []);
+    if (!loading && user) {
+      const fetchTrainees = async () => {
+        setDataLoading(true);
+        const trainees = await getAllTrainees();
+        const traineesWithCompletion = trainees.map(t => ({
+          ...t,
+          certificationCompleted: generateConsistentCompletion(t.id),
+        }));
+        setAllFreshers(traineesWithCompletion);
+        setDataLoading(false);
+      };
+      fetchTrainees();
+    }
+  }, [user, loading]);
 
   const totalTrainees = allFreshers.length;
   const completedCount = allFreshers.filter(f => f.certificationCompleted).length;
@@ -52,7 +54,7 @@ export default function AdminDashboard() {
     ? allFreshers.reduce((max, trainee) => trainee.progress > max.progress ? trainee : max, allFreshers[0])
     : null;
   
-  if (authLoading || dataLoading) {
+  if (loading || dataLoading) {
       return (
           <div className="flex justify-center items-center h-screen">
               <Loader2 className="h-8 w-8 animate-spin" />
