@@ -1,4 +1,3 @@
-
 import { TraineeOnboardingPlan } from "@/components/trainee-onboarding-plan";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,7 +8,7 @@ export default function TraineeOnboardingPlanPage() {
       <header>
         <h1 className="text-4xl font-headline font-bold">My Onboarding Plan</h1>
         <p className="text-muted-foreground">
-          Generate your personalized AI-driven onboarding plan.
+          Describe your goals and preferences to generate a personalized, AI-driven onboarding plan.
         </p>
       </header>
       <section>
