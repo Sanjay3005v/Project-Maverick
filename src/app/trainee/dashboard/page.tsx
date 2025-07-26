@@ -17,25 +17,25 @@ import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 
 export default function TraineeDashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.email) {
+    if (!authLoading && user?.email) {
       const fetchTrainee = async () => {
-        setLoading(true);
+        setDataLoading(true);
         const traineeData = await getTraineeByEmail(user.email);
         setTrainee(traineeData);
-        setLoading(false);
+        setDataLoading(false);
       }
       fetchTrainee();
-    } else {
-      setLoading(false);
+    } else if (!authLoading && !user) {
+      setDataLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  if (loading) {
+  if (authLoading || dataLoading) {
     return (
         <div className="flex justify-center items-center h-screen">
             <Loader2 className="h-8 w-8 animate-spin" />
