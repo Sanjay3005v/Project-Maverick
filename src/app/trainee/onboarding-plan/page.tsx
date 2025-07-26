@@ -1,3 +1,4 @@
+
 import { TraineeOnboardingPlan } from "@/components/trainee-onboarding-plan";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

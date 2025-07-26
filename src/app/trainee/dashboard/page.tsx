@@ -100,7 +100,7 @@ export default function TraineeDashboard() {
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Link href="/trainee/onboarding-plan">
             <Card className="hover:border-primary transition-colors h-full">
                 <CardHeader>
