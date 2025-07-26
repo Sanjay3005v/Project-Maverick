@@ -6,11 +6,15 @@ import { useFormStatus } from 'react-dom';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2, Clock, CheckCircle } from 'lucide-react';
+import { Wand2, Loader2, Clock, FileDown } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+
 
 // Pre-filled data for the trainee and schedule
 const fresherProfile = "Recent computer science graduate with strong JavaScript skills and a passion for frontend development. Eager to learn React, Next.js, and Tailwind CSS. Prefers hands-on, project-based learning and has completed several personal projects, including a weather app and a to-do list application.";
@@ -59,6 +63,27 @@ export function TraineeOnboardingPlan() {
     }
   }, [state, toast]);
 
+  const handleDownloadPDF = () => {
+    if (!state.data?.personalizedPlan) return;
+    const doc = new jsPDF();
+    doc.text("My Personalized Onboarding Plan", 14, 16);
+    autoTable(doc, {
+      head: [['Week', 'Topic', 'Tasks', 'Status']],
+      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks, item.status]),
+      startY: 20,
+    });
+    doc.save('my-onboarding-plan.pdf');
+  };
+
+  const handleDownloadExcel = () => {
+    if (!state.data?.personalizedPlan) return;
+    const worksheet = XLSX.utils.json_to_sheet(state.data.personalizedPlan);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Onboarding Plan");
+    XLSX.writeFile(workbook, 'my-onboarding-plan.xlsx');
+  };
+
+
   return (
     <div className="grid md:grid-cols-3 gap-8 items-start">
         <div className="md:col-span-1 space-y-4">
@@ -83,8 +108,24 @@ export function TraineeOnboardingPlan() {
       <div className="md:col-span-2">
         <Card className="shadow-lg h-full flex flex-col">
             <CardHeader>
-            <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
-            <CardDescription>Your AI-generated onboarding plan will appear here.</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
+                  <CardDescription>Your AI-generated onboarding plan will appear here.</CardDescription>
+                </div>
+                 {state?.success && state.data && (
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                      <FileDown className="mr-2" />
+                      PDF
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleDownloadExcel}>
+                      <FileDown className="mr-2" />
+                      Excel
+                    </Button>
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="flex-grow">
             {state?.success && state.data ? (
