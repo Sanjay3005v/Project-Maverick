@@ -49,11 +49,30 @@ export default function TrainingProgressPage() {
     }, {} as Record<TrainingStatus, number>);
 
     return [
-        { status: 'Completed', trainees: counts['Completed'] || 0, fill: 'hsl(var(--chart-1))' },
-        { status: 'In Progress', trainees: counts['In Progress'] || 0, fill: 'hsl(var(--chart-4))' },
-        { status: 'Not Started', trainees: counts['Not Started'] || 0, fill: 'hsl(var(--muted))' }
+        { status: 'Completed', trainees: counts['Completed'] || 0, fill: 'var(--color-completed)' },
+        { status: 'In Progress', trainees: counts['In Progress'] || 0, fill: 'var(--color-in-progress)' },
+        { status: 'Not Started', trainees: counts['Not Started'] || 0, fill: 'var(--color-not-started)' }
     ];
   }, [trainees]);
+  
+  const chartConfig = {
+    trainees: {
+      label: "Trainees",
+    },
+    completed: {
+      label: "Completed",
+      color: "hsl(var(--chart-1))",
+    },
+    'in-progress': {
+        label: "In Progress",
+       color: "hsl(var(--chart-4))",
+    },
+    'not-started': {
+        label: "Not Started",
+        color: "hsl(var(--muted))",
+    }
+  };
+
 
   if (loading) {
     return (
@@ -82,7 +101,7 @@ export default function TrainingProgressPage() {
             <CardDescription>A visual summary of training status across all trainees.</CardDescription>
         </CardHeader>
         <CardContent>
-             <ChartContainer config={{}} className="h-[300px] w-full">
+             <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
                     <BarChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
