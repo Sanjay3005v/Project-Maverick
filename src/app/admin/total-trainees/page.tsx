@@ -24,6 +24,15 @@ export default function TotalTraineesPage() {
     fetchTrainees();
   }, []);
 
+  const formatUserId = (id: string) => {
+    // A simple, consistent way to create a numeric-like ID from the alphanumeric original
+    const numericPart = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
+    const letterPart = (id.replace(/[^a-zA-Z]/g, '').charCodeAt(0) || 0) % 100;
+    const combinedId = (numericPart + letterPart * 100000);
+    return combinedId.toString().padStart(7, '0');
+  };
+  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -62,7 +71,7 @@ export default function TotalTraineesPage() {
               <TableBody>
                 {trainees.map((trainee) => (
                   <TableRow key={trainee.id}>
-                    <TableCell className="font-mono text-xs">{trainee.id}</TableCell>
+                    <TableCell className="font-mono text-xs">{formatUserId(trainee.id)}</TableCell>
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.email}</TableCell>
                   </TableRow>
