@@ -28,6 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(user);
       setLoading(false);
       
+      const isLoginPage = pathname === '/login';
       const isHomePage = pathname === '/';
       const isAdminRoute = pathname.startsWith('/admin');
       const isTraineeRoute = pathname.startsWith('/trainee');
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const isUserAdmin = user.email?.includes('admin');
         
         // Redirect on login
-        if (isHomePage) {
+        if (isLoginPage || isHomePage) {
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
         }
 
@@ -48,9 +49,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         
       } else {
-        // If not logged in, and trying to access a protected route, redirect to the home page.
+        // If not logged in, and trying to access a protected route, redirect to the login page.
         if (isAdminRoute || isTraineeRoute) {
-            router.push('/');
+            router.push('/login');
         }
       }
     });

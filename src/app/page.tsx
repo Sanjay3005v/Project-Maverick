@@ -1,38 +1,30 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Rocket } from 'lucide-react';
-import { LoginForm } from '@/components/login-form';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+    if (!loading) {
+      if (user) {
+        const isUserAdmin = user.email?.includes('admin');
+        router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [user, loading, router]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-      <header className="text-center mb-12">
-        <div className="inline-flex items-center gap-4 mb-4">
-          <Rocket className="w-16 h-16 text-primary" />
-          <h1 className="text-5xl md:text-6xl font-headline font-bold text-foreground">
-            Maverick Mindset
-          </h1>
-        </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Revolutionizing the onboarding experience with personalized, AI-driven training plans for the next generation of talent.
-        </p>
-      </header>
-      
-      <main className="w-full max-w-sm">
-        <LoginForm />
-      </main>
-
-      <footer className="mt-12 text-center text-muted-foreground text-sm">
-        <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>
-      </footer>
+    <div className="flex h-screen w-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      <p className="ml-4">Loading...</p>
     </div>
   );
 }

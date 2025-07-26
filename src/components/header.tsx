@@ -23,7 +23,7 @@ export function Header() {
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
-      router.push('/');
+      router.push('/login');
     } catch (error) {
       toast({
         variant: "destructive",
@@ -68,7 +68,7 @@ export function Header() {
             </>
           )}
            {!loading && !user && (
-            <Link href="/" passHref>
+            <Link href="/login" passHref>
               <Button>
                 <LogIn className="mr-2 h-4 w-4" />
                 Get Started
