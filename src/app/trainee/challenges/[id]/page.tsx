@@ -148,6 +148,9 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
                       <SelectContent>
                         <SelectItem value="javascript">JavaScript</SelectItem>
                         <SelectItem value="python">Python</SelectItem>
+                        <SelectItem value="java">Java</SelectItem>
+                        <SelectItem value="c">C</SelectItem>
+                        <SelectItem value="cpp">C++</SelectItem>
                         <SelectItem value="css">CSS</SelectItem>
                         <SelectItem value="html">HTML</SelectItem>
                       </SelectContent>
