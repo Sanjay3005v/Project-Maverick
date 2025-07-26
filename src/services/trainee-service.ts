@@ -16,7 +16,49 @@ export interface Trainee {
 const traineesCollection = collection(db, 'trainees');
 
 // Dummy data for seeding
-const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [];
+const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
+    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
+    { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', progress: 72, dob: '1999-08-20' },
+    { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Design', progress: 95, dob: '1997-03-15' },
+    { name: 'Neo Anderson', email: 'neo.a@example.com', department: 'Engineering', progress: 60, dob: '1996-11-30' },
+    { name: 'George Costanza', email: 'george.c@example.com', department: 'Product', progress: 45, dob: '1998-07-22' },
+    { name: 'George Costanza', email: 'george.c1@example.com', department: 'Design', progress: 55, dob: '1998-07-22' },
+    { name: 'Hannah Montana', email: 'hannah.m@example.com', department: 'Engineering', progress: 88, dob: '2000-01-10' },
+    { name: 'Rachel Green', email: 'rachel.g@example.com', department: 'Product', progress: 92, dob: '1995-05-25' },
+    { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
+    { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
+    { name: 'Neo Anderson', email: 'neo.a1@example.com', department: 'Product', progress: 70, dob: '1996-11-30' },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
+    { name: 'Rachel Green', email: 'rachel.g1@example.com', department: 'Engineering', progress: 85, dob: '1995-05-25' },
+    { name: 'Brenda Smith', email: 'brenda.s1@example.com', department: 'Product', progress: 75, dob: '1997-09-05' },
+    { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
+    { name: 'Monica Geller', email: 'monica.g@example.com', department: 'Engineering', progress: 91, dob: '1996-08-08' },
+    { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', progress: 82, dob: '1995-10-10' },
+    { name: 'Kate Austen', email: 'kate.a@example.com', department: 'Design', progress: 77, dob: '1998-11-03' },
+    { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Engineering', progress: 89, dob: '2000-04-09' },
+    { name: 'Charlie Brown', email: 'charlie.b1@example.com', department: 'Product', progress: 80, dob: '1998-04-12' },
+    { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 93, dob: '1993-07-07' },
+    { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', progress: 84, dob: '2002-08-10' },
+    { name: 'Peter Parker', email: 'peter.p1@example.com', department: 'Product', progress: 74, dob: '2002-08-10' },
+    { name: 'Diana Prince', email: 'diana.p1@example.com', department: 'Design', progress: 99, dob: '1997-03-15' },
+    { name: 'Iron Man', email: 'iron@gmail.com', department: 'Engineering', progress: 100, dob: '1970-05-29' },
+    { name: 'Leo DiCaprio', email: 'leo.d@example.com', department: 'Product', progress: 81, dob: '1974-11-11' },
+    { name: 'Trainee User 2', email: 'trainee1@example.com', department: 'Design', progress: 40, dob: '2001-06-19' },
+    { name: 'Kate Austen', email: 'kate.a1@example.com', department: 'Engineering', progress: 79, dob: '1998-11-03' },
+    { name: 'Jack Sparrow', email: 'jack.s@example.com', department: 'Product', progress: 73, dob: '1963-06-09' },
+    { name: 'Ethan Hunt', email: 'ethan.h1@example.com', department: 'Design', progress: 86, dob: '1995-10-10' },
+    { name: 'Olivia Pope', email: 'olivia.p1@example.com', department: 'Engineering', progress: 97, dob: '1994-02-14' },
+    { name: 'Admin User', email: 'admin@example.com', department: 'Product', progress: 100, dob: '1970-01-01' },
+    { name: 'Quinn Fabray', email: 'quinn.f1@example.com', department: 'Design', progress: 90, dob: '2000-04-09' },
+    { name: 'Monica Geller', email: 'monica.g1@example.com', department: 'Engineering', progress: 94, dob: '1996-08-08' },
+    { name: 'Hannah Montana', email: 'hannah.m1@example.com', department: 'Product', progress: 87, dob: '2000-01-10' },
+    { name: 'Admin User 2', email: 'admin1@example.com', department: 'Design', progress: 100, dob: '1970-01-02' },
+    { name: 'Alex Johnson', email: 'alex.j1@example.com', department: 'Engineering', progress: 76, dob: '1999-12-01' },
+    { name: 'Fiona Glenanne', email: 'fiona.g1@example.com', department: 'Product', progress: 68, dob: '1999-08-20' },
+    { name: 'Indiana Jones', email: 'indy.j1@example.com', department: 'Design', progress: 96, dob: '1993-07-07' },
+    { name: 'Leo DiCaprio', email: 'leo.d1@example.com', department: 'Engineering', progress: 83, dob: '1974-11-11' },
+    { name: 'Jack Sparrow', email: 'jack.s1@example.com', department: 'Product', progress: 71, dob: '1963-06-09' },
+];
 
 const getStatusForProgress = (progress: number) => {
     if (progress >= 70) return 'On Track';
@@ -89,7 +131,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         // For development, if specific test users don't exist, seed the DB.
-        if (email === 'trainee@example.com' || email === 'ad@example.com') {
+        if (email === 'trainee@example.com' || email === 'ad@example.com' || email === 'admin@example.com') {
              await getAllTrainees(); // This will trigger seeding if needed
              const retrySnapshot = await getDocs(q);
              if (!retrySnapshot.empty) {
