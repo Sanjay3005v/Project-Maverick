@@ -15,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Loader2, FileText, Wand2, Download } from 'lucide-react';
+import { Loader2, Wand2, Download } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
 
 interface ReportDialogProps {
