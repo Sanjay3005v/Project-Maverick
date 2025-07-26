@@ -57,7 +57,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleDownloadReport = () => {
     if (!report) return;
 
-    const blob = new Blob([report], { type: 'text/plain' });
+    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
