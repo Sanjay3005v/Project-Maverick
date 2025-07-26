@@ -1,14 +1,16 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock, ListChecks, Circle } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, ListChecks, Circle, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 type TrainingStatus = 'Completed' | 'In Progress' | 'Not Started';
 
@@ -40,6 +42,19 @@ export default function TrainingProgressPage() {
     fetchAndProcessTrainees();
   }, []);
 
+  const chartData = useMemo(() => {
+    const counts = trainees.reduce((acc, trainee) => {
+        acc[trainee.trainingStatus] = (acc[trainee.trainingStatus] || 0) + 1;
+        return acc;
+    }, {} as Record<TrainingStatus, number>);
+
+    return [
+        { status: 'Completed', trainees: counts['Completed'] || 0, fill: 'hsl(var(--chart-1))' },
+        { status: 'In Progress', trainees: counts['In Progress'] || 0, fill: 'hsl(var(--chart-4))' },
+        { status: 'Not Started', trainees: counts['Not Started'] || 0, fill: 'hsl(var(--muted))' }
+    ];
+  }, [trainees]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -50,13 +65,38 @@ export default function TrainingProgressPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
+    <div className="container mx-auto p-4 md:p-8 space-y-8">
       <header className="mb-8">
         <h1 className="text-4xl font-headline font-bold">Training Progress</h1>
         <p className="text-muted-foreground">
           A detailed view of each trainee's overall training completion status.
         </p>
       </header>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>
+                <BarChart3 className="mr-2 h-6 w-6" />
+                Progress Overview
+            </CardTitle>
+            <CardDescription>A visual summary of training status across all trainees.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <ChartContainer config={{}} className="h-[300px] w-full">
+                <ResponsiveContainer>
+                    <BarChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="status" />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="trainees" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+        </CardContent>
+      </Card>
+      
       <Card>
         <CardHeader>
           <CardTitle>
@@ -94,7 +134,7 @@ export default function TrainingProgressPage() {
                                 In Progress
                             </Badge>
                         ) : (
-                            <Badge variant="secondary" className="gap-1.5 bg-gray-400 text-gray-900 hover:bg-gray-500">
+                            <Badge variant="secondary" className="gap-1.5 bg-gray-500 text-white hover:bg-gray-600">
                                 <Circle className="h-3.5 w-3.5" />
                                 Not Started
                             </Badge>
@@ -107,6 +147,7 @@ export default function TrainingProgressPage() {
           </div>
         </CardContent>
       </Card>
+
        <div className="text-center mt-12">
           <Link href="/admin/dashboard">
             <Button variant="outline">Back to Dashboard</Button>
