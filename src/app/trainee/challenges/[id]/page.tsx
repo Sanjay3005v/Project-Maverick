@@ -50,6 +50,7 @@ const challenges: Record<string, { title: string; description: string; testCases
 };
 
 export default function ChallengePage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [challenge, setChallenge] = useState<{ title: string; description: string, testCases: string[] } | null>(null);
   const [language, setLanguage] = useState('javascript');
   const [code, setCode] = useState('');
@@ -58,12 +59,12 @@ export default function ChallengePage({ params }: { params: { id: string } }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (params.id && challenges[params.id]) {
-      setChallenge(challenges[params.id]);
+    if (id && challenges[id]) {
+      setChallenge(challenges[id]);
     } else {
       // Handle case where challenge is not found
     }
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
