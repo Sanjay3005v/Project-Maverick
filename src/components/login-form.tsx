@@ -10,26 +10,27 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogIn } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("trainee");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const loggedInUser = userCredential.user;
-      const userType = loggedInUser.email?.includes('admin') ? 'Admin' : 'Trainee';
-      
+      await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${userType}!`,
+        description: `Welcome back, ${role === 'admin' ? 'Admin' : 'Trainee'}!`,
       });
-      // Redirect is handled by AuthProvider
+      router.push(role === "admin" ? "/admin/dashboard" : "/trainee/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -56,7 +57,7 @@ export function LoginForm() {
                     <Input
                         id="email"
                         type="email"
-                        placeholder="m@example.com"
+                        placeholder="admin@example.com"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -71,6 +72,18 @@ export function LoginForm() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="role">Role</Label>
+                     <Select onValueChange={setRole} defaultValue={role}>
+                        <SelectTrigger id="role">
+                            <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="trainee">Trainee</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardContent>
             <CardFooter>
