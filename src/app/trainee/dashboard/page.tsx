@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { BookOpenCheck, Code2, FileText, Award, Route, Loader2 } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, Loader2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
@@ -103,7 +103,7 @@ export default function TraineeDashboard() {
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/trainee/onboarding-plan">
             <Card className="hover:border-primary transition-colors h-full">
                 <CardHeader>
@@ -113,7 +113,6 @@ export default function TraineeDashboard() {
                 </div>
                 </CardHeader>
                 <CardContent>
-                <p className="text-2xl font-bold">Ready to Generate</p>
                 <p className="text-sm text-muted-foreground">Get your personalized plan</p>
                 </CardContent>
             </Card>
@@ -127,7 +126,6 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">Ready</p>
               <p className="text-sm text-muted-foreground">Test your knowledge now</p>
             </CardContent>
           </Card>
@@ -141,8 +139,7 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{completedChallenges} / {totalChallenges}</p>
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-sm text-muted-foreground">{completedChallenges} / {totalChallenges} Completed</p>
             </CardContent>
           </Card>
         </Link>
@@ -155,8 +152,7 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">2 Submitted</p>
-              <p className="text-sm text-muted-foreground">1 Pending Feedback</p>
+              <p className="text-sm text-muted-foreground">Submit your work</p>
             </CardContent>
           </Card>
         </Link>
@@ -169,10 +165,22 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">1 / 2</p>
-              <p className="text-sm text-muted-foreground">In Progress</p>
+              <p className="text-sm text-muted-foreground">View your achievements</p>
             </CardContent>
           </Card>
+        </Link>
+        <Link href="/trainee/leaderboard">
+            <Card className="hover:border-primary transition-colors h-full">
+                <CardHeader>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-headline">Leaderboard</CardTitle>
+                    <Trophy className="h-6 w-6 text-muted-foreground" />
+                </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">See top performers</p>
+                </CardContent>
+            </Card>
         </Link>
       </section>
     </div>
