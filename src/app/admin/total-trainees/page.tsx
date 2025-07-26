@@ -1,17 +1,19 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Users, Search } from 'lucide-react';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
 
 export default function TotalTraineesPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -32,6 +34,11 @@ export default function TotalTraineesPage() {
     return combinedId.toString().padStart(7, '0');
   };
   
+  const filteredTrainees = useMemo(() => {
+    return trainees.filter(trainee => 
+      trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [trainees, searchTerm]);
 
   if (loading) {
     return (
@@ -50,13 +57,26 @@ export default function TotalTraineesPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>
-            <Users className="mr-2 h-6 w-6" />
-            All Registered Trainees
-          </CardTitle>
-          <CardDescription>
-            This list shows the name, email, and unique user ID for each trainee.
-          </CardDescription>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <CardTitle>
+                        <Users className="mr-2 h-6 w-6" />
+                        All Registered Trainees
+                    </CardTitle>
+                    <CardDescription>
+                        This list shows the name, email, and unique user ID for each trainee.
+                    </CardDescription>
+                </div>
+                 <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by name..." 
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
@@ -69,7 +89,7 @@ export default function TotalTraineesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {trainees.map((trainee) => (
+                {filteredTrainees.map((trainee) => (
                   <TableRow key={trainee.id}>
                     <TableCell className="font-mono text-xs">{formatUserId(trainee.id)}</TableCell>
                     <TableCell className="font-medium">{trainee.name}</TableCell>
