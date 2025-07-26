@@ -40,7 +40,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Bucky Barnes', email: 'bucky.b@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
     { name: 'Sam Wilson', email: 'sam.w@example.com', department: 'Engineering', progress: 78, dob: '2000-03-03' },
     { name: 'Nick Fury', email: 'nick.f@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
-    { name: 'Admin User', email: 'admin@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
+    { name: 'Admin User', email: 'ad@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
     { name: 'Trainee User', email: 'trainee@example.com', department: 'Engineering', progress: 50, dob: '2002-05-20' },
 ];
 
@@ -115,7 +115,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         // For development, if specific test users don't exist, seed the DB.
-        if (email === 'trainee@example.com' || email === 'admin@example.com') {
+        if (email === 'trainee@example.com' || email === 'ad@example.com') {
              await getAllTrainees(); // This will trigger seeding if needed
              const retrySnapshot = await getDocs(q);
              if (!retrySnapshot.empty) {
