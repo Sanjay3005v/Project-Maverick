@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText, Users } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText, Users, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -180,7 +180,10 @@ export default function TraineeManagementPage() {
                     <Button variant="outline">Back to Dashboard</Button>
                 </Link>
                 <Link href="/admin/trainees">
-                    <Button>Add New Trainee</Button>
+                    <Button>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add New Trainee
+                    </Button>
                 </Link>
             </div>
           </CardContent>
