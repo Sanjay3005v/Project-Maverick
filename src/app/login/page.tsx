@@ -6,7 +6,7 @@ import { Rocket } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 
 export default function LoginPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -31,7 +31,7 @@ export default function LoginPage() {
       </main>
 
       <footer className="mt-12 text-center text-muted-foreground text-sm">
-        <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>
+        {year && <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>}
       </footer>
     </div>
   );
