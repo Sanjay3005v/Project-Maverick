@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader2, UserCog, Bell } from "lucide-react";
+import { Users, TrendingUp, Award, ClipboardCheck, ListChecks, BarChart2, Loader2, UserCog, Bell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
@@ -44,6 +44,10 @@ export default function AdminDashboard() {
   const completedCount = allFreshers.filter(f => f.certificationCompleted).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   const averageProgress = 78;
+
+  const topPerformer = allFreshers.length > 0
+    ? allFreshers.reduce((max, trainee) => trainee.progress > max.progress ? trainee : max, allFreshers[0])
+    : null;
   
   if (loading) {
       return (
@@ -71,6 +75,18 @@ export default function AdminDashboard() {
             <CardContent>
                 <div className="text-2xl font-bold">{totalTrainees} Trainees</div>
                 <p className="text-xs text-muted-foreground">Add, edit, and track trainees</p>
+            </CardContent>
+            </Card>
+        </Link>
+        <Link href="/admin/top-performers">
+            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{topPerformer ? topPerformer.name : 'N/A'}</div>
+                <p className="text-xs text-muted-foreground">View leaderboards and rankings</p>
             </CardContent>
             </Card>
         </Link>
