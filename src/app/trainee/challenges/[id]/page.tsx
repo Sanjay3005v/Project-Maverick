@@ -15,37 +15,33 @@ import { evaluateCodeChallenge, EvaluateCodeChallengeOutput } from '@/ai/flows/e
 
 // Mock data for challenges - in a real app, this would be fetched from a database
 const challenges: Record<string, { title: string; description: string; testCases: string[] }> = {
-  'css-flexbox-layout': {
-    title: 'CSS Flexbox Layout',
-    description:
-      'Given the HTML structure, write the CSS using Flexbox to create a responsive header with a logo on the left, navigation links in the center, and a login button on the right.',
+  'python-list-comprehension': {
+    title: 'Python List Comprehension',
+    description: 'Write a Python function to transform a list of numbers into a list of their squares using list comprehension.',
     testCases: [
-      'The container should be a flex container.',
-      'Items should be vertically centered.',
-      'Logo should be on the far left.',
-      'Login button should be on the far right.',
+      'Must be a function that accepts a list.',
+      'Must use list comprehension syntax.',
+      '[1, 2, 3] should return [1, 4, 9].',
+      'Should handle an empty list correctly.'
     ],
   },
-  'api-data-fetching': {
-    title: 'API Data Fetching',
-    description:
-      'Write a JavaScript function that fetches a list of users from the JSONPlaceholder API (`https://jsonplaceholder.typicode.com/users`) and returns an array of their names.',
+  'java-inheritance': {
+    title: 'Java Class Inheritance',
+    description: "Create a 'Dog' class that inherits from an 'Animal' class, overriding a method to make a specific sound.",
     testCases: [
-      'Function must be async.',
-      'Must use the `fetch` API.',
-      'Should handle potential errors with a try...catch block.',
-      'Should return an array of strings (names).',
+      'Must define an Animal base class.',
+      'Dog class must extend Animal.',
+      "Animal's `makeSound()` should be overridden in Dog.",
+      "Dog's `makeSound()` should return 'Woof!'."
     ],
   },
-  'state-management-with-hooks': {
-    title: 'State Management with Hooks',
-    description:
-      'Build a React component that displays a count. The component should have two buttons: one to increment the count and one to decrement it. Use the `useState` hook to manage the count.',
+  'sql-join-query': {
+    title: 'SQL Join Query',
+    description: "Write a SQL query to join 'Orders' and 'Customers' tables on `customer_id`, returning the order ID and customer name.",
     testCases: [
-      'Must use the `useState` hook to store the count.',
-      'Increment button should increase the count by 1.',
-      'Decrement button should decrease the count by 1.',
-      'The initial count should be 0.',
+      'Must SELECT Orders.OrderID and Customers.CustomerName.',
+      'Must JOIN the Orders and Customers tables.',
+      'The JOIN condition must be `Orders.CustomerID = Customers.CustomerID`.',
     ],
   },
 };
@@ -54,7 +50,7 @@ export default function ChallengePage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const [challenge, setChallenge] = useState<{ title: string; description: string, testCases: string[] } | null>(null);
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluateCodeChallengeOutput | null>(null);
@@ -149,13 +145,13 @@ export default function ChallengePage() {
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="javascript">JavaScript</SelectItem>
                         <SelectItem value="python">Python</SelectItem>
                         <SelectItem value="java">Java</SelectItem>
+                        <SelectItem value="sql">SQL</SelectItem>
                         <SelectItem value="c">C</SelectItem>
                         <SelectItem value="cpp">C++</SelectItem>
-                        <SelectItem value="css">CSS</SelectItem>
-                        <SelectItem value="html">HTML</SelectItem>
+                        <SelectItem value="php">PHP</SelectItem>
+                        <SelectItem value="javascript">JavaScript</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -225,5 +221,3 @@ export default function ChallengePage() {
     </div>
   );
 }
-
-    

@@ -5,25 +5,25 @@ import Link from "next/link";
 
 const challenges = [
   {
-    id: "css-flexbox-layout",
-    title: "CSS Flexbox Layout",
-    description: "Recreate a complex layout using only CSS Flexbox. Focus on responsiveness and alignment.",
+    id: "python-list-comprehension",
+    title: "Python List Comprehension",
+    description: "Write a Python function to transform a list of numbers into a list of their squares using list comprehension.",
     difficulty: "Easy",
-    tags: ["CSS", "Frontend"],
+    tags: ["Python", "Data Structures"],
   },
   {
-    id: "api-data-fetching",
-    title: "API Data Fetching",
-    description: "Fetch data from a public API and display it in a list format. Handle loading and error states.",
+    id: "java-inheritance",
+    title: "Java Class Inheritance",
+    description: "Create a 'Dog' class that inherits from an 'Animal' class, overriding a method to make a specific sound.",
     difficulty: "Medium",
-    tags: ["JavaScript", "API"],
+    tags: ["Java", "OOP"],
   },
   {
-    id: "state-management-with-hooks",
-    title: "State Management with Hooks",
-    description: "Build a simple counter application using React's useState and useEffect hooks.",
+    id: "sql-join-query",
+    title: "SQL Join Query",
+    description: "Write a SQL query to join 'Orders' and 'Customers' tables, returning the order ID and customer name.",
     difficulty: "Medium",
-    tags: ["React", "State"],
+    tags: ["SQL", "Database"],
   }
 ];
 
