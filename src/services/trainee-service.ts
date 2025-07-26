@@ -16,11 +16,7 @@ export interface Trainee {
 const traineesCollection = collection(db, 'trainees');
 
 // Dummy data for seeding
-const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
-    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Design', progress: 60, dob: '2000-11-30' },
-    { name: 'Admin User', email: 'ad@example.com', department: 'Administration', progress: 100, dob: '1990-01-01' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Engineering', progress: 50, dob: '2002-05-20' },
-];
+const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [];
 
 const getStatusForProgress = (progress: number) => {
     if (progress >= 70) return 'On Track';
@@ -59,7 +55,7 @@ async function seedTrainees() {
 export async function getAllTrainees(): Promise<Trainee[]> {
     let traineeSnapshot = await getDocs(traineesCollection);
 
-    if (traineeSnapshot.empty) {
+    if (traineeSnapshot.empty && dummyTrainees.length > 0) {
         await seedTrainees();
         traineeSnapshot = await getDocs(traineesCollection);
     }
