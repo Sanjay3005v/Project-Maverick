@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -34,26 +34,41 @@ import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
 export default function TraineeManagementPage() {
-  const [allFreshers, setAllFreshers] = useState<Trainee[]>([]);
-  const [filteredFreshers, setFilteredFreshers] = useState<Trainee[]>([]);
+  const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     const fetchTrainees = async () => {
       setLoading(true);
       const trainees = await getAllTrainees();
-      setAllFreshers(trainees);
-      setFilteredFreshers(trainees);
+      setAllTrainees(trainees);
       setLoading(false);
     };
     fetchTrainees();
   }, []);
 
-  const handleClearFilter = () => {
-    setFilteredFreshers(allFreshers);
-    setFilter(null);
-  }
+  const formatUserId = (id: string) => {
+    const numericPart = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
+    const letterPart = (id.replace(/[^a-zA-Z]/g, '').charCodeAt(0) || 0) % 100;
+    const combinedId = (numericPart + letterPart * 100000);
+    return combinedId.toString().padStart(7, '0');
+  };
+
+  const filteredTrainees = useMemo(() => {
+    return allTrainees
+      .filter(trainee => 
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter(trainee => 
+        departmentFilter === 'all' || trainee.department === departmentFilter
+      )
+      .filter(trainee =>
+        statusFilter === 'all' || trainee.status === statusFilter
+      );
+  }, [allTrainees, searchTerm, departmentFilter, statusFilter]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,63 +100,83 @@ export default function TraineeManagementPage() {
       </header>
        <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle>
                   <Users className="mr-2 h-6 w-6" />
-                  All Trainees
+                  All Trainees ({filteredTrainees.length})
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                    {filter && (
-                        <Button variant="ghost" onClick={handleClearFilter}>
-                            <FilterX className="mr-2 h-4 w-4" />
-                            Clear Filter ({filter})
-                        </Button>
-                    )}
-                    <ReportDialog trainees={allFreshers}>
+                    <ReportDialog trainees={allTrainees}>
                        <Button>
                           <FileText className="mr-2 h-4 w-4" />
                           Generate Report
                         </Button>
                     </ReportDialog>
+                     <Link href="/admin/onboarding-plan">
+                        <Button variant="outline">
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Onboarding Planner
+                        </Button>
+                    </Link>
+                    <Link href="/admin/quizzes">
+                        <Button variant="outline">
+                            <BookOpenCheck className="mr-2 h-4 w-4" />
+                            Manage Quizzes
+                        </Button>
+                    </Link>
                 </div>
             </div>
+             <CardDescription>
+                A complete list of all trainees in the system. Search, filter, and manage them from one place.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
               <div className="relative w-full md:flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="Search by name..." className="pl-10" />
+                <Input 
+                    placeholder="Search by name..." 
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <Select>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                 <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Filter by Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="engineering">Engineering</SelectItem>
-                  <SelectItem value="product">Product</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  <SelectItem value="Engineering">Engineering</SelectItem>
+                  <SelectItem value="Product">Product</SelectItem>
+                  <SelectItem value="Design">Design</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-2 w-full flex-wrap md:w-auto md:flex-nowrap">
-                <Link href="/admin/onboarding-plan" className="w-full md:w-auto">
-                    <Button variant="outline" className="w-full">
-                        <Wand2 className="mr-2 h-4 w-4" />
-                        Onboarding Planner
-                    </Button>
-                </Link>
-                <Link href="/admin/quizzes" className="w-full md:w-auto">
-                    <Button variant="outline" className="w-full">
-                        <BookOpenCheck className="mr-2 h-4 w-4" />
-                        Manage Quizzes
-                    </Button>
-                </Link>
-              </div>
+               <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="On Track">On Track</SelectItem>
+                  <SelectItem value="At Risk">At Risk</SelectItem>
+                  <SelectItem value="Need Attention">Need Attention</SelectItem>
+                </SelectContent>
+              </Select>
+              {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm) && (
+                <Button variant="ghost" onClick={() => { setSearchTerm(''); setDepartmentFilter('all'); setStatusFilter('all'); }}>
+                    <FilterX className="mr-2 h-4 w-4" />
+                    Clear Filters
+                </Button>
+              )}
             </div>
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>User ID</TableHead>
                     <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Department</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Progress</TableHead>
@@ -149,9 +184,11 @@ export default function TraineeManagementPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredFreshers.map((fresher) => (
+                  {filteredTrainees.map((fresher) => (
                     <TableRow key={fresher.id}>
+                      <TableCell className="font-mono text-xs">{formatUserId(fresher.id)}</TableCell>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
+                      <TableCell>{fresher.email}</TableCell>
                       <TableCell>{fresher.department}</TableCell>
                       <TableCell>
                         {getStatusBadge(fresher.status)}

@@ -62,18 +62,6 @@ export default function AdminDashboard() {
       </header>
       
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/admin/total-trainees">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Trainees</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalTrainees}</div>
-                <p className="text-xs text-muted-foreground">Click to view all trainees</p>
-              </CardContent>
-            </Card>
-        </Link>
          <Link href="/admin/trainee-management">
             <Card className="cursor-pointer hover:border-primary transition-colors h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -81,7 +69,7 @@ export default function AdminDashboard() {
                 <UserCog className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">Manage</div>
+                <div className="text-2xl font-bold">{totalTrainees} Trainees</div>
                 <p className="text-xs text-muted-foreground">Add, edit, and track trainees</p>
             </CardContent>
             </Card>
