@@ -23,7 +23,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Engineering', progress: 35, dob: '1997-07-22' },
     { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', progress: 95, dob: '1998-09-01' },
     { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Design', progress: 75, dob: '1999-03-12' },
-    { name: 'George Constanza', email: 'george.c@example.com', department: 'Engineering', progress: 50, dob: '1996-08-19' },
+    { name: 'George Costanza', email: 'george.c@example.com', department: 'Engineering', progress: 50, dob: '1996-08-19' },
     { name: 'Hannah Montana', email: 'hannah.m@example.com', department: 'Product', progress: 88, dob: '2001-01-05' },
     { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 100, dob: '1995-06-10' },
     { name: 'Jack Sparrow', email: 'jack.s@example.com', department: 'Engineering', progress: 20, dob: '1997-12-25' },
