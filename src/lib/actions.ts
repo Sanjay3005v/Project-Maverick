@@ -1,12 +1,12 @@
+
 'use server';
 
-import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput, type OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { z } from 'zod';
 
 const formSchema = z.object({
-  fresherProfile: z.string().min(50, "Please provide a detailed fresher profile of at least 50 characters."),
-  trainingSchedule: z.string().min(50, "Please provide a detailed training schedule of at least 50 characters."),
+  learningGoal: z.string().min(10, "Please provide a learning goal of at least 10 characters."),
 });
 
 type OnboardingPlanState = {
@@ -20,8 +20,7 @@ export async function createOnboardingPlan(
   formData: FormData
 ): Promise<OnboardingPlanState> {
   const validatedFields = formSchema.safeParse({
-    fresherProfile: formData.get('fresherProfile'),
-    trainingSchedule: formData.get('trainingSchedule'),
+    learningGoal: formData.get('learningGoal'),
   });
 
   if (!validatedFields.success) {

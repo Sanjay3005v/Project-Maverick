@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,26 +13,21 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GeneratePersonalizedOnboardingPlanInputSchema = z.object({
-  fresherProfile: z
-    .string()
-    .describe('The profile details of the fresher, including skills, learning preferences, and experience.'),
-  trainingSchedule: z
-    .string()
-    .describe('The overall training schedule for the fresher program.'),
+  learningGoal: z.string().describe('The learning goal of the trainee, including topic and desired timeframe (e.g., "I want to learn the basics of Python in 2 weeks").'),
 });
 export type GeneratePersonalizedOnboardingPlanInput = z.infer<
   typeof GeneratePersonalizedOnboardingPlanInputSchema
 >;
 
 const OnboardingPlanItemSchema = z.object({
-  week: z.string().describe('The week number or range (e.g., "Week 1", "Weeks 2-3").'),
+  week: z.string().describe('The week number or range (e.g., "Week 1", "Week 2").'),
   topic: z.string().describe('The main topic or module for that period.'),
-  tasks: z.string().describe('A summary of tasks, learning objectives, or activities for the week.'),
+  tasks: z.string().describe('A summary of tasks, learning objectives, or activities for the week, broken down into actionable steps.'),
   status: z.string().describe('The current status for this item, which should be "Not Started" by default.'),
 });
 
 const GeneratePersonalizedOnboardingPlanOutputSchema = z.object({
-  personalizedPlan: z.array(OnboardingPlanItemSchema).describe('The personalized onboarding plan structured as a list of weekly items.'),
+  personalizedPlan: z.array(OnboardingPlanItemSchema).describe('The personalized learning plan structured as a list of weekly items.'),
 });
 export type GeneratePersonalizedOnboardingPlanOutput = z.infer<
   typeof GeneratePersonalizedOnboardingPlanOutputSchema
@@ -49,16 +45,14 @@ const prompt = ai.definePrompt({
   name: 'generatePersonalizedOnboardingPlanPrompt',
   input: {schema: GeneratePersonalizedOnboardingPlanInputSchema},
   output: {schema: GeneratePersonalizedOnboardingPlanOutputSchema},
-  prompt: `You are an AI assistant designed to create a structured, personalized onboarding plan in a table format for freshers based on their profile details and the overall training schedule.
+  prompt: `You are an expert AI mentor. A trainee has provided a learning goal. Your task is to create a structured, actionable, and personalized learning plan based on their request.
 
-  Fresher Profile:
-  {{fresherProfile}}
+Learning Goal:
+"{{learningGoal}}"
 
-  Training Schedule:
-  {{trainingSchedule}}
-
-  Create a personalized onboarding plan that considers the fresher's skills, learning preferences, and experience, and aligns with the overall training schedule. The plan should be broken down into weekly items. For each item, provide the week, topic, a summary of tasks, and set the initial status to "Not Started". The output must be an array of plan items.
-  `,
+Based on this goal, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks or learning objectives. Assume the trainee is a beginner unless otherwise specified. Set the initial status of all items to "Not Started". The output must be an array of plan items.
+For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week.
+`,
 });
 
 const generatePersonalizedOnboardingPlanFlow = ai.defineFlow(

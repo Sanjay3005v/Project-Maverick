@@ -17,8 +17,6 @@ import * as XLSX from 'xlsx';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 
-const trainingSchedule = "Week 1: Orientation, company culture, and development environment setup. Weeks 2-3: Deep dive into React fundamentals and state management. Week 4: Introduction to Next.js, including routing and server-side rendering. Week 5: Styling with Tailwind CSS and ShadCN UI components. Weeks 6-8: Capstone project to build a full-stack application.";
-
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -41,13 +39,8 @@ function SubmitButton() {
 export function TraineeOnboardingPlan() {
   const { toast } = useToast();
   const initialState = { success: false, message: '', data: undefined };
-
-  const createOnboardingPlanWithSchedule = (prevState: any, formData: FormData) => {
-    formData.append('trainingSchedule', trainingSchedule);
-    return createOnboardingPlan(prevState, formData);
-  };
   
-  const [state, dispatch] = useActionState(createOnboardingPlanWithSchedule, initialState);
+  const [state, dispatch] = useActionState(createOnboardingPlan, initialState);
 
   useEffect(() => {
     if (state && !state.success && state.message) {
@@ -85,24 +78,21 @@ export function TraineeOnboardingPlan() {
         <Card className="shadow-lg">
             <form action={dispatch}>
                 <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Your Onboarding Preferences</CardTitle>
-                    <CardDescription>Tell us what you want to focus on during your onboarding.</CardDescription>
+                    <CardTitle className="font-headline text-2xl">Your Learning Goal</CardTitle>
+                    <CardDescription>Tell the AI what you want to learn, and it will generate a plan for you.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-2">
-                        <Label htmlFor="fresherProfile" className="text-base">My Profile &amp; Goals</Label>
+                        <Label htmlFor="learningGoal" className="text-base">I want to learn...</Label>
                         <Textarea
-                            id="fresherProfile"
-                            name="fresherProfile"
-                            placeholder="Describe your skills, what you want to learn, and your career goals. e.g., 'I have a background in JavaScript and want to become an expert in frontend development, especially with Next.js...'"
+                            id="learningGoal"
+                            name="learningGoal"
+                            placeholder="e.g., 'The basics of Python in 2 weeks', 'Advanced React state management in 1 month', or 'How to build a full-stack app with Next.js in 8 weeks'"
                             rows={8}
                             required
                             className="text-base"
                         />
                     </div>
-                     <p className="text-sm text-muted-foreground mt-4">
-                        Your input will be combined with the standard company training schedule to create a plan that's tailored to you.
-                     </p>
                 </CardContent>
                 <CardFooter>
                     <SubmitButton />
