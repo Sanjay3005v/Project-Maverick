@@ -13,6 +13,8 @@ export interface Trainee {
     assessmentScore?: number;
 }
 
+const traineesCollection = collection(db, 'trainees');
+
 const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
     { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', progress: 72, dob: '1999-08-20' },
