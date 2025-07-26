@@ -101,10 +101,15 @@ export default function TraineeManagementPage() {
        <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle>
-                  <Users className="mr-2 h-6 w-6" />
-                  All Trainees ({filteredTrainees.length})
-                </CardTitle>
+                <div>
+                    <CardTitle>
+                    <Users className="mr-2 h-6 w-6" />
+                    All Trainees ({filteredTrainees.length})
+                    </CardTitle>
+                    <CardDescription>
+                        A complete list of all trainees in the system. Search, filter, and manage them from one place.
+                    </CardDescription>
+                </div>
                 <div className="flex items-center gap-2">
                     <ReportDialog trainees={allTrainees}>
                        <Button>
@@ -126,9 +131,6 @@ export default function TraineeManagementPage() {
                     </Link>
                 </div>
             </div>
-             <CardDescription>
-                A complete list of all trainees in the system. Search, filter, and manage them from one place.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
