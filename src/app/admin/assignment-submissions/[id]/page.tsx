@@ -37,6 +37,24 @@ export default function SubmissionReviewPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleDownload = () => {
+    if (!submission) return;
+
+    // In a real app, this would be a link to a file in cloud storage.
+    // For this demo, we'll create a dummy file to simulate the download.
+    const dummyContent = `This is a dummy file representing the submission: ${submission.fileName}\n\nSubmitted by: ${submission.traineeName}`;
+    const blob = new Blob([dummyContent], { type: submission.fileType || 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = submission.fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -106,7 +124,7 @@ export default function SubmissionReviewPage() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button disabled>
+                    <Button onClick={handleDownload}>
                         <Download className="mr-2" /> Download Submitted File
                     </Button>
                 </CardFooter>
