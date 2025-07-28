@@ -56,6 +56,10 @@ export default function AssignmentsPage() {
     setSelectedFile(null);
     setUploadSuccess(false);
     setUploadProgress(0);
+    const fileInput = document.getElementById('dropzone-file') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
   };
 
   const handleSubmit = async () => {
@@ -120,6 +124,7 @@ export default function AssignmentsPage() {
                 description: `Your file "${selectedFile.name}" has been submitted for review.`,
             });
         } catch (error) {
+            console.error("Submission failed:", error);
             setIsUploading(false);
             toast({
                 variant: 'destructive',
@@ -180,10 +185,10 @@ export default function AssignmentsPage() {
             </div>
           )}
 
-          {uploadSuccess && selectedFile && (
+          {uploadSuccess && (
               <div className="mt-4 p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
                 <CheckCircle className="h-5 w-5" />
-                <p>Successfully submitted: {selectedFile.name}</p>
+                <p>Successfully submitted. You can now upload another file if needed.</p>
               </div>
           )}
 
