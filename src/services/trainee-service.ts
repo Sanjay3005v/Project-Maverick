@@ -1,6 +1,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc } from 'firebase/firestore';
+import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 
 export interface Trainee {
     id: string;
@@ -11,6 +12,7 @@ export interface Trainee {
     status: string;
     dob: string | Date; 
     assessmentScore?: number;
+    onboardingPlan?: OnboardingPlanItem[];
 }
 
 const traineesCollection = collection(db, 'trainees');
@@ -182,4 +184,11 @@ export async function updateTraineeProgress(traineeId: string, newProgress: numb
         progress: newProgress,
         status: getStatusForProgress(newProgress),
     });
+}
+
+export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlanItem[]): Promise<void> {
+  const traineeRef = doc(db, 'trainees', traineeId);
+  await updateDoc(traineeRef, {
+    onboardingPlan: plan,
+  });
 }

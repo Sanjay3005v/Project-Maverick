@@ -4,36 +4,24 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Upload, FileText, Loader2, CheckCircle, X } from "lucide-react";
+import { Upload, FileText, Loader2, CheckCircle, X, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
-import { addSubmission } from '@/services/submission-service';
+import { addSubmission, getAllSubmissions } from '@/services/submission-service';
+import type { Submission } from '@/services/submission-service';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Progress } from '@/components/ui/progress';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-export default function AssignmentsPage() {
+function FileUploader({ assignmentTitle, trainee, onUploadSuccess }: { assignmentTitle: string, trainee: Trainee, onUploadSuccess: (title: string) => void }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [trainee, setTrainee] = useState<Trainee | null>(null);
-
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
-  
-  useEffect(() => {
-    if (!authLoading && user?.email) {
-      const fetchTrainee = async () => {
-        const traineeData = await getTraineeByEmail(user.email);
-        setTrainee(traineeData);
-      }
-      fetchTrainee();
-    }
-  }, [user, authLoading]);
-
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -56,7 +44,7 @@ export default function AssignmentsPage() {
     setSelectedFile(null);
     setUploadSuccess(false);
     setUploadProgress(0);
-    const fileInput = document.getElementById('dropzone-file') as HTMLInputElement;
+    const fileInput = document.getElementById(`dropzone-file-${assignmentTitle}`) as HTMLInputElement;
     if (fileInput) {
         fileInput.value = '';
     }
@@ -64,23 +52,9 @@ export default function AssignmentsPage() {
 
   const handleSubmit = () => {
     if (!selectedFile) {
-      toast({
-        variant: 'destructive',
-        title: 'No File Selected',
-        description: 'Please select a file to submit.',
-      });
+      toast({ variant: 'destructive', title: 'No File Selected' });
       return;
     }
-
-    if (!trainee) {
-       toast({
-        variant: 'destructive',
-        title: 'User not found',
-        description: 'Could not submit assignment, user data is missing.',
-      });
-      return;
-    }
-
     setIsUploading(true);
     setUploadSuccess(false);
     setUploadProgress(0);
@@ -90,23 +64,17 @@ export default function AssignmentsPage() {
 
     uploadTask.on('state_changed', 
       (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
+        setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
       },
       (error) => {
-        console.error("Upload failed:", error);
         setIsUploading(false);
-        toast({
-          variant: 'destructive',
-          title: 'Upload Failed',
-          description: 'There was an error uploading your file. Please try again.',
-        });
+        toast({ variant: 'destructive', title: 'Upload Failed' });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           try {
               await addSubmission({
-                  assignmentTitle: "Build a Personal Portfolio",
+                  assignmentTitle,
                   traineeId: trainee.id,
                   traineeName: trainee.name,
                   fileName: selectedFile.name,
@@ -118,18 +86,11 @@ export default function AssignmentsPage() {
       
               setIsUploading(false);
               setUploadSuccess(true);
-              toast({
-                  title: 'Upload Successful!',
-                  description: `Your file "${selectedFile.name}" has been submitted for review.`,
-              });
+              onUploadSuccess(assignmentTitle);
+              toast({ title: 'Upload Successful!', description: `"${selectedFile.name}" has been submitted.` });
           } catch (error) {
-              console.error("Submission failed:", error);
               setIsUploading(false);
-              toast({
-                  variant: 'destructive',
-                  title: 'Submission Failed',
-                  description: 'There was an error saving your assignment details. Please try again.',
-              });
+              toast({ variant: 'destructive', title: 'Submission Failed' });
           }
         });
       }
@@ -137,32 +98,15 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <header className="mb-8">
-        <h1 className="text-4xl font-headline font-bold">Assignments</h1>
-        <p className="text-muted-foreground">Submit your work and track your feedback.</p>
-      </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>Assignment: Build a Personal Portfolio</CardTitle>
-          <CardDescription>Due: 2 weeks from start</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-6">
-            Create a personal portfolio website using React and Tailwind CSS. The portfolio should showcase your skills, projects, and include a contact form. Deploy the final version to a hosting service of your choice and submit a link or the source code.
-          </p>
-          {!selectedFile ? (
-            <div className="flex items-center justify-center w-full">
-              <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80 transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-10 h-10 mb-3 text-muted-foreground" />
-                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                      <p className="text-xs text-muted-foreground">ZIP, RAR, or PDF (MAX. 10MB)</p>
-                  </div>
-                  <input id="dropzone-file" type="file" className="hidden" onChange={handleFileChange} />
-              </label>
-            </div>
-          ) : (
+    <div className='space-y-4'>
+        {!selectedFile ? (
+            <label htmlFor={`dropzone-file-${assignmentTitle}`} className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80">
+                <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
+                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                <p className="text-xs text-muted-foreground">ZIP, RAR, or PDF (MAX. 10MB)</p>
+                <input id={`dropzone-file-${assignmentTitle}`} type="file" className="hidden" onChange={handleFileChange} />
+            </label>
+        ) : (
             <div className="p-4 border rounded-lg bg-muted/50 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -183,33 +127,116 @@ export default function AssignmentsPage() {
                   </div>
                 )}
             </div>
-          )}
+        )}
 
-          {uploadSuccess && (
-              <div className="mt-4 p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
-                <CheckCircle className="h-5 w-5" />
-                <p>Successfully submitted. You can now upload another file if needed.</p>
-              </div>
-          )}
+        {uploadSuccess && (
+            <div className="p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
+              <CheckCircle className="h-5 w-5" />
+              <p>Successfully submitted. You can re-submit by selecting a new file.</p>
+            </div>
+        )}
+        
+        <Button onClick={handleSubmit} disabled={isUploading || !selectedFile} className="w-full sm:w-auto">
+            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Submit Assignment
+        </Button>
+    </div>
+  );
+}
 
-        </CardContent>
-        <CardFooter>
-            <Button onClick={handleSubmit} disabled={isUploading || !selectedFile} className="w-full sm:w-auto">
-                {isUploading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                    </>
-                ) : (
-                    'Submit Assignment'
-                )}
-            </Button>
-        </CardFooter>
-      </Card>
+export default function AssignmentsPage() {
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const { user, loading: authLoading } = useAuth();
+  
+  const fetchTraineeData = async (email: string) => {
+      const traineeData = await getTraineeByEmail(email);
+      setTrainee(traineeData);
+      const submissionData = await getAllSubmissions();
+      setSubmissions(submissionData);
+  }
+
+  useEffect(() => {
+    if (!authLoading && user?.email) {
+      fetchTraineeData(user.email);
+    }
+  }, [user, authLoading]);
+  
+  const handleUploadSuccess = (assignmentTitle: string) => {
+    // A simple way to show the new submission without a full refetch
+     setSubmissions(prev => [...prev, { assignmentTitle } as Submission]);
+  }
+
+  const getSubmittedAssignments = () => {
+      if (!trainee) return new Set();
+      return new Set(submissions.filter(s => s.traineeId === trainee.id).map(s => s.assignmentTitle));
+  }
+  const submittedAssignments = getSubmittedAssignments();
+
+
+  if (authLoading || !trainee) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading Your Assignments...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-8">
+      <header className="mb-8">
+        <h1 className="text-4xl font-headline font-bold">Your Assignments</h1>
+        <p className="text-muted-foreground">Submit your work based on your personalized onboarding plan.</p>
+      </header>
+      
+      {trainee.onboardingPlan && trainee.onboardingPlan.length > 0 ? (
+        <div className="space-y-6">
+          {trainee.onboardingPlan.map((planItem, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle>Week {planItem.week}: {planItem.topic}</CardTitle>
+                <CardDescription>Complete the tasks below to make progress.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                  {planItem.tasks.map((task, taskIndex) => (
+                    <AccordionItem value={`item-${index}-${taskIndex}`} key={taskIndex}>
+                      <AccordionTrigger>
+                        <div className='flex items-center gap-4'>
+                           {submittedAssignments.has(task) ? (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <ChevronsUpDown className="h-5 w-5 text-muted-foreground" />
+                          )}
+                           <span>{task}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-4">
+                        <FileUploader assignmentTitle={task} trainee={trainee} onUploadSuccess={handleUploadSuccess} />
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="text-center p-8">
+          <CardContent>
+            <p className="mb-4">You don't have a personalized onboarding plan yet.</p>
+            <Link href="/trainee/onboarding-plan">
+              <Button>Generate Your Plan</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center mt-12">
-          <Link href="/trainee/dashboard">
-            <Button variant="outline">Back to Dashboard</Button>
-          </Link>
+        <Link href="/trainee/dashboard">
+          <Button variant="outline">Back to Dashboard</Button>
+        </Link>
       </div>
     </div>
   );

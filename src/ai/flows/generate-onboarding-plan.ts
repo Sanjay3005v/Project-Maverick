@@ -22,7 +22,7 @@ export type GeneratePersonalizedOnboardingPlanInput = z.infer<
 const OnboardingPlanItemSchema = z.object({
   week: z.string().describe('The week number or range (e.g., "Week 1", "Week 2").'),
   topic: z.string().describe('The main topic or module for that period.'),
-  tasks: z.string().describe('A summary of tasks, learning objectives, or activities for the week, broken down into actionable steps.'),
+  tasks: z.array(z.string()).describe('A list of specific, actionable tasks or assignments for the week.'),
   status: z.string().describe('The current status for this item, which should be "Not Started" by default.'),
 });
 
@@ -50,8 +50,9 @@ const prompt = ai.definePrompt({
 Learning Goal:
 "{{learningGoal}}"
 
-Based on this goal, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks or learning objectives. Assume the trainee is a beginner unless otherwise specified. Set the initial status of all items to "Not Started". The output must be an array of plan items.
-For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week.
+Based on this goal, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks as an array of strings. These tasks should be phrased as assignments. Assume the trainee is a beginner unless otherwise specified. Set the initial status of all items to "Not Started". The output must be an array of plan items.
+
+For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week. A task for week 1 might be "Write a Python script that prints 'Hello, World!' and calculates the sum of two numbers."
 `,
 });
 

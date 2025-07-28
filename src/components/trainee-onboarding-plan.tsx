@@ -6,8 +6,8 @@ import { useFormStatus } from 'react-dom';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2, Clock, FileDown } from 'lucide-react';
-import { useEffect } from 'react';
+import { Wand2, Loader2, Clock, FileDown, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
@@ -16,6 +16,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
+import { useAuth } from '@/hooks/use-auth';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -38,17 +39,25 @@ function SubmitButton() {
 
 export function TraineeOnboardingPlan() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const initialState = { success: false, message: '', data: undefined };
   
   const [state, dispatch] = useActionState(createOnboardingPlan, initialState);
 
   useEffect(() => {
-    if (state && !state.success && state.message) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: state.message,
-      });
+    if (state && state.message) {
+        if (!state.success) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: state.message,
+            });
+        } else {
+             toast({
+                title: 'Success!',
+                description: state.message,
+            });
+        }
     }
   }, [state, toast]);
 
@@ -58,7 +67,7 @@ export function TraineeOnboardingPlan() {
     doc.text("My Personalized Onboarding Plan", 14, 16);
     autoTable(doc, {
       head: [['Week', 'Topic', 'Tasks', 'Status']],
-      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks, item.status]),
+      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks.join('\n'), item.status]),
       startY: 20,
     });
     doc.save('my-onboarding-plan.pdf');
@@ -66,10 +75,33 @@ export function TraineeOnboardingPlan() {
 
   const handleDownloadExcel = () => {
     if (!state.data?.personalizedPlan) return;
-    const worksheet = XLSX.utils.json_to_sheet(state.data.personalizedPlan);
+    const worksheetData = state.data.personalizedPlan.map(item => ({
+        Week: item.week,
+        Topic: item.topic,
+        Tasks: item.tasks.join('\n'),
+        Status: item.status
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Onboarding Plan");
     XLSX.writeFile(workbook, 'my-onboarding-plan.xlsx');
+  };
+
+  const handleFormAction = async (formData: FormData) => {
+    const idToken = await user?.getIdToken();
+    if (idToken) {
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${idToken}`);
+        // This is a workaround to pass headers to a server action.
+        // In a real app, you might use a dedicated API route or a different pattern.
+        (createOnboardingPlan as any)(undefined, formData, headers);
+    } else {
+         toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: "You must be logged in to create a plan.",
+        });
+    }
   };
 
 
@@ -138,7 +170,11 @@ export function TraineeOnboardingPlan() {
                             <TableRow key={index}>
                                 <TableCell className="font-medium">{item.week}</TableCell>
                                 <TableCell>{item.topic}</TableCell>
-                                <TableCell className="text-sm">{item.tasks}</TableCell>
+                                <TableCell className="text-sm">
+                                    <ul className="list-disc pl-4 space-y-1">
+                                      {item.tasks.map((task, i) => <li key={i}>{task}</li>)}
+                                    </ul>
+                                </TableCell>
                                 <TableCell>
                                     <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
                                         <Clock className="h-3 w-3" />
