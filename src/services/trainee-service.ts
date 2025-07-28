@@ -175,3 +175,11 @@ export async function updateTrainee(id: string, traineeData: Partial<Omit<Traine
     }
     await updateDoc(traineeRef, updateData);
 }
+
+export async function updateTraineeProgress(traineeId: string, newProgress: number): Promise<void> {
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await updateDoc(traineeRef, {
+        progress: newProgress,
+        status: getStatusForProgress(newProgress),
+    });
+}

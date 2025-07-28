@@ -7,22 +7,31 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getDailyQuiz, Quiz } from '@/services/quiz-service';
+import { useAuth } from '@/hooks/use-auth';
+import { getTraineeByEmail, updateTraineeProgress, Trainee } from '@/services/trainee-service';
 
 export default function DailyQuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [dailyQuiz, setDailyQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    const fetchQuiz = async () => {
+    const fetchQuizAndTrainee = async () => {
         setLoading(true);
         const todayQuiz = await getDailyQuiz();
         setDailyQuiz(todayQuiz);
+
+        if (user?.email) {
+            const traineeData = await getTraineeByEmail(user.email);
+            setTrainee(traineeData);
+        }
 
         if (todayQuiz) {
             const lastTaken = localStorage.getItem('dailyQuizTaken');
@@ -42,16 +51,18 @@ export default function DailyQuizPage() {
         setLoading(false);
     };
 
-    fetchQuiz();
-  }, []);
+    if (!authLoading) {
+      fetchQuizAndTrainee();
+    }
+  }, [user, authLoading]);
 
   const handleAnswerChange = (questionIndex: number, value: string) => {
     setAnswers(prev => ({ ...prev, [questionIndex]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!dailyQuiz) return;
+    if (!dailyQuiz || !trainee) return;
     
     if (Object.keys(answers).length !== dailyQuiz.questions.length) {
       toast({
@@ -67,13 +78,33 @@ export default function DailyQuizPage() {
     localStorage.setItem('lastQuizId', dailyQuiz.id);
     localStorage.setItem('lastQuizAnswers', JSON.stringify(answers));
 
+    const newScore = dailyQuiz.questions.reduce((total, question, index) => {
+        return total + (answers[index] === question.answer ? 1 : 0);
+    }, 0);
+    const newProgress = Math.round((newScore / dailyQuiz.questions.length) * 100);
+
+    try {
+        await updateTraineeProgress(trainee.id, newProgress);
+        toast({
+            title: 'Progress Updated!',
+            description: `Your new progress is ${newProgress}%. Keep it up!`
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not update your progress.'
+        })
+    }
+
     setSubmitted(true);
   };
 
-  if(loading) {
+  if(loading || authLoading) {
     return (
-        <div className="container mx-auto p-4 md:p-8 text-center">
-            <p>Loading daily quiz...</p>
+        <div className="container mx-auto p-4 md:p-8 text-center flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-4">Loading daily quiz...</p>
         </div>
     )
   }
@@ -168,7 +199,7 @@ export default function DailyQuizPage() {
                 </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-                <p className="text-sm text-muted-foreground">You have completed the daily quiz. A new quiz will be available tomorrow.</p>
+                <p className="text-sm text-muted-foreground">You have completed the daily quiz. Your progress has been updated!</p>
                  <Link href="/trainee/dashboard">
                     <Button variant="outline">Back to Dashboard</Button>
                 </Link>
@@ -178,5 +209,3 @@ export default function DailyQuizPage() {
     </div>
   );
 }
-
-    
