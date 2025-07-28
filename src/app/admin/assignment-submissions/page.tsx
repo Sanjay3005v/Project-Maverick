@@ -10,11 +10,13 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Submission, getAllSubmissions } from '@/services/submission-service';
 import { formatDistanceToNow } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 
 export default function AssignmentSubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -34,6 +36,11 @@ export default function AssignmentSubmissionsPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+  
+  const handleRowClick = (submissionId: string) => {
+    router.push(`/admin/assignment-submissions/${submissionId}`);
+  };
+
 
   if (loading) {
     return (
@@ -57,7 +64,7 @@ export default function AssignmentSubmissionsPage() {
             Submission Inbox
           </CardTitle>
           <CardDescription>
-            This list shows all files submitted by trainees, sorted by the most recent.
+            This list shows all files submitted by trainees, sorted by the most recent. Click a row to view details.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,7 +76,7 @@ export default function AssignmentSubmissionsPage() {
                   <TableHead>Assignment</TableHead>
                   <TableHead>File Name</TableHead>
                   <TableHead>Submitted</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -79,7 +86,7 @@ export default function AssignmentSubmissionsPage() {
                     </TableRow>
                 )}
                 {submissions.map((submission) => (
-                  <TableRow key={submission.id}>
+                  <TableRow key={submission.id} onClick={() => handleRowClick(submission.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{submission.traineeName}</TableCell>
                     <TableCell>{submission.assignmentTitle}</TableCell>
                     <TableCell>
@@ -95,10 +102,9 @@ export default function AssignmentSubmissionsPage() {
                       {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true })}
                     </TableCell>
                     <TableCell className="text-right">
-                        <Button variant="outline" size="sm" disabled>
-                            <Download className="mr-2" /> Download
-                        </Button>
-                        <Badge variant="secondary" className="ml-2">Not Reviewed</Badge>
+                        <Badge variant={submission.review ? 'default' : 'secondary'} className={submission.review ? 'bg-green-500' : ''}>
+                          {submission.review ? 'Reviewed' : 'Not Reviewed'}
+                        </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
