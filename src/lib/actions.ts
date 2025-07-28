@@ -4,7 +4,6 @@
 import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { saveOnboardingPlan as savePlan, getTraineeByEmail } from '@/services/trainee-service';
-import { auth } from '@/lib/firebase-admin';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -23,6 +22,7 @@ export async function createOnboardingPlan(
   prevState: OnboardingPlanState | undefined,
   formData: FormData
 ): Promise<OnboardingPlanState> {
+    const { auth } = await import('@/lib/firebase-admin');
     const headersList = headers();
     const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
 
