@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 import { addSubmission } from '@/services/submission-service';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 export default function AssignmentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -75,26 +77,44 @@ export default function AssignmentsPage() {
     setUploadSuccess(false);
 
     try {
-        // In a real app, you would upload the file to a service like Firebase Storage
-        // and get a URL. For this demo, we'll just record the submission.
-        await new Promise(resolve => setTimeout(resolve, 1500));
+      const storageRef = ref(storage, `submissions/${trainee.id}/${Date.now()}-${selectedFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
-        await addSubmission({
-            assignmentTitle: "Build a Personal Portfolio",
-            traineeId: trainee.id,
-            traineeName: trainee.name,
-            fileName: selectedFile.name,
-            fileType: selectedFile.type,
-            fileSize: selectedFile.size,
-            submittedAt: new Date(),
-        });
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          // Can be used to show upload progress
+        },
+        (error) => {
+          console.error("Upload failed:", error);
+          setIsUploading(false);
+          toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: 'There was an error uploading your file. Please try again.',
+          });
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-        setIsUploading(false);
-        setUploadSuccess(true);
-        toast({
-            title: 'Upload Successful!',
-            description: `Your file "${selectedFile.name}" has been submitted for review.`,
-        });
+          await addSubmission({
+              assignmentTitle: "Build a Personal Portfolio",
+              traineeId: trainee.id,
+              traineeName: trainee.name,
+              fileName: selectedFile.name,
+              fileType: selectedFile.type,
+              fileSize: selectedFile.size,
+              fileUrl: downloadURL,
+              submittedAt: new Date(),
+          });
+
+          setIsUploading(false);
+          setUploadSuccess(true);
+          toast({
+              title: 'Upload Successful!',
+              description: `Your file "${selectedFile.name}" has been submitted for review.`,
+          });
+        }
+      );
 
     } catch (error) {
         setIsUploading(false);

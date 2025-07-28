@@ -38,21 +38,8 @@ export default function SubmissionReviewPage() {
   };
 
   const handleDownload = () => {
-    if (!submission) return;
-
-    // In a real app, this would be a link to a file in cloud storage.
-    // For this demo, we'll create a dummy file to simulate the download.
-    const dummyContent = `This is a dummy file representing the submission: ${submission.fileName}\n\nSubmitted by: ${submission.traineeName}`;
-    const blob = new Blob([dummyContent], { type: submission.fileType || 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = submission.fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
+    if (!submission?.fileUrl) return;
+    window.open(submission.fileUrl, '_blank');
   };
 
   if (loading) {
@@ -112,7 +99,7 @@ export default function SubmissionReviewPage() {
                         <Calendar className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="text-sm text-muted-foreground">Submitted On</p>
-                            <p className="font-medium">{format(new Date(submission.submittedAt), "PPP p")}</p>
+                            <p className="font-medium">{format(new Date(submission.submittedAt.toString()), "PPP p")}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -124,7 +111,7 @@ export default function SubmissionReviewPage() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleDownload}>
+                    <Button onClick={handleDownload} disabled={!submission.fileUrl}>
                         <Download className="mr-2" /> Download Submitted File
                     </Button>
                 </CardFooter>
@@ -168,7 +155,7 @@ export default function SubmissionReviewPage() {
                                 <Calendar className="h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p className="text-sm text-muted-foreground">Reviewed On</p>
-                                    <p className="font-medium">{format(new Date(submission.review.reviewedAt), "PPP p")}</p>
+                                    <p className="font-medium">{format(new Date(submission.review.reviewedAt.toString()), "PPP p")}</p>
                                 </div>
                             </div>
                         </CardContent>

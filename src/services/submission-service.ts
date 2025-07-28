@@ -10,6 +10,7 @@ export interface Submission {
     fileName: string;
     fileType: string;
     fileSize: number;
+    fileUrl: string; // URL to the file in Firebase Storage
     submittedAt: Date | Timestamp;
     review?: {
         feedback: string;
