@@ -81,56 +81,54 @@ export default function AssignmentsPage() {
     setUploadSuccess(false);
     setUploadProgress(0);
 
-    try {
-      const storageRef = ref(storage, `submissions/${trainee.id}/${Date.now()}-${selectedFile.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+    const storageRef = ref(storage, `submissions/${trainee.id}/${Date.now()}-${selectedFile.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
-      uploadTask.on('state_changed', 
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress);
-        },
-        (error) => {
-          console.error("Upload failed:", error);
-          setIsUploading(false);
-          toast({
-            variant: 'destructive',
-            title: 'Upload Failed',
-            description: 'There was an error uploading your file. Please try again.',
-          });
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
-          await addSubmission({
-              assignmentTitle: "Build a Personal Portfolio",
-              traineeId: trainee.id,
-              traineeName: trainee.name,
-              fileName: selectedFile.name,
-              fileType: selectedFile.type,
-              fileSize: selectedFile.size,
-              fileUrl: downloadURL,
-              submittedAt: new Date(),
-          });
-
-          setIsUploading(false);
-          setUploadSuccess(true);
-          toast({
-              title: 'Upload Successful!',
-              description: `Your file "${selectedFile.name}" has been submitted for review.`,
-          });
-        }
-      );
-
-    } catch (error) {
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
+      },
+      (error) => {
+        console.error("Upload failed:", error);
         setIsUploading(false);
         toast({
-            variant: 'destructive',
-            title: 'Submission Failed',
-            description: 'There was an error submitting your assignment. Please try again.',
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: 'There was an error uploading your file. Please try again.',
         });
-    }
-
+      },
+      async () => {
+        try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+    
+            await addSubmission({
+                assignmentTitle: "Build a Personal Portfolio",
+                traineeId: trainee.id,
+                traineeName: trainee.name,
+                fileName: selectedFile.name,
+                fileType: selectedFile.type,
+                fileSize: selectedFile.size,
+                fileUrl: downloadURL,
+                submittedAt: new Date(),
+            });
+    
+            setIsUploading(false);
+            setUploadSuccess(true);
+            toast({
+                title: 'Upload Successful!',
+                description: `Your file "${selectedFile.name}" has been submitted for review.`,
+            });
+        } catch (error) {
+            setIsUploading(false);
+            toast({
+                variant: 'destructive',
+                title: 'Submission Failed',
+                description: 'There was an error saving your assignment details. Please try again.',
+            });
+        }
+      }
+    );
   };
 
   return (
