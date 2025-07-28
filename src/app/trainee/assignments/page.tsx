@@ -1,18 +1,35 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Upload, FileText, Loader2, CheckCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
+import { addSubmission } from '@/services/submission-service';
 
 export default function AssignmentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
+
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  
+  useEffect(() => {
+    if (!authLoading && user?.email) {
+      const fetchTrainee = async () => {
+        const traineeData = await getTraineeByEmail(user.email);
+        setTrainee(traineeData);
+      }
+      fetchTrainee();
+    }
+  }, [user, authLoading]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -45,17 +62,49 @@ export default function AssignmentsPage() {
       return;
     }
 
+    if (!trainee) {
+       toast({
+        variant: 'destructive',
+        title: 'User not found',
+        description: 'Could not submit assignment, user data is missing.',
+      });
+      return;
+    }
+
     setIsUploading(true);
     setUploadSuccess(false);
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+        // In a real app, you would upload the file to a service like Firebase Storage
+        // and get a URL. For this demo, we'll just record the submission.
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-    setIsUploading(false);
-    setUploadSuccess(true);
-    toast({
-      title: 'Upload Successful!',
-      description: `Your file "${selectedFile.name}" has been submitted.`,
-    });
+        await addSubmission({
+            assignmentTitle: "Build a Personal Portfolio",
+            traineeId: trainee.id,
+            traineeName: trainee.name,
+            fileName: selectedFile.name,
+            fileType: selectedFile.type,
+            fileSize: selectedFile.size,
+            submittedAt: new Date(),
+        });
+
+        setIsUploading(false);
+        setUploadSuccess(true);
+        toast({
+            title: 'Upload Successful!',
+            description: `Your file "${selectedFile.name}" has been submitted for review.`,
+        });
+
+    } catch (error) {
+        setIsUploading(false);
+        toast({
+            variant: 'destructive',
+            title: 'Submission Failed',
+            description: 'There was an error submitting your assignment. Please try again.',
+        });
+    }
+
   };
 
   return (
