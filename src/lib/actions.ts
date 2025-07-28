@@ -6,11 +6,12 @@ import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTr
 import { saveOnboardingPlan as savePlan, getTraineeByEmail } from '@/services/trainee-service';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-import * as admin from 'firebase-admin';
+import { auth } from 'firebase-admin';
 
 
 const formSchema = z.object({
   learningGoal: z.string().min(10, "Please provide a learning goal of at least 10 characters."),
+  userEmail: z.string().email("Invalid email address provided.")
 });
 
 type OnboardingPlanState = {
@@ -23,23 +24,10 @@ export async function createOnboardingPlan(
   prevState: OnboardingPlanState | undefined,
   formData: FormData
 ): Promise<OnboardingPlanState> {
-    if (!admin.apps.length) {
-      admin.initializeApp();
-    }
-    const auth = admin.auth();
-
-    const headersList = headers();
-    const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
-
-    if (!idToken) {
-         return {
-            success: false,
-            message: 'Authentication token not found. Please log in.',
-        };
-    }
     
   const validatedFields = formSchema.safeParse({
     learningGoal: formData.get('learningGoal'),
+    userEmail: formData.get('userEmail'),
   });
 
   if (!validatedFields.success) {
@@ -50,15 +38,7 @@ export async function createOnboardingPlan(
   }
 
   try {
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const userEmail = decodedToken.email;
-
-    if (!userEmail) {
-      return {
-        success: false,
-        message: 'Could not identify user from token. Please log in again.',
-      };
-    }
+    const { userEmail, learningGoal } = validatedFields.data;
 
     const trainee = await getTraineeByEmail(userEmail);
     if (!trainee) {
@@ -69,7 +49,7 @@ export async function createOnboardingPlan(
     }
 
     const result = await generatePersonalizedOnboardingPlan({
-      learningGoal: validatedFields.data.learningGoal,
+      learningGoal: learningGoal,
       fresherProfile: 'Not provided', // Placeholder as form was simplified
       trainingSchedule: 'Not provided' // Placeholder as form was simplified
     });
@@ -83,12 +63,6 @@ export async function createOnboardingPlan(
     };
   } catch (error) {
     console.error('Error creating onboarding plan:', error);
-    if ((error as any).code === 'auth/id-token-expired') {
-        return {
-            success: false,
-            message: 'Your session has expired. Please log out and log in again.'
-        }
-    }
     return {
        success: false,
        message: 'An unexpected error occurred. Please try again later.',

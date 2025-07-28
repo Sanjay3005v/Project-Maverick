@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { createOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -43,6 +43,7 @@ export function TraineeOnboardingPlan() {
   const initialState = { success: false, message: '', data: undefined };
   
   const [state, dispatch] = useActionState(createOnboardingPlan, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state && state.message) {
@@ -87,28 +88,24 @@ export function TraineeOnboardingPlan() {
     XLSX.writeFile(workbook, 'my-onboarding-plan.xlsx');
   };
 
-  const handleFormAction = async (formData: FormData) => {
-    const idToken = await user?.getIdToken();
-    if (idToken) {
-        const headers = new Headers();
-        headers.append('Authorization', `Bearer ${idToken}`);
-        // This is a workaround to pass headers to a server action.
-        // In a real app, you might use a dedicated API route or a different pattern.
-        (createOnboardingPlan as any)(undefined, formData, headers);
-    } else {
-         toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: "You must be logged in to create a plan.",
-        });
+  const handleFormAction = (formData: FormData) => {
+    if (!user?.email) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: 'You must be logged in to create a plan.',
+      });
+      return;
     }
+    formData.append('userEmail', user.email);
+    dispatch(formData);
   };
 
 
   return (
     <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card className="shadow-lg">
-            <form action={dispatch}>
+            <form ref={formRef} action={handleFormAction}>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Your Learning Goal</CardTitle>
                     <CardDescription>Tell the AI what you want to learn, and it will generate a plan for you.</CardDescription>
