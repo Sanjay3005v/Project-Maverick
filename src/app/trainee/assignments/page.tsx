@@ -62,7 +62,7 @@ export default function AssignmentsPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!selectedFile) {
       toast({
         variant: 'destructive',
