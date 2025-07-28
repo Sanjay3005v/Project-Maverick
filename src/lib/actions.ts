@@ -63,7 +63,11 @@ export async function createOnboardingPlan(
         }
     }
 
-    const result = await generatePersonalizedOnboardingPlan(validatedFields.data);
+    const result = await generatePersonalizedOnboardingPlan({
+      learningGoal: validatedFields.data.learningGoal,
+      fresherProfile: 'Not provided', // Placeholder as form was simplified
+      trainingSchedule: 'Not provided' // Placeholder as form was simplified
+    });
 
     await savePlan(trainee.id, result.personalizedPlan);
     

@@ -14,6 +14,8 @@ import {z} from 'genkit';
 
 const GeneratePersonalizedOnboardingPlanInputSchema = z.object({
   learningGoal: z.string().describe('The learning goal of the trainee, including topic and desired timeframe (e.g., "I want to learn the basics of Python in 2 weeks").'),
+  fresherProfile: z.string().describe("A description of the trainee's skills and learning preferences."),
+  trainingSchedule: z.string().describe("The company's overall training schedule or available modules."),
 });
 export type GeneratePersonalizedOnboardingPlanInput = z.infer<
   typeof GeneratePersonalizedOnboardingPlanInputSchema
@@ -22,7 +24,7 @@ export type GeneratePersonalizedOnboardingPlanInput = z.infer<
 const OnboardingPlanItemSchema = z.object({
   week: z.string().describe('The week number or range (e.g., "Week 1", "Week 2").'),
   topic: z.string().describe('The main topic or module for that period.'),
-  tasks: z.array(z.string()).describe('A list of specific, actionable tasks or assignments for the week.'),
+  tasks: z.array(z.string()).describe('A list of specific, actionable tasks or assignments for the week. These should be phrased as clear actions.'),
   status: z.string().describe('The current status for this item, which should be "Not Started" by default.'),
 });
 
@@ -45,14 +47,20 @@ const prompt = ai.definePrompt({
   name: 'generatePersonalizedOnboardingPlanPrompt',
   input: {schema: GeneratePersonalizedOnboardingPlanInputSchema},
   output: {schema: GeneratePersonalizedOnboardingPlanOutputSchema},
-  prompt: `You are an expert AI mentor. A trainee has provided a learning goal. Your task is to create a structured, actionable, and personalized learning plan based on their request.
+  prompt: `You are an expert AI mentor. A trainee has provided a learning goal, their profile, and a general training schedule. Your task is to create a structured, actionable, and personalized learning plan.
 
-Learning Goal:
+**Fresher Profile:**
+"{{fresherProfile}}"
+
+**Available Training Schedule:**
+"{{trainingSchedule}}"
+
+**Trainee's Stated Learning Goal:**
 "{{learningGoal}}"
 
-Based on this goal, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks as an array of strings. These tasks should be phrased as assignments. Assume the trainee is a beginner unless otherwise specified. Set the initial status of all items to "Not Started". The output must be an array of plan items.
+Based on all this information, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks as an array of strings. These tasks should be phrased as assignments suitable for a task list. Assume the trainee is a beginner unless their profile specifies otherwise. Set the initial status of all items to "Not Started". The output must be an array of plan items.
 
-For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week. A task for week 1 might be "Write a Python script that prints 'Hello, World!' and calculates the sum of two numbers."
+For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week. A task for week 1 might be "Complete the 'Data Types' module and submit the associated quiz." or "Write a Python script that prints 'Hello, World!' and calculates the sum of two numbers."
 `,
 });
 
