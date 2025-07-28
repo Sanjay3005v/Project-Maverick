@@ -102,36 +102,36 @@ export default function AssignmentsPage() {
           description: 'There was an error uploading your file. Please try again.',
         });
       },
-      async () => {
-        try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    
-            await addSubmission({
-                assignmentTitle: "Build a Personal Portfolio",
-                traineeId: trainee.id,
-                traineeName: trainee.name,
-                fileName: selectedFile.name,
-                fileType: selectedFile.type,
-                fileSize: selectedFile.size,
-                fileUrl: downloadURL,
-                submittedAt: new Date(),
-            });
-    
-            setIsUploading(false);
-            setUploadSuccess(true);
-            toast({
-                title: 'Upload Successful!',
-                description: `Your file "${selectedFile.name}" has been submitted for review.`,
-            });
-        } catch (error) {
-            console.error("Submission failed:", error);
-            setIsUploading(false);
-            toast({
-                variant: 'destructive',
-                title: 'Submission Failed',
-                description: 'There was an error saving your assignment details. Please try again.',
-            });
-        }
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          try {
+              await addSubmission({
+                  assignmentTitle: "Build a Personal Portfolio",
+                  traineeId: trainee.id,
+                  traineeName: trainee.name,
+                  fileName: selectedFile.name,
+                  fileType: selectedFile.type,
+                  fileSize: selectedFile.size,
+                  fileUrl: downloadURL,
+                  submittedAt: new Date(),
+              });
+      
+              setIsUploading(false);
+              setUploadSuccess(true);
+              toast({
+                  title: 'Upload Successful!',
+                  description: `Your file "${selectedFile.name}" has been submitted for review.`,
+              });
+          } catch (error) {
+              console.error("Submission failed:", error);
+              setIsUploading(false);
+              toast({
+                  variant: 'destructive',
+                  title: 'Submission Failed',
+                  description: 'There was an error saving your assignment details. Please try again.',
+              });
+          }
+        });
       }
     );
   };
