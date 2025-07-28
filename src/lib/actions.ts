@@ -6,6 +6,7 @@ import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTr
 import { saveOnboardingPlan as savePlan, getTraineeByEmail } from '@/services/trainee-service';
 import { headers } from 'next/headers';
 import { z } from 'zod';
+import * as admin from 'firebase-admin';
 
 
 const formSchema = z.object({
@@ -22,7 +23,11 @@ export async function createOnboardingPlan(
   prevState: OnboardingPlanState | undefined,
   formData: FormData
 ): Promise<OnboardingPlanState> {
-    const { auth } = await import('@/lib/firebase-admin');
+    if (!admin.apps.length) {
+      admin.initializeApp();
+    }
+    const auth = admin.auth();
+
     const headersList = headers();
     const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
 
