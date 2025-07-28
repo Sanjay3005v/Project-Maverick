@@ -12,11 +12,13 @@ import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 import { addSubmission } from '@/services/submission-service';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { Progress } from '@/components/ui/progress';
 
 export default function AssignmentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [trainee, setTrainee] = useState<Trainee | null>(null);
 
   const { toast } = useToast();
@@ -46,12 +48,14 @@ export default function AssignmentsPage() {
       }
       setSelectedFile(file);
       setUploadSuccess(false);
+      setUploadProgress(0);
     }
   };
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
     setUploadSuccess(false);
+    setUploadProgress(0);
   };
 
   const handleSubmit = async () => {
@@ -75,6 +79,7 @@ export default function AssignmentsPage() {
 
     setIsUploading(true);
     setUploadSuccess(false);
+    setUploadProgress(0);
 
     try {
       const storageRef = ref(storage, `submissions/${trainee.id}/${Date.now()}-${selectedFile.name}`);
@@ -82,7 +87,8 @@ export default function AssignmentsPage() {
 
       uploadTask.on('state_changed', 
         (snapshot) => {
-          // Can be used to show upload progress
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
         },
         (error) => {
           console.error("Upload failed:", error);
@@ -154,17 +160,25 @@ export default function AssignmentsPage() {
               </label>
             </div>
           ) : (
-            <div className="p-4 border rounded-lg bg-muted/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <FileText className="h-6 w-6 text-primary" />
-                    <div>
-                        <p className="font-medium">{selectedFile.name}</p>
-                        <p className="text-sm text-muted-foreground">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+            <div className="p-4 border rounded-lg bg-muted/50 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <FileText className="h-6 w-6 text-primary" />
+                        <div>
+                            <p className="font-medium">{selectedFile.name}</p>
+                            <p className="text-sm text-muted-foreground">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
                     </div>
+                    <Button variant="ghost" size="icon" onClick={handleRemoveFile} disabled={isUploading}>
+                        <X className="h-4 w-4" />
+                    </Button>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleRemoveFile}>
-                    <X className="h-4 w-4" />
-                </Button>
+                {isUploading && (
+                  <div className="space-y-2">
+                    <Progress value={uploadProgress} className="w-full" />
+                    <p className="text-sm text-muted-foreground text-center">Uploading... {Math.round(uploadProgress)}%</p>
+                  </div>
+                )}
             </div>
           )}
 
