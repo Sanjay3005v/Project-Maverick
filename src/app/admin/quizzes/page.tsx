@@ -7,7 +7,7 @@ export default function AdminQuizzesPage() {
       <header>
         <h1 className="text-4xl font-headline font-bold">Quiz Management</h1>
         <p className="text-muted-foreground">
-          Create, view, and assign quizzes for your trainees.
+          Create, view, and assign quizzes for your trainees using multiple methods.
         </p>
       </header>
       <section>
