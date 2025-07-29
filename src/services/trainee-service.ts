@@ -1,6 +1,7 @@
 
+'use server';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 
 export interface Trainee {
@@ -13,6 +14,7 @@ export interface Trainee {
     dob: string | Date; 
     assessmentScore?: number;
     onboardingPlan?: OnboardingPlanItem[];
+    quizCompletionDates?: string[];
 }
 
 const traineesCollection = collection(db, 'trainees');
@@ -29,7 +31,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
     { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
     { name: 'Neo Anderson', email: 'neo.a1@example.com', department: 'Engineering', progress: 62, dob: '1996-12-01' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18', quizCompletionDates: ['2024-07-20', '2024-07-21', '2024-07-23', '2024-07-24', '2024-07-25'] },
     { name: 'Rachel Green', email: 'rachel.g1@example.com', department: 'Product', progress: 93, dob: '1995-05-26' },
     { name: 'Brenda Smith', email: 'brenda.s1@example.com', department: 'Engineering', progress: 68, dob: '1997-09-06' },
     { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
@@ -86,6 +88,7 @@ async function seedTrainees() {
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
+                quizCompletionDates: trainee.quizCompletionDates || [],
             });
             emailSet.add(trainee.email); // Add to set to prevent duplicates within the batch
         }
@@ -162,6 +165,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         status: getStatusForProgress(traineeData.progress),
         dob: new Date(traineeData.dob as string),
         assessmentScore: traineeData.assessmentScore || null,
+        quizCompletionDates: [],
     });
     return docRef.id;
 }
@@ -183,6 +187,13 @@ export async function updateTraineeProgress(traineeId: string, newProgress: numb
     await updateDoc(traineeRef, {
         progress: newProgress,
         status: getStatusForProgress(newProgress),
+    });
+}
+
+export async function addQuizCompletionDate(traineeId: string, date: string): Promise<void> {
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await updateDoc(traineeRef, {
+        quizCompletionDates: arrayUnion(date)
     });
 }
 

@@ -10,12 +10,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import { BookOpenCheck, Code2, FileText, Award, Route, Loader2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 import { challenges } from '@/lib/challenges-data';
+import { Heatmap } from '@/components/heatmap';
 
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -57,7 +57,6 @@ export default function TraineeDashboard() {
     )
   }
 
-  const overallProgress = typeof trainee.progress === 'number' ? trainee.progress : 0;
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   }
@@ -88,17 +87,11 @@ export default function TraineeDashboard() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="font-headline">Your Onboarding Progress</CardTitle>
-            <CardDescription>This reflects your overall progress through the onboarding program.</CardDescription>
+            <CardTitle className="font-headline">Daily Quiz Activity</CardTitle>
+            <CardDescription>A heatmap of your daily quiz completions over the past year.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4 mb-4">
-              <Progress value={overallProgress} className="h-3" />
-              <span className="font-bold text-lg text-primary">{Math.round(overallProgress)}%</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4">
-                Your progress is automatically updated as you complete quizzes, assignments, and other activities.
-            </p>
+             <Heatmap completionDates={trainee.quizCompletionDates || []} />
           </CardContent>
         </Card>
       </section>

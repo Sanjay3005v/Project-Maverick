@@ -11,7 +11,8 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getDailyQuiz, Quiz } from '@/services/quiz-service';
 import { useAuth } from '@/hooks/use-auth';
-import { getTraineeByEmail, updateTraineeProgress, Trainee } from '@/services/trainee-service';
+import { getTraineeByEmail, updateTraineeProgress, Trainee, addQuizCompletionDate } from '@/services/trainee-service';
+import { format } from 'date-fns';
 
 export default function DailyQuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -31,21 +32,11 @@ export default function DailyQuizPage() {
         if (user?.email) {
             const traineeData = await getTraineeByEmail(user.email);
             setTrainee(traineeData);
-        }
 
-        if (todayQuiz) {
-            const lastTaken = localStorage.getItem('dailyQuizTaken');
-            const lastQuizId = localStorage.getItem('lastQuizId');
-            const today = new Date().toISOString().split('T')[0];
-
-            if (lastTaken === today && lastQuizId === todayQuiz.id) {
-                setSubmitted(true);
-                const savedAnswers = JSON.parse(localStorage.getItem('lastQuizAnswers') || '{}');
-                setAnswers(savedAnswers);
-            } else {
-                localStorage.removeItem('dailyQuizTaken');
-                localStorage.removeItem('lastQuizId');
-                localStorage.removeItem('lastQuizAnswers');
+            if (todayQuiz && traineeData?.quizCompletionDates?.includes(format(new Date(), 'yyyy-MM-dd'))) {
+                 setSubmitted(true);
+                 // Note: We won't be able to reconstruct the answers, so we'll just show the result view.
+                 // A more robust solution would store answers in Firestore.
             }
         }
         setLoading(false);
@@ -72,32 +63,32 @@ export default function DailyQuizPage() {
       });
       return;
     }
-    
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem('dailyQuizTaken', today);
-    localStorage.setItem('lastQuizId', dailyQuiz.id);
-    localStorage.setItem('lastQuizAnswers', JSON.stringify(answers));
 
+    const todayString = format(new Date(), 'yyyy-MM-dd');
+    
+    // Calculate score and new progress
     const newScore = dailyQuiz.questions.reduce((total, question, index) => {
         return total + (answers[index] === question.answer ? 1 : 0);
     }, 0);
-    const newProgress = Math.round((newScore / dailyQuiz.questions.length) * 100);
+    const newProgress = Math.round((newScore / dailyQuiz.questions.length) * 10); // +10% for quiz completion
 
     try {
-        await updateTraineeProgress(trainee.id, newProgress);
+        await updateTraineeProgress(trainee.id, Math.min(100, trainee.progress + newProgress));
+        await addQuizCompletionDate(trainee.id, todayString);
+        
         toast({
-            title: 'Progress Updated!',
-            description: `Your new progress is ${newProgress}%. Keep it up!`
+            title: 'Quiz Submitted!',
+            description: `Your progress has been updated. Keep it up!`
         });
+
+        setSubmitted(true);
     } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Error',
-            description: 'Could not update your progress.'
+            description: 'Could not submit your quiz or update progress.'
         })
     }
-
-    setSubmitted(true);
   };
 
   if(loading || authLoading) {
@@ -178,24 +169,28 @@ export default function DailyQuizPage() {
                     {score} / {quizQuestions.length}
                 </p>
                 <div className="space-y-4">
-                    {quizQuestions.map((q, index) => (
-                        <div key={index} className="p-4 rounded-lg text-left"
-                             style={{
-                                 backgroundColor: answers[index] === q.answer ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)'
-                             }}>
-                            <p className="font-semibold">{q.question}</p>
-                            <div className="flex items-center mt-2">
-                                {answers[index] === q.answer ?
-                                    <CheckCircle className="h-5 w-5 text-green-600 mr-2"/> :
-                                    <XCircle className="h-5 w-5 text-red-600 mr-2"/>
-                                }
-                                <p className="text-sm">Your answer: {answers[index]}</p>
+                    {Object.keys(answers).length > 0 ? (
+                        quizQuestions.map((q, index) => (
+                            <div key={index} className="p-4 rounded-lg text-left"
+                                 style={{
+                                     backgroundColor: answers[index] === q.answer ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)'
+                                 }}>
+                                <p className="font-semibold">{q.question}</p>
+                                <div className="flex items-center mt-2">
+                                    {answers[index] === q.answer ?
+                                        <CheckCircle className="h-5 w-5 text-green-600 mr-2"/> :
+                                        <XCircle className="h-5 w-5 text-red-600 mr-2"/>
+                                    }
+                                    <p className="text-sm">Your answer: {answers[index]}</p>
+                                </div>
+                                {answers[index] !== q.answer && (
+                                    <p className="text-sm text-muted-foreground mt-1">Correct answer: {q.answer}</p>
+                                )}
                             </div>
-                            {answers[index] !== q.answer && (
-                                <p className="text-sm text-muted-foreground mt-1">Correct answer: {q.answer}</p>
-                            )}
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground">You've already completed the quiz for today!</p>
+                    )}
                 </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
