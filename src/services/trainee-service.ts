@@ -33,7 +33,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
     { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
     { name: 'Neo Anderson', email: 'neo.a1@example.com', department: 'Engineering', progress: 62, dob: '1996-12-01' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18', quizCompletionDates: DUMMY_COMPLETION_DATES },
     { name: 'Rachel Green', email: 'rachel.g1@example.com', department: 'Product', progress: 93, dob: '1995-05-26' },
     { name: 'Brenda Smith', email: 'brenda.s1@example.com', department: 'Engineering', progress: 68, dob: '1997-09-06' },
     { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
@@ -105,7 +105,7 @@ async function seedTrainees() {
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
-                quizCompletionDates: trainee.email === 'trainee@example.com' ? DUMMY_COMPLETION_DATES : generateRandomCompletionDates(),
+                quizCompletionDates: trainee.quizCompletionDates || generateRandomCompletionDates(),
             });
             operationsPerformed = true;
         }
@@ -235,4 +235,5 @@ export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlan
   });
 }
 
+    
     
