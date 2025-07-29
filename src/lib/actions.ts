@@ -4,9 +4,7 @@
 import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { saveOnboardingPlan as savePlan, getTraineeByEmail } from '@/services/trainee-service';
-import { headers } from 'next/headers';
 import { z } from 'zod';
-import { auth } from 'firebase-admin';
 
 
 const formSchema = z.object({
