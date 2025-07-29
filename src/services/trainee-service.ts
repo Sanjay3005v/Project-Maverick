@@ -91,35 +91,45 @@ const generateRandomCompletionDates = (): string[] => {
 async function seedTrainees() {
     console.log("Checking and seeding trainees...");
     const existingTraineesSnapshot = await getDocs(traineesCollection);
-    const emailSet = new Set(existingTraineesSnapshot.docs.map(doc => doc.data().email));
+    const existingTraineesMap = new Map(existingTraineesSnapshot.docs.map(doc => [doc.data().email, {id: doc.id, ...doc.data()}]));
 
-    const addBatch = writeBatch(db);
-    let newTraineesAdded = false;
+    const batch = writeBatch(db);
+    let operationsPerformed = false;
 
+    // Add new trainees who don't exist
     dummyTrainees.forEach(trainee => {
-        if (!emailSet.has(trainee.email)) {
-            const docRef = doc(collection(db, 'trainees')); // Create a new doc reference
-            
-            const completionDates = trainee.email === 'trainee@example.com' 
-                ? DUMMY_COMPLETION_DATES 
-                : generateRandomCompletionDates();
-
-            addBatch.set(docRef, {
+        if (!existingTraineesMap.has(trainee.email)) {
+            const docRef = doc(traineesCollection);
+            batch.set(docRef, {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
-                quizCompletionDates: completionDates,
+                quizCompletionDates: trainee.email === 'trainee@example.com' ? DUMMY_COMPLETION_DATES : generateRandomCompletionDates(),
             });
-            newTraineesAdded = true;
+            operationsPerformed = true;
         }
     });
 
-    if (newTraineesAdded) {
-        await addBatch.commit();
-        console.log("New trainees seeded successfully.");
+    // Update existing trainees if they are missing heatmap data
+    existingTraineesSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (!data.quizCompletionDates || data.quizCompletionDates.length === 0) {
+            const traineeRef = doc.ref;
+            const completionDates = data.email === 'trainee@example.com' 
+                ? DUMMY_COMPLETION_DATES 
+                : generateRandomCompletionDates();
+
+            batch.update(traineeRef, { quizCompletionDates: completionDates });
+            operationsPerformed = true;
+        }
+    });
+
+    if (operationsPerformed) {
+        await batch.commit();
+        console.log("Database seeding/update completed successfully.");
     } else {
-        console.log("All dummy trainees already exist in the database.");
+        console.log("All trainees already exist and have heatmap data.");
     }
 }
 
@@ -157,19 +167,17 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const q = query(traineesCollection, where("email", "==", email), limit(1));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
-        // For development, if specific test users don't exist, seed the DB.
-        if (email === 'trainee@example.com' || email === 'ad@example.com' || email === 'admin@example.com') {
-             await seedTrainees();
-             const retrySnapshot = await getDocs(q);
-             if (!retrySnapshot.empty) {
-                 const traineeDoc = retrySnapshot.docs[0];
-                 const data = traineeDoc.data();
-                 return {
-                    id: traineeDoc.id,
-                    ...data,
-                    dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
-                } as Trainee;
-             }
+        // This case should be rare now with the robust seeding
+        await seedTrainees();
+        const retrySnapshot = await getDocs(q);
+        if (!retrySnapshot.empty) {
+            const traineeDoc = retrySnapshot.docs[0];
+            const data = traineeDoc.data();
+            return {
+               id: traineeDoc.id,
+               ...data,
+               dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+           } as Trainee;
         }
         return null;
     }
@@ -226,3 +234,5 @@ export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlan
     onboardingPlan: plan,
   });
 }
+
+    
