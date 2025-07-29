@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TraineeSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   name: z.string(),
   department: z.string(),
   progress: z.number(),
