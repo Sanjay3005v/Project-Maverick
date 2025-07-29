@@ -81,7 +81,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
             An AI-powered summary of the current trainee progress and status.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-4 max-h-[60vh] overflow-y-auto">
           {loading && (
             <div className="flex items-center justify-center h-48">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -103,7 +103,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
             </div>
           )}
         </div>
-        <DialogFooter className="sm:justify-between gap-2">
+        <DialogFooter className="sm:justify-between gap-2 pt-4 border-t">
             <div>
               {report && !loading && (
                   <Button variant="secondary" onClick={handleDownloadReport}>
