@@ -89,31 +89,17 @@ const generateRandomCompletionDates = (): string[] => {
 }
 
 async function seedTrainees() {
-    console.log("Seeding trainees...");
+    console.log("Checking and seeding trainees...");
     const existingTraineesSnapshot = await getDocs(traineesCollection);
     const emailSet = new Set(existingTraineesSnapshot.docs.map(doc => doc.data().email));
 
-    // Special handling for the main trainee user to ensure heatmap data
-    const mainTraineeQuery = query(traineesCollection, where("email", "==", "trainee@example.com"));
-    const mainTraineeSnapshot = await getDocs(mainTraineeQuery);
-    if (!mainTraineeSnapshot.empty) {
-        const traineeDoc = mainTraineeSnapshot.docs[0];
-        const currentData = traineeDoc.data() as Trainee;
-        if (!currentData.quizCompletionDates || currentData.quizCompletionDates.length === 0) {
-            await updateDoc(traineeDoc.ref, { quizCompletionDates: DUMMY_COMPLETION_DATES });
-            console.log("Updated main trainee with extensive heatmap data.");
-        }
-    }
-
-    if(existingTraineesSnapshot.docs.length >= dummyTrainees.length) {
-        console.log("Database already has sufficient data. Skipping rest of seed.");
-        return;
-    }
-
     const addBatch = writeBatch(db);
+    let newTraineesAdded = false;
+
     dummyTrainees.forEach(trainee => {
         if (!emailSet.has(trainee.email)) {
             const docRef = doc(collection(db, 'trainees')); // Create a new doc reference
+            
             const completionDates = trainee.email === 'trainee@example.com' 
                 ? DUMMY_COMPLETION_DATES 
                 : generateRandomCompletionDates();
@@ -125,25 +111,23 @@ async function seedTrainees() {
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
                 quizCompletionDates: completionDates,
             });
-            emailSet.add(trainee.email);
+            newTraineesAdded = true;
         }
     });
-    await addBatch.commit();
-    console.log("Seeding complete.");
+
+    if (newTraineesAdded) {
+        await addBatch.commit();
+        console.log("New trainees seeded successfully.");
+    } else {
+        console.log("All dummy trainees already exist in the database.");
+    }
 }
 
 
 export async function getAllTrainees(): Promise<Trainee[]> {
-    let traineeSnapshot = await getDocs(traineesCollection);
-
-    if (traineeSnapshot.empty && dummyTrainees.length > 0) {
-        await seedTrainees();
-        traineeSnapshot = await getDocs(traineesCollection);
-    } else {
-        // Even if not empty, we might need to update the main trainee for the heatmap
-        await seedTrainees(); 
-        traineeSnapshot = await getDocs(traineesCollection);
-    }
+    await seedTrainees(); // Ensure DB is seeded on first load
+    
+    const traineeSnapshot = await getDocs(traineesCollection);
     
     const traineeList = traineeSnapshot.docs.map(doc => {
         const data = doc.data();
@@ -175,7 +159,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     if (querySnapshot.empty) {
         // For development, if specific test users don't exist, seed the DB.
         if (email === 'trainee@example.com' || email === 'ad@example.com' || email === 'admin@example.com') {
-             await getAllTrainees(); // This will trigger seeding if needed
+             await seedTrainees();
              const retrySnapshot = await getDocs(q);
              if (!retrySnapshot.empty) {
                  const traineeDoc = retrySnapshot.docs[0];
