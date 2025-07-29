@@ -33,7 +33,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
     { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
     { name: 'Neo Anderson', email: 'neo.a1@example.com', department: 'Engineering', progress: 62, dob: '1996-12-01' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18', quizCompletionDates: DUMMY_COMPLETION_DATES },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
     { name: 'Rachel Green', email: 'rachel.g1@example.com', department: 'Product', progress: 93, dob: '1995-05-26' },
     { name: 'Brenda Smith', email: 'brenda.s1@example.com', department: 'Engineering', progress: 68, dob: '1997-09-06' },
     { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
@@ -71,6 +71,23 @@ const getStatusForProgress = (progress: number) => {
     return 'Need Attention';
 }
 
+const generateRandomCompletionDates = (): string[] => {
+    const dates = new Set<string>();
+    const today = new Date();
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+    const totalDays = Math.floor((today.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    const numberOfEntries = Math.floor(Math.random() * 80) + 20; // Generate between 20 and 100 dates
+
+    for (let i = 0; i < numberOfEntries; i++) {
+        const randomDay = Math.floor(Math.random() * totalDays);
+        const date = new Date(yearStart.getTime());
+        date.setDate(date.getDate() + randomDay);
+        dates.add(date.toISOString().split('T')[0]);
+    }
+    return Array.from(dates);
+}
+
 async function seedTrainees() {
     console.log("Seeding trainees...");
     const existingTraineesSnapshot = await getDocs(traineesCollection);
@@ -79,16 +96,14 @@ async function seedTrainees() {
     // Special handling for the main trainee user to ensure heatmap data
     const mainTraineeQuery = query(traineesCollection, where("email", "==", "trainee@example.com"));
     const mainTraineeSnapshot = await getDocs(mainTraineeQuery);
-
     if (!mainTraineeSnapshot.empty) {
         const traineeDoc = mainTraineeSnapshot.docs[0];
         const currentData = traineeDoc.data() as Trainee;
-        if (!currentData.quizCompletionDates || currentData.quizCompletionDates.length < DUMMY_COMPLETION_DATES.length) {
+        if (!currentData.quizCompletionDates || currentData.quizCompletionDates.length === 0) {
             await updateDoc(traineeDoc.ref, { quizCompletionDates: DUMMY_COMPLETION_DATES });
-            console.log("Updated main trainee with heatmap data.");
+            console.log("Updated main trainee with extensive heatmap data.");
         }
     }
-
 
     if(existingTraineesSnapshot.docs.length >= dummyTrainees.length) {
         console.log("Database already has sufficient data. Skipping rest of seed.");
@@ -99,14 +114,18 @@ async function seedTrainees() {
     dummyTrainees.forEach(trainee => {
         if (!emailSet.has(trainee.email)) {
             const docRef = doc(collection(db, 'trainees')); // Create a new doc reference
+            const completionDates = trainee.email === 'trainee@example.com' 
+                ? DUMMY_COMPLETION_DATES 
+                : generateRandomCompletionDates();
+
             addBatch.set(docRef, {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
-                quizCompletionDates: trainee.quizCompletionDates || [],
+                quizCompletionDates: completionDates,
             });
-            emailSet.add(trainee.email); // Add to set to prevent duplicates within the batch
+            emailSet.add(trainee.email);
         }
     });
     await addBatch.commit();
