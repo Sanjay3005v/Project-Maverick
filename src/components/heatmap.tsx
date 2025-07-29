@@ -52,7 +52,7 @@ export function Heatmap({ completionDates }: { completionDates: string[] }) {
                   <div key={monthIndex} className="flex flex-col items-center min-w-[10rem]">
                     <div className="text-sm font-medium mb-2">{monthLabels[monthIndex]}</div>
                     <div className="grid grid-cols-7 gap-1 w-full">
-                      {weekDays.map(day => <div key={day} className="text-xs text-muted-foreground text-center">{day}</div>)}
+                      {weekDays.map((day, index) => <div key={index} className="text-xs text-muted-foreground text-center">{day}</div>)}
                       {emptyCells}
                       {monthDays.map((day) => {
                         const dateString = format(day, 'yyyy-MM-dd');
