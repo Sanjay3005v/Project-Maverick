@@ -20,6 +20,7 @@ export interface Trainee {
     assessmentScore?: number;
     onboardingPlan?: OnboardingPlanItem[];
     quizCompletions?: QuizCompletion[];
+    avatarUrl?: string;
 }
 
 const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
@@ -233,6 +234,8 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
     
+    // If the trainee exists but is missing quizCompletions, add them.
+    // This is more robust than relying solely on the initial seed.
     if (!data.quizCompletions || data.quizCompletions.length === 0) {
         const completionData = email === 'trainee@example.com'
             ? DUMMY_COMPLETION_DATA
@@ -240,6 +243,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
         
         await updateDoc(traineeDoc.ref, { quizCompletions: completionData });
         
+        // Return the trainee data with the newly added completions
         return {
             id: traineeDoc.id,
             ...data,
@@ -298,4 +302,9 @@ export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlan
   await updateDoc(traineeRef, {
     onboardingPlan: plan,
   });
+}
+
+export async function updateUserAvatar(traineeId: string, avatarUrl: string): Promise<void> {
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await updateDoc(traineeRef, { avatarUrl });
 }

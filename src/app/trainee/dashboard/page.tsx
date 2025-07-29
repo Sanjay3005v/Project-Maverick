@@ -16,20 +16,24 @@ import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 import { challenges } from '@/lib/challenges-data';
 import { Heatmap } from '@/components/heatmap';
+import { AvatarUploader } from '@/components/avatar-uploader';
 
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
 
-  useEffect(() => {
-    if (!authLoading && user?.email) {
-      const fetchTrainee = async () => {
+  const fetchTrainee = async () => {
+      if (user?.email) {
         setDataLoading(true);
         const traineeData = await getTraineeByEmail(user.email);
         setTrainee(traineeData);
         setDataLoading(false);
       }
+  }
+
+  useEffect(() => {
+    if (!authLoading && user?.email) {
       fetchTrainee();
     } else if (!authLoading && !user) {
       setDataLoading(false);
@@ -69,10 +73,15 @@ export default function TraineeDashboard() {
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-1">
           <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="person portrait" />
-              <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+                <Avatar className="h-16 w-16">
+                    <AvatarImage src={trainee.avatarUrl} data-ai-hint="person portrait" />
+                    <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                    <AvatarUploader trainee={trainee} onUploadComplete={fetchTrainee} />
+                </div>
+            </div>
             <div>
               <CardTitle className="font-headline text-2xl">Welcome, {trainee.name}!</CardTitle>
               <CardDescription>Trainee, {trainee.department} Department</CardDescription>
