@@ -42,6 +42,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 - [Node.js](https://nodejs.org/en) (version 20 or later recommended)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [Firebase CLI](https://firebase.google.com/docs/cli)
 
 ### Firebase Configuration
 
@@ -111,8 +112,36 @@ Follow these instructions to get a copy of the project up and running on your lo
       ```
       This starts the local server that handles the AI flow executions.
 
-## Deployment
+## Deployment to Firebase App Hosting
 
-This application is configured for easy deployment to **Firebase App Hosting**. Once you have the [Firebase CLI](https://firebase.google.com/docs/cli) installed and configured, you can deploy the application by running the deploy command from your project's root directory.
+This application is configured for easy deployment to **Firebase App Hosting**. Follow these steps to deploy your application.
 
-    
+### 1. Install and Log in to Firebase CLI
+If you haven't already, install the Firebase Command Line Interface and log in.
+
+```bash
+npm install -g firebase-tools
+firebase login
+```
+
+### 2. Initialize App Hosting in Your Project
+From your project's root directory, run the initialization command. This connects your local project to your Firebase project.
+
+```bash
+firebase init apphosting
+```
+
+- When prompted, select the Firebase project you created earlier.
+- You will be asked to choose a backend service name (e.g., `maverick-mindset-backend`).
+- When asked for the service account, you can select one or allow it to create one for you.
+- For the region, choose the one closest to your users.
+- When asked "Set up a GitHub repository for continuous deployment?", you can choose "No" for now to deploy manually.
+
+### 3. Deploy Your Application
+After initialization is complete, you can deploy the application with a single command:
+
+```bash
+firebase deploy
+```
+
+This command will build your Next.js application, bundle it with the server configuration, and deploy it to Firebase App Hosting. Once it's finished, the CLI will provide you with the URL to your live application!
