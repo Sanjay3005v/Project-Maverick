@@ -11,7 +11,7 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getDailyQuiz, Quiz } from '@/services/quiz-service';
 import { useAuth } from '@/hooks/use-auth';
-import { getTraineeByEmail, updateTraineeProgress, Trainee, addQuizCompletionDate } from '@/services/trainee-service';
+import { getTraineeByEmail, updateTraineeProgress, Trainee, addQuizCompletion } from '@/services/trainee-service';
 import { format } from 'date-fns';
 
 export default function DailyQuizPage() {
@@ -22,6 +22,8 @@ export default function DailyQuizPage() {
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const [score, setScore] = useState(0);
+
 
   useEffect(() => {
     const fetchQuizAndTrainee = async () => {
@@ -32,11 +34,11 @@ export default function DailyQuizPage() {
         if (user?.email) {
             const traineeData = await getTraineeByEmail(user.email);
             setTrainee(traineeData);
-
-            if (todayQuiz && traineeData?.quizCompletionDates?.includes(format(new Date(), 'yyyy-MM-dd'))) {
+            const todayString = format(new Date(), 'yyyy-MM-dd');
+            
+            if (todayQuiz && traineeData?.quizCompletions?.find(c => c.date === todayString)) {
                  setSubmitted(true);
-                 // Note: We won't be able to reconstruct the answers, so we'll just show the result view.
-                 // A more robust solution would store answers in Firestore.
+                 // We can't reconstruct answers, just show the already-completed view
             }
         }
         setLoading(false);
@@ -66,15 +68,19 @@ export default function DailyQuizPage() {
 
     const todayString = format(new Date(), 'yyyy-MM-dd');
     
-    // Calculate score and new progress
-    const newScore = dailyQuiz.questions.reduce((total, question, index) => {
+    // Calculate score
+    const calculatedScore = dailyQuiz.questions.reduce((total, question, index) => {
         return total + (answers[index] === question.answer ? 1 : 0);
     }, 0);
-    const newProgress = Math.round((newScore / dailyQuiz.questions.length) * 10); // +10% for quiz completion
+    const scorePercentage = Math.round((calculatedScore / dailyQuiz.questions.length) * 100);
+    setScore(calculatedScore);
+
+    // Calculate progress update
+    const progressUpdate = Math.round((calculatedScore / dailyQuiz.questions.length) * 10); // +10% for a perfect quiz
 
     try {
-        await updateTraineeProgress(trainee.id, Math.min(100, trainee.progress + newProgress));
-        await addQuizCompletionDate(trainee.id, todayString);
+        await updateTraineeProgress(trainee.id, Math.min(100, trainee.progress + progressUpdate));
+        await addQuizCompletion(trainee.id, { date: todayString, score: scorePercentage });
         
         toast({
             title: 'Quiz Submitted!',
@@ -121,9 +127,6 @@ export default function DailyQuizPage() {
   }
 
   const quizQuestions = dailyQuiz.questions;
-  const score = quizQuestions.reduce((total, question, index) => {
-    return total + (answers[index] === question.answer ? 1 : 0);
-  }, 0);
 
   return (
     <div className="container mx-auto p-4 md:p-8">

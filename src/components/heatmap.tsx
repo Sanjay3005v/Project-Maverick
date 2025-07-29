@@ -3,6 +3,7 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import type { QuizCompletion } from '@/services/trainee-service';
 import { 
   format, 
   startOfToday, 
@@ -13,8 +14,8 @@ import {
   getMonth
 } from 'date-fns';
 
-export function Heatmap({ completionDates }: { completionDates: string[] }) {
-  const completionSet = new Set(completionDates);
+export function Heatmap({ quizCompletions }: { quizCompletions: QuizCompletion[] }) {
+  const completionMap = new Map(quizCompletions.map(c => [c.date, c.score]));
   const today = startOfToday();
   const yearStart = startOfYear(today);
   const yearEnd = endOfYear(today);
@@ -34,6 +35,14 @@ export function Heatmap({ completionDates }: { completionDates: string[] }) {
     acc[month].push(day);
     return acc;
   }, [] as Date[][]);
+
+  const getColorForScore = (score: number) => {
+    if (score >= 90) return 'bg-primary';
+    if (score >= 80) return 'bg-primary/80';
+    if (score >= 70) return 'bg-primary/60';
+    if (score >= 50) return 'bg-primary/40';
+    return 'bg-primary/20';
+  };
 
   return (
     <TooltipProvider>
@@ -56,10 +65,11 @@ export function Heatmap({ completionDates }: { completionDates: string[] }) {
                       {emptyCells}
                       {monthDays.map((day) => {
                         const dateString = format(day, 'yyyy-MM-dd');
-                        const hasCompleted = completionSet.has(dateString);
+                        const score = completionMap.get(dateString);
+                        const hasCompleted = score !== undefined;
                         const isToday = format(day, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
                         
-                        const colorClass = hasCompleted ? 'bg-primary' : 'bg-muted/60';
+                        const colorClass = hasCompleted ? getColorForScore(score) : 'bg-muted/60';
                         const borderClass = isToday ? 'border-2 border-foreground' : 'border-transparent';
 
                         return (
@@ -72,7 +82,12 @@ export function Heatmap({ completionDates }: { completionDates: string[] }) {
                               )} />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{hasCompleted ? 'Quiz completed on' : 'No quiz on'} {format(day, 'PPP')}</p>
+                              <p>
+                                {hasCompleted 
+                                  ? `Score: ${score}% on ${format(day, 'PPP')}`
+                                  : `No quiz on ${format(day, 'PPP')}`
+                                }
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         );
@@ -84,12 +99,12 @@ export function Heatmap({ completionDates }: { completionDates: string[] }) {
             </div>
         </div>
 
-        {/* Legend */}
         <div className="flex justify-end items-center gap-2 mt-2 text-xs text-muted-foreground self-end">
           <span>Less</span>
           <div className="h-3 w-3 rounded-sm bg-muted/60" />
+          <div className="h-3 w-3 rounded-sm bg-primary/20" />
           <div className="h-3 w-3 rounded-sm bg-primary/40" />
-          <div className="h-3 w-3 rounded-sm bg-primary/70" />
+          <div className="h-3 w-3 rounded-sm bg-primary/80" />
           <div className="h-3 w-3 rounded-sm bg-primary" />
           <span>More</span>
         </div>

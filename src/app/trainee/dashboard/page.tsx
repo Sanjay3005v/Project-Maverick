@@ -88,10 +88,10 @@ export default function TraineeDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="font-headline">Daily Quiz Activity</CardTitle>
-            <CardDescription>A heatmap of your daily quiz completions over the past year.</CardDescription>
+            <CardDescription>A heatmap of your daily quiz scores over the past year.</CardDescription>
           </CardHeader>
           <CardContent>
-             <Heatmap completionDates={trainee.quizCompletionDates || []} />
+             <Heatmap quizCompletions={trainee.quizCompletions || []} />
           </CardContent>
         </Card>
       </section>

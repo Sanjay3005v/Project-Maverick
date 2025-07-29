@@ -4,6 +4,11 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 
+export interface QuizCompletion {
+    date: string;
+    score: number; // e.g., percentage score
+}
+
 export interface Trainee {
     id: string;
     name: string;
@@ -14,10 +19,43 @@ export interface Trainee {
     dob: string | Date; 
     assessmentScore?: number;
     onboardingPlan?: OnboardingPlanItem[];
-    quizCompletionDates?: string[];
+    quizCompletions?: QuizCompletion[];
 }
 
-const DUMMY_COMPLETION_DATES = ['2024-07-23', '2024-07-24', '2024-07-25', '2024-07-26', '2024-07-27', '2024-07-28', '2024-07-29', '2024-01-05', '2024-01-06', '2024-01-15', '2024-01-20', '2024-02-01', '2024-02-02', '2024-02-03', '2024-02-10', '2024-02-11', '2024-02-19', '2024-02-28', '2024-03-01', '2024-03-05', '2024-03-06', '2024-03-07', '2024-03-12', '2024-03-13', '2024-03-20', '2024-03-21', '2024-03-30', '2024-04-04', '2024-04-05', '2024-04-06', '2024-04-07', '2024-04-14', '2024-04-15', '2024-04-22', '2024-04-23', '2024-04-24', '2024-04-29', '2024-05-01', '2024-05-02', '2024-05-05', '2024-05-10', '2024-05-11', '2024-05-12', '2024-05-18', '2024-05-25', '2024-06-03', '2024-06-04', '2024-06-09', '2024-06-15', '2024-06-20', '2024-06-21', '2024-06-22', '2024-06-29', '2024-06-30', '2024-07-01', '2024-07-05', '2024-07-06', '2024-07-10', '2024-07-13', '2024-07-14', '2024-07-20', '2024-07-21', '2024-07-23', '2024-07-24', '2024-07-25'];
+const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
+    { date: '2024-07-23', score: 85 }, { date: '2024-07-24', score: 92 },
+    { date: '2024-07-25', score: 78 }, { date: '2024-07-26', score: 95 },
+    { date: '2024-07-27', score: 60 }, { date: '2024-07-28', score: 72 },
+    { date: '2024-07-29', score: 88 }, { date: '2024-01-05', score: 55 },
+    { date: '2024-01-06', score: 90 }, { date: '2024-01-15', score: 68 },
+    { date: '2024-01-20', score: 76 }, { date: '2024-02-01', score: 91 },
+    { date: '2024-02-02', score: 82 }, { date: '2024-02-03', score: 79 },
+    { date: '2024-02-10', score: 94 }, { date: '2024-02-11', score: 65 },
+    { date: '2024-02-19', score: 81 }, { date: '2024-02-28', score: 70 },
+    { date: '2024-03-01', score: 88 }, { date: '2024-03-05', score: 93 },
+    { date: '2024-03-06', score: 77 }, { date: '2024-03-07', score: 85 },
+    { date: '2024-03-12', score: 96 }, { date: '2024-03-13', score: 69 },
+    { date: '2024-03-20', score: 80 }, { date: '2024-03-21', score: 89 },
+    { date: '2024-03-30', score: 74 }, { date: '2024-04-04', score: 98 },
+    { date: '2024-04-05', score: 81 }, { date: '2024-04-06', score: 73 },
+    { date: '2024-04-07', score: 86 }, { date: '2024-04-14', score: 90 },
+    { date: '2024-04-15', score: 66 }, { date: '2024-04-22', score: 79 },
+    { date: '2024-04-23', score: 84 }, { date: '2024-04-24', score: 92 },
+    { date: '2024-04-29', score: 71 }, { date: '2024-05-01', score: 87 },
+    { date: '2024-05-02', score: 94 }, { date: '2024-05-05', score: 75 },
+    { date: '2024-05-10', score: 83 }, { date: '2024-05-11', score: 91 },
+    { date: '2024-05-12', score: 88 }, { date: '2024-05-18', score: 68 },
+    { date: '2024-05-25', score: 95 }, { date: '2024-06-03', score: 80 },
+    { date: '2024-06-04', score: 78 }, { date: '2024-06-09', score: 92 },
+    { date: '2024-06-15', score: 85 }, { date: '2024-06-20', score: 89 },
+    { date: '2024-06-21', score: 76 }, { date: '2024-06-22', score: 94 },
+    { date: '2024-06-29', score: 70 }, { date: '2024-06-30', score: 81 },
+    { date: '2024-07-01', score: 93 }, { date: '2024-07-05', score: 86 },
+    { date: '2024-07-06', score: 79 }, { date: '2024-07-10', score: 97 },
+    { date: '2024-07-13', score: 65 }, { date: '2024-07-14', score: 88 },
+    { date: '2024-07-20', score: 91 }, { date: '2024-07-21', score: 84 },
+    { date: '2024-07-22', score: 77 },
+];
 
 const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
@@ -69,21 +107,27 @@ const getStatusForProgress = (progress: number) => {
     return 'Need Attention';
 }
 
-const generateRandomCompletionDates = (): string[] => {
-    const dates = new Set<string>();
+const generateRandomCompletionData = (): QuizCompletion[] => {
+    const data: QuizCompletion[] = [];
     const today = new Date();
     const yearStart = new Date(today.getFullYear(), 0, 1);
     const totalDays = Math.floor((today.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24));
     
-    const numberOfEntries = Math.floor(Math.random() * 80) + 20; // Generate between 20 and 100 dates
+    const numberOfEntries = Math.floor(Math.random() * 80) + 20; // 20-100 entries
 
     for (let i = 0; i < numberOfEntries; i++) {
         const randomDay = Math.floor(Math.random() * totalDays);
         const date = new Date(yearStart.getTime());
         date.setDate(date.getDate() + randomDay);
-        dates.add(date.toISOString().split('T')[0]);
+        
+        data.push({
+            date: date.toISOString().split('T')[0],
+            score: Math.floor(Math.random() * 61) + 40 // Score between 40 and 100
+        });
     }
-    return Array.from(dates);
+    // Remove duplicates by date
+    const uniqueData = Array.from(new Map(data.map(item => [item.date, item])).values());
+    return uniqueData;
 }
 
 const traineesCollection = collection(db, 'trainees');
@@ -100,16 +144,16 @@ async function seedTrainees() {
     dummyTrainees.forEach(trainee => {
         if (!existingTraineesMap.has(trainee.email)) {
             const docRef = doc(traineesCollection);
-            const completionDates = trainee.email === 'trainee@example.com' 
-                ? DUMMY_COMPLETION_DATES 
-                : generateRandomCompletionDates();
+            const completionData = trainee.email === 'trainee@example.com' 
+                ? DUMMY_COMPLETION_DATA 
+                : generateRandomCompletionData();
 
             batch.set(docRef, {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
-                quizCompletionDates: completionDates,
+                quizCompletions: completionData,
             });
             operationsPerformed = true;
         }
@@ -118,13 +162,13 @@ async function seedTrainees() {
     // Update existing trainees if they are missing heatmap data
     existingTraineesSnapshot.docs.forEach(doc => {
         const data = doc.data();
-        if (!data.quizCompletionDates || data.quizCompletionDates.length === 0) {
+        if (!data.quizCompletions || data.quizCompletions.length === 0) {
             const traineeRef = doc.ref;
-            const completionDates = data.email === 'trainee@example.com' 
-                ? DUMMY_COMPLETION_DATES 
-                : generateRandomCompletionDates();
+            const completionData = data.email === 'trainee@example.com' 
+                ? DUMMY_COMPLETION_DATA 
+                : generateRandomCompletionData();
 
-            batch.update(traineeRef, { quizCompletionDates: completionDates });
+            batch.update(traineeRef, { quizCompletions: completionData });
             operationsPerformed = true;
         }
     });
@@ -172,11 +216,9 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        // If the user doesn't exist, it might be the first run. Seed the DB.
         await seedTrainees();
         const retrySnapshot = await getDocs(q);
         if (retrySnapshot.empty) {
-            // Still not found after seeding, so they truly don't exist.
             return null;
         }
         const traineeDoc = retrySnapshot.docs[0];
@@ -191,19 +233,17 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
     
-    // Check if heatmap data is missing and add it if necessary
-    if (!data.quizCompletionDates || data.quizCompletionDates.length === 0) {
-        const completionDates = email === 'trainee@example.com'
-            ? DUMMY_COMPLETION_DATES
-            : generateRandomCompletionDates();
+    if (!data.quizCompletions || data.quizCompletions.length === 0) {
+        const completionData = email === 'trainee@example.com'
+            ? DUMMY_COMPLETION_DATA
+            : generateRandomCompletionData();
         
-        await updateDoc(traineeDoc.ref, { quizCompletionDates: completionDates });
+        await updateDoc(traineeDoc.ref, { quizCompletions: completionData });
         
-        // Return data with the new dates included
         return {
             id: traineeDoc.id,
             ...data,
-            quizCompletionDates: completionDates,
+            quizCompletions: completionData,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
     }
@@ -221,7 +261,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         status: getStatusForProgress(traineeData.progress),
         dob: new Date(traineeData.dob as string),
         assessmentScore: traineeData.assessmentScore || null,
-        quizCompletionDates: [],
+        quizCompletions: [],
     });
     return docRef.id;
 }
@@ -246,10 +286,10 @@ export async function updateTraineeProgress(traineeId: string, newProgress: numb
     });
 }
 
-export async function addQuizCompletionDate(traineeId: string, date: string): Promise<void> {
+export async function addQuizCompletion(traineeId: string, completionData: QuizCompletion): Promise<void> {
     const traineeRef = doc(db, 'trainees', traineeId);
     await updateDoc(traineeRef, {
-        quizCompletionDates: arrayUnion(date)
+        quizCompletions: arrayUnion(completionData)
     });
 }
 
@@ -259,6 +299,3 @@ export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlan
     onboardingPlan: plan,
   });
 }
-
-    
-    
