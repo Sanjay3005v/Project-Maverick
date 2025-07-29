@@ -17,8 +17,6 @@ export interface Trainee {
     quizCompletionDates?: string[];
 }
 
-const traineesCollection = collection(db, 'trainees');
-
 const DUMMY_COMPLETION_DATES = ['2024-07-23', '2024-07-24', '2024-07-25', '2024-07-26', '2024-07-27', '2024-07-28', '2024-07-29', '2024-01-05', '2024-01-06', '2024-01-15', '2024-01-20', '2024-02-01', '2024-02-02', '2024-02-03', '2024-02-10', '2024-02-11', '2024-02-19', '2024-02-28', '2024-03-01', '2024-03-05', '2024-03-06', '2024-03-07', '2024-03-12', '2024-03-13', '2024-03-20', '2024-03-21', '2024-03-30', '2024-04-04', '2024-04-05', '2024-04-06', '2024-04-07', '2024-04-14', '2024-04-15', '2024-04-22', '2024-04-23', '2024-04-24', '2024-04-29', '2024-05-01', '2024-05-02', '2024-05-05', '2024-05-10', '2024-05-11', '2024-05-12', '2024-05-18', '2024-05-25', '2024-06-03', '2024-06-04', '2024-06-09', '2024-06-15', '2024-06-20', '2024-06-21', '2024-06-22', '2024-06-29', '2024-06-30', '2024-07-01', '2024-07-05', '2024-07-06', '2024-07-10', '2024-07-13', '2024-07-14', '2024-07-20', '2024-07-21', '2024-07-23', '2024-07-24', '2024-07-25'];
 
 const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
@@ -33,7 +31,7 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
     { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
     { name: 'Neo Anderson', email: 'neo.a1@example.com', department: 'Engineering', progress: 62, dob: '1996-12-01' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18', quizCompletionDates: DUMMY_COMPLETION_DATES },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
     { name: 'Rachel Green', email: 'rachel.g1@example.com', department: 'Product', progress: 93, dob: '1995-05-26' },
     { name: 'Brenda Smith', email: 'brenda.s1@example.com', department: 'Engineering', progress: 68, dob: '1997-09-06' },
     { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
@@ -88,6 +86,8 @@ const generateRandomCompletionDates = (): string[] => {
     return Array.from(dates);
 }
 
+const traineesCollection = collection(db, 'trainees');
+
 async function seedTrainees() {
     console.log("Checking and seeding trainees...");
     const existingTraineesSnapshot = await getDocs(traineesCollection);
@@ -100,12 +100,16 @@ async function seedTrainees() {
     dummyTrainees.forEach(trainee => {
         if (!existingTraineesMap.has(trainee.email)) {
             const docRef = doc(traineesCollection);
+            const completionDates = trainee.email === 'trainee@example.com' 
+                ? DUMMY_COMPLETION_DATES 
+                : generateRandomCompletionDates();
+
             batch.set(docRef, {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 assessmentScore: Math.floor(Math.random() * 41) + 60,
-                quizCompletionDates: trainee.quizCompletionDates || generateRandomCompletionDates(),
+                quizCompletionDates: completionDates,
             });
             operationsPerformed = true;
         }
@@ -166,23 +170,44 @@ export async function getTraineeById(id: string): Promise<Trainee | null> {
 export async function getTraineeByEmail(email: string): Promise<Trainee | null> {
     const q = query(traineesCollection, where("email", "==", email), limit(1));
     const querySnapshot = await getDocs(q);
+    
     if (querySnapshot.empty) {
-        // This case should be rare now with the robust seeding
+        // If the user doesn't exist, it might be the first run. Seed the DB.
         await seedTrainees();
         const retrySnapshot = await getDocs(q);
-        if (!retrySnapshot.empty) {
-            const traineeDoc = retrySnapshot.docs[0];
-            const data = traineeDoc.data();
-            return {
-               id: traineeDoc.id,
-               ...data,
-               dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
-           } as Trainee;
+        if (retrySnapshot.empty) {
+            // Still not found after seeding, so they truly don't exist.
+            return null;
         }
-        return null;
+        const traineeDoc = retrySnapshot.docs[0];
+        const data = traineeDoc.data();
+         return {
+            id: traineeDoc.id,
+            ...data,
+            dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        } as Trainee;
     }
+
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
+    
+    // Check if heatmap data is missing and add it if necessary
+    if (!data.quizCompletionDates || data.quizCompletionDates.length === 0) {
+        const completionDates = email === 'trainee@example.com'
+            ? DUMMY_COMPLETION_DATES
+            : generateRandomCompletionDates();
+        
+        await updateDoc(traineeDoc.ref, { quizCompletionDates: completionDates });
+        
+        // Return data with the new dates included
+        return {
+            id: traineeDoc.id,
+            ...data,
+            quizCompletionDates: completionDates,
+            dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        } as Trainee;
+    }
+
     return {
         id: traineeDoc.id,
         ...data,
