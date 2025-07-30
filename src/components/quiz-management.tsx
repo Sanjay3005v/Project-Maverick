@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import * as XLSX from 'xlsx';
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
-import { generateQuizFromDocument } from '@/ai/flows/generate-quiz-from-doc-flow';
+import { generateQuiz as generateQuizFromDoc } from '@/ai/flows/generate-quiz-flow'; // Reusing the same flow for simplicity now
 
 
 // Manual Quiz Form Component
@@ -55,7 +55,7 @@ function ManualQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
         const updatedOptions = [...updatedQuestions[qIndex].options];
         updatedOptions[oIndex] = value;
         updatedQuestions[qIndex] = { ...updatedQuestions[qIndex], options: updatedOptions };
-        setNewQuiz(prev => ({ ...prev, questions: updatedQuestions }));
+        setNewQuiz(prev => ({ ...prev, questions: updatedOptions }));
     }
 
     const handleCreateQuiz = async (e: React.FormEvent) => {
@@ -80,7 +80,7 @@ function ManualQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
     return (
         <form onSubmit={handleCreateQuiz}>
             <CardHeader>
-                <CardTitle>Create New Quiz</CardTitle>
+                <CardTitle>Create New Quiz Manually</CardTitle>
                 <CardDescription>
                     Add a new quiz to the question bank by filling out the fields below.
                 </CardDescription>
@@ -133,94 +133,23 @@ function ManualQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
     );
 }
 
-// AI-powered Upload Component
-function UploadQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
+
+// AI-powered Generation Component
+function AIGenerationForm({ onQuizCreated }: { onQuizCreated: () => void }) {
+    const [topic, setTopic] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        if (e.target.files && e.target.files.length > 0) {
             setFile(e.target.files[0]);
-        }
-    };
-
-    const handleUpload = async () => {
-        if (!file) {
-            toast({ variant: 'destructive', title: 'No file selected' });
-            return;
-        }
-        setLoading(true);
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const data = e.target?.result;
-                let documentContent = '';
-
-                if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const json: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    documentContent = json.map(row => row.join(' ')).join('\n');
-                } else if (file.type === 'text/plain') {
-                    documentContent = data as string;
-                } else {
-                    throw new Error("Unsupported file type. Please upload an Excel (.xlsx) or Text (.txt) file.");
-                }
-
-                if (!documentContent.trim()) {
-                    throw new Error("The uploaded file is empty or contains no readable text.");
-                }
-                
-                const topic = file.name.replace(/\.[^/.]+$/, "");
-                const result = await generateQuizFromDocument({ topic, documentContent, numQuestions: 10 });
-
-                await addQuiz(result);
-                toast({ title: 'Success!', description: `AI has generated a quiz from "${file.name}".` });
-                onQuizCreated();
-                setFile(null);
-                 // Reset file input
-                const fileInput = document.getElementById('doc-upload') as HTMLInputElement;
-                if(fileInput) fileInput.value = '';
-
-            } catch (error: any) {
-                toast({ variant: 'destructive', title: 'Generation Failed', description: error.message || 'Could not process the file.' });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-            reader.readAsArrayBuffer(file);
+            // If user selects a file, use the filename as the topic
+            setTopic(e.target.files[0].name.replace(/\.[^/.]+$/, ""));
         } else {
-            reader.readAsText(file);
+            setFile(null);
         }
     };
-
-    return (
-        <CardContent className="space-y-6">
-            <p className="text-sm text-muted-foreground">
-                Upload a document (.xlsx, .txt) with content, and the AI will generate a quiz based on it.
-            </p>
-            <div className="space-y-2">
-                <Label htmlFor="doc-upload">Document File</Label>
-                <Input id="doc-upload" type="file" accept=".xlsx,.txt" onChange={handleFileChange} />
-            </div>
-            <Button onClick={handleUpload} disabled={!file || loading} className="w-full">
-                {loading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                Upload and Generate with AI
-            </Button>
-        </CardContent>
-    );
-}
-
-// AI Topic Generation Component
-function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
-    const [topic, setTopic] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { toast } = useToast();
 
     const handleGenerate = async () => {
         if (!topic.trim()) {
@@ -230,28 +159,75 @@ function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
         setLoading(true);
 
         try {
-            const result = await generateQuiz({ topic, numQuestions: 10 });
+            let result;
+            if (file) {
+                 const documentContent = await readFileContent(file);
+                 if (!documentContent.trim()) {
+                    throw new Error("The uploaded file is empty or contains no readable text.");
+                 }
+                 result = await generateQuizFromDoc({ topic, documentContent, numQuestions: 10 });
+                 toast({ title: 'Success!', description: `AI has generated a quiz from "${file.name}".` });
+
+            } else {
+                result = await generateQuiz({ topic, numQuestions: 10 });
+                toast({ title: 'Success!', description: `AI has generated and saved a quiz on "${topic}".` });
+            }
+
             await addQuiz(result);
-            toast({ title: 'Success!', description: `AI has generated and saved a quiz on "${topic}".` });
             onQuizCreated();
             setTopic('');
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Generation Failed', description: 'The AI could not generate the quiz. Please try a different topic.' });
+            setFile(null);
+            const fileInput = document.getElementById('ai-doc-upload') as HTMLInputElement;
+            if(fileInput) fileInput.value = '';
+
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Generation Failed', description: error.message || 'The AI could not generate the quiz.' });
         } finally {
             setLoading(false);
         }
     };
-    
+
+    const readFileContent = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = e.target?.result;
+                if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    resolve(json.map(row => row.join(' ')).join('\n'));
+                } else if (file.type === 'text/plain') {
+                    resolve(data as string);
+                } else {
+                    reject(new Error("Unsupported file type. Please upload an Excel (.xlsx) or Text (.txt) file."));
+                }
+            };
+            reader.onerror = (e) => reject(new Error("Failed to read file."));
+
+            if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
+        });
+    }
+
     return (
         <CardContent className="space-y-6">
              <p className="text-sm text-muted-foreground">
-                Enter a topic, and the AI will generate a 10-question quiz for you.
+                Enter a topic, or upload a document (.txt, .xlsx), and the AI will generate a 10-question quiz.
             </p>
             <div className="space-y-2">
                 <Label htmlFor="ai-topic">Quiz Topic</Label>
-                <Input id="ai-topic" placeholder="e.g., React Hooks, SQL Joins, Python Fundamentals" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                <Input id="ai-topic" placeholder="e.g., React Hooks, SQL Joins..." value={topic} onChange={(e) => setTopic(e.target.value)} />
             </div>
-             <Button onClick={handleGenerate} disabled={loading} className="w-full">
+             <div className="space-y-2">
+                <Label htmlFor="ai-doc-upload">Or Upload Document (Optional)</Label>
+                <Input id="ai-doc-upload" type="file" accept=".xlsx,.txt" onChange={handleFileChange} />
+            </div>
+             <Button onClick={handleGenerate} disabled={loading || !topic.trim()} className="w-full">
                 {loading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
                 Generate with AI
             </Button>
@@ -379,19 +355,15 @@ export function QuizManagement() {
       
       <Card className="sticky top-24">
         <Tabs defaultValue="manual">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="manual">Manual</TabsTrigger>
-                <TabsTrigger value="upload">Upload</TabsTrigger>
-                <TabsTrigger value="ai">AI Topic</TabsTrigger>
+                <TabsTrigger value="ai">AI Generation</TabsTrigger>
             </TabsList>
             <TabsContent value="manual">
                 <ManualQuizForm onQuizCreated={fetchQuizzes} />
             </TabsContent>
-            <TabsContent value="upload">
-                <UploadQuizForm onQuizCreated={fetchQuizzes} />
-            </TabsContent>
             <TabsContent value="ai">
-                <AIGeneratedQuizForm onQuizCreated={fetchQuizzes} />
+                 <AIGenerationForm onQuizCreated={fetchQuizzes} />
             </TabsContent>
         </Tabs>
       </Card>
