@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, ClipboardCheck } from 'lucide-react';
+import { LoaderCircle, ClipboardCheck } from 'lucide-react';
 import Link from 'next/link';
 
 // Function to generate a random score for demonstration
@@ -34,7 +34,7 @@ export default function AssessmentScoresPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoaderCircle className="h-8 w-8 animate-spin" />
         <p className="ml-4">Loading Assessment Scores...</p>
       </div>
     );

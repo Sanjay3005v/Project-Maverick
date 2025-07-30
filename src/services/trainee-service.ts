@@ -153,7 +153,7 @@ async function seedTrainees() {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
-                assessmentScore: Math.floor(Math.random() * 41) + 60,
+                // assessmentScore is not seeded here to avoid hydration mismatch
                 quizCompletions: completionData,
             });
             operationsPerformed = true;
