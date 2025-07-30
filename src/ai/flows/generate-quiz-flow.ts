@@ -11,22 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { QuizSchema, QuestionSchema } from '@/lib/quiz-data';
-
-
-const GenerateQuizInputSchema = z.object({
-  topic: z.string().describe('The topic for which to generate the quiz.'),
-  numQuestions: z.number().int().positive().default(10).describe('The number of questions to generate for the quiz.'),
-});
-export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
-
-
-export const GenerateQuizOutputSchema = z.object({
-  title: z.string().describe('A suitable title for the generated quiz.'),
-  topic: z.string().describe('The topic of the quiz.'),
-  questions: z.array(QuestionSchema).describe('An array of generated questions.'),
-});
-export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
+import { GenerateQuizInputSchema, GenerateQuizOutputSchema, type GenerateQuizInput, type GenerateQuizOutput } from '@/lib/quiz-data';
 
 
 export async function generateQuiz(input: GenerateQuizInput): Promise<GenerateQuizOutput> {
