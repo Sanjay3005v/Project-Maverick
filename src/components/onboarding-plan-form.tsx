@@ -39,7 +39,7 @@ function SubmitButton() {
 }
 
 function AssignButton({ plan, selectedTrainees }: { plan: OnboardingPlanItem[], selectedTrainees: string[] }) {
-  const { pending, data, method, action } = useFormStatus();
+  const { pending } = useFormStatus();
 
   return (
       <Button type="submit" disabled={pending || selectedTrainees.length === 0}>
@@ -65,7 +65,25 @@ export function OnboardingPlanForm() {
 
   const initialState = { success: false, message: '', data: undefined };
   const [state, dispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
-  const [assignState, assignDispatch] = useActionState(assignOnboardingPlan, { success: false, message: '' });
+
+  const handleAssignSubmit = async (formData: FormData) => {
+    const result = await assignOnboardingPlan(undefined, formData);
+    if (result && result.message) {
+      if (result.success) {
+        toast({
+          title: 'Plan Assigned!',
+          description: result.message,
+        });
+        setSelectedTrainees([]);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Assignment Failed',
+          description: result.message,
+        });
+      }
+    }
+  };
 
 
   useEffect(() => {
@@ -85,24 +103,6 @@ export function OnboardingPlanForm() {
       });
     }
   }, [state, toast]);
-
-  useEffect(() => {
-     if (assignState && assignState.message) {
-      if (assignState.success) {
-        toast({
-          title: 'Plan Assigned!',
-          description: assignState.message,
-        });
-        setSelectedTrainees([]);
-      } else {
-         toast({
-          variant: 'destructive',
-          title: 'Assignment Failed',
-          description: assignState.message,
-        });
-      }
-    }
-  }, [assignState, toast])
 
   const handleDownloadPDF = () => {
     if (!state.data?.personalizedPlan) return;
@@ -189,7 +189,7 @@ export function OnboardingPlanForm() {
         </Card>
          {state?.success && state.data && (
             <Card>
-                <form action={assignDispatch}>
+                <form action={handleAssignSubmit}>
                     <input type="hidden" name="plan" value={JSON.stringify(state.data.personalizedPlan)} />
                     <input type="hidden" name="selectedTrainees" value={JSON.stringify(selectedTrainees)} />
                     <CardHeader>
