@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
@@ -80,100 +81,137 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
   };
 
   return (
-    <Card className="w-full">
-        <CardHeader>
-            <CardTitle className="text-2xl font-headline">{isEditing ? "Edit Trainee" : "Add New Trainee"}</CardTitle>
-            <CardDescription>
-                {isEditing ? `You are editing personal details for ${trainee.name}. The progress and status are updated automatically based on performance.` : "Enter the personal details for the new trainee."}
-            </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-            <CardContent className="grid gap-6">
-                <div className="grid gap-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                        id="name"
-                        placeholder="e.g., Jane Doe"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-8">
+        <Card className="w-full">
+            <CardHeader>
+                <CardTitle className="text-2xl font-headline">{isEditing ? "Edit Trainee" : "Add New Trainee"}</CardTitle>
+                <CardDescription>
+                    {isEditing ? `You are editing personal details for ${trainee.name}. The progress and status are updated automatically based on performance.` : "Enter the personal details for the new trainee."}
+                </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSubmit}>
+                <CardContent className="grid gap-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Full Name</Label>
                         <Input
-                            id="email"
-                            type="email"
-                            placeholder="trainee@example.com"
+                            id="name"
+                            placeholder="e.g., Jane Doe"
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="pl-10"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                         />
                     </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="department">Department</Label>
-                        <Select onValueChange={setDepartment} value={department}>
-                            <SelectTrigger id="department">
-                                <SelectValue placeholder="Select a department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Engineering">Engineering</SelectItem>
-                                <SelectItem value="Product">Product</SelectItem>
-                                <SelectItem value="Design">Design</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="email">Email Address</Label>
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="trainee@example.com"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
                     </div>
-                    <div className="grid gap-2">
-                       <Label htmlFor="dob">Date of Birth</Label>
-                       <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                variant={"outline"}
-                                className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !dob && "text-muted-foreground"
-                                )}
-                                >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dob ? format(dob, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={dob}
-                                    onSelect={setDob}
-                                    initialFocus
-                                    captionLayout="dropdown-buttons"
-                                    fromYear={new Date().getFullYear() - 100}
-                                    toYear={new Date().getFullYear()}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="department">Department</Label>
+                            <Select onValueChange={setDepartment} value={department}>
+                                <SelectTrigger id="department">
+                                    <SelectValue placeholder="Select a department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Engineering">Engineering</SelectItem>
+                                    <SelectItem value="Product">Product</SelectItem>
+                                    <SelectItem value="Design">Design</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                        <Label htmlFor="dob">Date of Birth</Label>
+                        <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !dob && "text-muted-foreground"
+                                    )}
+                                    >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dob ? format(dob, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={dob}
+                                        onSelect={setDob}
+                                        initialFocus
+                                        captionLayout="dropdown-buttons"
+                                        fromYear={new Date().getFullYear() - 100}
+                                        toYear={new Date().getFullYear()}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                     </div>
-                </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-                <Link href="/admin/trainee-management">
-                    <Button variant="outline">Cancel</Button>
-                </Link>
-                <Button type="submit" disabled={loading}>
-                    {loading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : isEditing ? (
-                        <Save className="mr-2 h-4 w-4" />
-                    ) : (
-                        <UserPlus className="mr-2 h-4 w-4" />
-                    )}
-                    {isEditing ? "Save Changes" : "Add Trainee"}
-                </Button>
-            </CardFooter>
-        </form>
-    </Card>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                    <Link href="/admin/trainee-management">
+                        <Button variant="outline">Cancel</Button>
+                    </Link>
+                    <Button type="submit" disabled={loading}>
+                        {loading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : isEditing ? (
+                            <Save className="mr-2 h-4 w-4" />
+                        ) : (
+                            <UserPlus className="mr-2 h-4 w-4" />
+                        )}
+                        {isEditing ? "Save Changes" : "Add Trainee"}
+                    </Button>
+                </CardFooter>
+            </form>
+        </Card>
+
+        {isEditing && trainee.onboardingPlan && trainee.onboardingPlan.length > 0 && (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Assigned Onboarding Plan</CardTitle>
+                    <CardDescription>This is the personalized plan assigned to {trainee.name}.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Week</TableHead>
+                                    <TableHead>Topic</TableHead>
+                                    <TableHead>Tasks</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {trainee.onboardingPlan.map((item, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium">{item.week}</TableCell>
+                                        <TableCell>{item.topic}</TableCell>
+                                        <TableCell>
+                                            <ul className="list-disc pl-4 space-y-1 text-sm">
+                                                {item.tasks.map((task, i) => <li key={i}>{task}</li>)}
+                                            </ul>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
+    </div>
   );
 }
