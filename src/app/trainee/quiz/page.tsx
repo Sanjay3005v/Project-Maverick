@@ -40,7 +40,8 @@ export default function DailyQuizPage() {
                 const todaysCompletion = traineeData.quizCompletions.find(c => c.date === todayString);
                 if (todaysCompletion) {
                     setSubmitted(true);
-                    // We can't reconstruct answers, but we can show the score
+                    // We can't reconstruct answers, but we can show the score.
+                    // The score from DB is a percentage.
                     const questionsCount = todayQuiz.questions.length;
                     const savedScore = Math.round((todaysCompletion.score / 100) * questionsCount);
                     setScore(savedScore);
