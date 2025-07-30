@@ -1,16 +1,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Rocket } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 
 export default function LoginPage() {
-  const [year, setYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  const [year, setYear] = useState(new Date().getFullYear());
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
@@ -31,7 +27,7 @@ export default function LoginPage() {
       </main>
 
       <footer className="mt-12 text-center text-muted-foreground text-sm">
-        {year && <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>}
+        <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>
       </footer>
     </div>
   );

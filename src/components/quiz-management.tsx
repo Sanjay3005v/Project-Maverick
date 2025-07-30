@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, X, Loader2, Edit, Trash2, Wand2, Upload } from 'lucide-react';
+import { PlusCircle, X, LoaderCircle, Edit, Trash2, Wand2, Upload } from 'lucide-react';
 import { Quiz, getAllQuizzes, setDailyQuiz, addQuiz, deleteQuiz } from '@/services/quiz-service';
 import { EditQuizDialog } from './edit-quiz-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -203,7 +203,7 @@ function ExcelQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
                 <Input id="excel-upload" type="file" accept=".xlsx" onChange={handleFileChange} />
             </div>
             <Button onClick={handleUpload} disabled={!file || loading} className="w-full">
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                {loading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                 Upload and Create Quiz
             </Button>
         </CardContent>
@@ -246,7 +246,7 @@ function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
                 <Input id="ai-topic" placeholder="e.g., React Hooks, SQL Joins, Python Fundamentals" value={topic} onChange={(e) => setTopic(e.target.value)} />
             </div>
              <Button onClick={handleGenerate} disabled={loading} className="w-full">
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                {loading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
                 Generate with AI
             </Button>
         </CardContent>
@@ -307,7 +307,7 @@ export function QuizManagement() {
   if (loading) {
       return (
           <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <LoaderCircle className="h-8 w-8 animate-spin" />
               <p className="ml-4">Loading Quizzes...</p>
           </div>
       )
