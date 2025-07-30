@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState, useRef, useEffect } from 'react';
+import { useActionState, useRef, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { assignOnboardingPlan, createOnboardingPlanForAdmin } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import * as XLSX from 'xlsx';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
+import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 
 function GenerateButton() {
   const { pending } = useFormStatus();
@@ -57,12 +58,23 @@ function SavePlanButton() {
 export function TraineeOnboardingPlan() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
   const initialState = { success: false, message: '', data: undefined };
   
   const [generateState, generateDispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   
   const [assignState, assignDispatch] = useActionState(assignOnboardingPlan, { success: false, message: '' });
+
+  useEffect(() => {
+    const fetchTrainee = async () => {
+        if (user?.email) {
+            const traineeData = await getTraineeByEmail(user.email);
+            setTrainee(traineeData);
+        }
+    }
+    fetchTrainee();
+  }, [user]);
 
 
   useEffect(() => {
@@ -210,11 +222,11 @@ export function TraineeOnboardingPlan() {
             </div>
         )}
         </CardContent>
-        {generateState.success && generateState.data && user && (
+        {generateState.success && generateState.data && trainee && (
             <CardFooter>
                 <form action={assignDispatch}>
                     <input type="hidden" name="plan" value={JSON.stringify(generateState.data.personalizedPlan)} />
-                    <input type="hidden" name="selectedTrainees" value={JSON.stringify([user.uid])} />
+                    <input type="hidden" name="selectedTrainees" value={JSON.stringify([trainee.id])} />
                     <SavePlanButton />
                 </form>
             </CardFooter>
