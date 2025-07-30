@@ -212,7 +212,7 @@ export function TraineeOnboardingPlan() {
         </CardContent>
         {generateState.success && generateState.data && user && (
             <CardFooter>
-                 <form action={assignDispatch}>
+                <form action={assignDispatch}>
                     <input type="hidden" name="plan" value={JSON.stringify(generateState.data.personalizedPlan)} />
                     <input type="hidden" name="selectedTrainees" value={JSON.stringify([user.uid])} />
                     <SavePlanButton />
