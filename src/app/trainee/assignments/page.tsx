@@ -195,7 +195,7 @@ export default function AssignmentsPage() {
           {trainee.onboardingPlan.map((planItem, index) => (
             <Card key={index}>
               <CardHeader>
-                <CardTitle>Week {planItem.week}: {planItem.topic}</CardTitle>
+                <CardTitle>{planItem.week}: {planItem.topic}</CardTitle>
                 <CardDescription>Complete the tasks below to make progress.</CardDescription>
               </CardHeader>
               <CardContent>
