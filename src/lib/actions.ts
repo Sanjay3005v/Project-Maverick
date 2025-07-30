@@ -3,7 +3,7 @@
 
 import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput, type OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
-import { saveOnboardingPlan as savePlan } from '@/services/trainee-service';
+import { getTraineeById, saveOnboardingPlan as savePlan } from '@/services/trainee-service';
 import { z } from 'zod';
 
 const adminFormSchema = z.object({
@@ -71,17 +71,38 @@ export async function assignOnboardingPlan(
   }
 
   try {
-    const plan = JSON.parse(planData as string) as OnboardingPlanItem[];
+    const newPlanPart = JSON.parse(planData as string) as OnboardingPlanItem[];
     const traineeIds = JSON.parse(traineesData as string) as string[];
 
-    if (!Array.isArray(plan) || !Array.isArray(traineeIds)) {
+    if (!Array.isArray(newPlanPart) || !Array.isArray(traineeIds)) {
        return { success: false, message: 'Invalid data format.'}
     }
 
-    // Server-side validation can be added here
-
     for (const traineeId of traineeIds) {
-        await savePlan(traineeId, plan);
+        const trainee = await getTraineeById(traineeId);
+        const existingPlan = trainee?.onboardingPlan || [];
+        
+        let combinedPlan: OnboardingPlanItem[];
+
+        if (existingPlan.length > 0) {
+            const lastWeekNumber = existingPlan.reduce((max, item) => {
+                const weekNum = parseInt(item.week.replace('Week ', ''), 10);
+                return isNaN(weekNum) ? max : Math.max(max, weekNum);
+            }, 0);
+
+            const updatedNewPlanPart = newPlanPart.map((item, index) => {
+                const newWeekNumber = lastWeekNumber + index + 1;
+                return {
+                    ...item,
+                    week: `Week ${newWeekNumber}`
+                };
+            });
+            combinedPlan = [...existingPlan, ...updatedNewPlanPart];
+        } else {
+            combinedPlan = newPlanPart;
+        }
+        
+        await savePlan(traineeId, combinedPlan);
     }
     
     return { success: true, message: `Plan successfully assigned to ${traineeIds.length} trainee(s).` };
