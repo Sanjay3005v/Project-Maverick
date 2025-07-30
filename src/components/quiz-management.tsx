@@ -258,6 +258,7 @@ function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
 export function QuizManagement() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   
   const fetchQuizzes = async () => {
     setLoading(true);
