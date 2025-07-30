@@ -6,7 +6,7 @@ import { useFormStatus } from 'react-dom';
 import { assignOnboardingPlan, createOnboardingPlanForAdmin } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2, FileDown } from 'lucide-react';
+import { Wand2, Loader2, FileDown, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import jsPDF from 'jspdf';
@@ -16,7 +16,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
 
-function SubmitButton() {
+function GenerateButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full" size="lg">
@@ -35,36 +35,45 @@ function SubmitButton() {
   );
 }
 
+function SavePlanButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} variant="secondary">
+             {pending ? (
+                <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+                </>
+            ) : (
+                <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Plan to My Profile
+                </>
+            )}
+        </Button>
+    )
+}
+
 export function TraineeOnboardingPlan() {
   const { toast } = useToast();
   const { user } = useAuth();
   const initialState = { success: false, message: '', data: undefined };
   
-  const [state, dispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
+  const [generateState, generateDispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   
   const [assignState, assignDispatch] = useActionState(assignOnboardingPlan, { success: false, message: '' });
 
 
   useEffect(() => {
-    if (state && state.message) {
-        if (!state.success) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: state.message,
-            });
-        } else {
-             if (state.data && user) {
-                // If plan is generated successfully, automatically assign it
-                const formData = new FormData();
-                formData.append('plan', JSON.stringify(state.data.personalizedPlan));
-                formData.append('selectedTrainees', JSON.stringify([user.uid])); // Trainee assigns to themself
-                assignDispatch(formData);
-             }
-        }
+    if (generateState && generateState.message && !generateState.success) {
+        toast({
+            variant: 'destructive',
+            title: 'Error Generating Plan',
+            description: generateState.message,
+        });
     }
-  }, [state, toast, user, assignDispatch]);
+  }, [generateState, toast]);
 
    useEffect(() => {
      if (assignState && assignState.message) {
@@ -85,20 +94,20 @@ export function TraineeOnboardingPlan() {
 
 
   const handleDownloadPDF = () => {
-    if (!state.data?.personalizedPlan) return;
+    if (!generateState.data?.personalizedPlan) return;
     const doc = new jsPDF();
     doc.text("My Personalized Onboarding Plan", 14, 16);
     autoTable(doc, {
       head: [['Week', 'Topic', 'Tasks']],
-      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks.join('\n')]),
+      body: generateState.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks.join('\n')]),
       startY: 20,
     });
     doc.save('my-onboarding-plan.pdf');
   };
 
   const handleDownloadExcel = () => {
-    if (!state.data?.personalizedPlan) return;
-    const worksheetData = state.data.personalizedPlan.map(item => ({
+    if (!generateState.data?.personalizedPlan) return;
+    const worksheetData = generateState.data.personalizedPlan.map(item => ({
         Week: item.week,
         Topic: item.topic,
         Tasks: item.tasks.join('\n'),
@@ -112,7 +121,7 @@ export function TraineeOnboardingPlan() {
   return (
     <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card className="shadow-lg">
-            <form ref={formRef} action={dispatch}>
+            <form ref={formRef} action={generateDispatch}>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Your Learning Goal</CardTitle>
                     <CardDescription>Tell the AI what you want to learn, and it will generate a plan for you.</CardDescription>
@@ -143,7 +152,7 @@ export function TraineeOnboardingPlan() {
                     <input type="hidden" name="trainingSchedule" value="N/A for trainee" />
                 </CardContent>
                 <CardFooter>
-                    <SubmitButton />
+                    <GenerateButton />
                 </CardFooter>
             </form>
         </Card>
@@ -155,7 +164,7 @@ export function TraineeOnboardingPlan() {
               <CardTitle className="font-headline text-2xl">Generated Plan</CardTitle>
               <CardDescription>Your AI-generated onboarding plan will appear here.</CardDescription>
             </div>
-             {state?.success && state.data && (
+             {generateState?.success && generateState.data && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
                   <FileDown className="mr-2" />
@@ -169,8 +178,8 @@ export function TraineeOnboardingPlan() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="h-[400px]">
-        {state?.success && state.data ? (
+        <CardContent className="min-h-[400px]">
+        {generateState?.success && generateState.data ? (
             <div className="border rounded-lg overflow-auto h-full">
                 <Table>
                     <TableHeader>
@@ -181,7 +190,7 @@ export function TraineeOnboardingPlan() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {state.data.personalizedPlan.map((item, index) => (
+                        {generateState.data.personalizedPlan.map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell className="font-medium">{item.week}</TableCell>
                                 <TableCell>{item.topic}</TableCell>
@@ -201,6 +210,15 @@ export function TraineeOnboardingPlan() {
             </div>
         )}
         </CardContent>
+        {generateState.success && generateState.data && user && (
+            <CardFooter>
+                 <form action={assignDispatch}>
+                    <input type="hidden" name="plan" value={JSON.stringify(generateState.data.personalizedPlan)} />
+                    <input type="hidden" name="selectedTrainees" value={JSON.stringify([user.uid])} />
+                    <SavePlanButton />
+                </form>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
