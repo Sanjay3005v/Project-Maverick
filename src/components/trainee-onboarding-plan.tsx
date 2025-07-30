@@ -1,13 +1,12 @@
 
 'use client';
 
-import { useActionState, useRef } from 'react';
+import { useActionState, useRef, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { assignOnboardingPlan, createOnboardingPlanForAdmin } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Wand2, Loader2, FileDown } from 'lucide-react';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import jsPDF from 'jspdf';
@@ -44,7 +43,7 @@ export function TraineeOnboardingPlan() {
   const [state, dispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   
-  const [assignState, assignDispatch] = useFormState(assignOnboardingPlan, { success: false, message: '' });
+  const [assignState, assignDispatch] = useActionState(assignOnboardingPlan, { success: false, message: '' });
 
 
   useEffect(() => {
