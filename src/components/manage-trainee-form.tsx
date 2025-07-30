@@ -18,6 +18,7 @@ import { Calendar } from "./ui/calendar";
 import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { EditOnboardingPlanDialog } from "./edit-onboarding-plan-dialog";
+import { Heatmap } from "./heatmap";
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
@@ -221,6 +222,18 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                             </TableBody>
                         </Table>
                     </div>
+                </CardContent>
+            </Card>
+        )}
+
+        {isEditing && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Daily Quiz Activity</CardTitle>
+                    <CardDescription>A heatmap of {trainee.name}'s daily quiz scores over the past year.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Heatmap quizCompletions={trainee.quizCompletions || []} />
                 </CardContent>
             </Card>
         )}
