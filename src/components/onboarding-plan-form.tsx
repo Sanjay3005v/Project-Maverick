@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createOnboardingPlanForAdmin, assignOnboardingPlan } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -64,8 +64,8 @@ export function OnboardingPlanForm() {
   const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
 
   const initialState = { success: false, message: '', data: undefined };
-  const [state, dispatch] = useFormState(createOnboardingPlanForAdmin, initialState);
-  const [assignState, assignDispatch] = useFormState(assignOnboardingPlan, { success: false, message: '' });
+  const [state, dispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
+  const [assignState, assignDispatch] = useActionState(assignOnboardingPlan, { success: false, message: '' });
 
 
   useEffect(() => {
