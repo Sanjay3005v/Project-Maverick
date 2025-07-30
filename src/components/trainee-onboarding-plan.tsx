@@ -3,14 +3,13 @@
 
 import { useActionState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { createOnboardingPlan } from '@/lib/actions';
+import { assignOnboardingPlan, createOnboardingPlanForAdmin } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wand2, Loader2, Clock, FileDown, CheckCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Wand2, Loader2, FileDown } from 'lucide-react';
+import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Badge } from './ui/badge';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -42,8 +41,11 @@ export function TraineeOnboardingPlan() {
   const { user } = useAuth();
   const initialState = { success: false, message: '', data: undefined };
   
-  const [state, dispatch] = useActionState(createOnboardingPlan, initialState);
+  const [state, dispatch] = useActionState(createOnboardingPlanForAdmin, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  const [assignState, assignDispatch] = useFormState(assignOnboardingPlan, { success: false, message: '' });
+
 
   useEffect(() => {
     if (state && state.message) {
@@ -54,21 +56,42 @@ export function TraineeOnboardingPlan() {
                 description: state.message,
             });
         } else {
-             toast({
-                title: 'Success!',
-                description: state.message,
-            });
+             if (state.data && user) {
+                // If plan is generated successfully, automatically assign it
+                const formData = new FormData();
+                formData.append('plan', JSON.stringify(state.data.personalizedPlan));
+                formData.append('selectedTrainees', JSON.stringify([user.uid])); // Trainee assigns to themself
+                assignDispatch(formData);
+             }
         }
     }
-  }, [state, toast]);
+  }, [state, toast, user, assignDispatch]);
+
+   useEffect(() => {
+     if (assignState && assignState.message) {
+      if (assignState.success) {
+        toast({
+          title: 'Plan Saved!',
+          description: "Your new onboarding plan has been saved to your profile.",
+        });
+      } else {
+         toast({
+          variant: 'destructive',
+          title: 'Assignment Failed',
+          description: assignState.message,
+        });
+      }
+    }
+  }, [assignState, toast])
+
 
   const handleDownloadPDF = () => {
     if (!state.data?.personalizedPlan) return;
     const doc = new jsPDF();
     doc.text("My Personalized Onboarding Plan", 14, 16);
     autoTable(doc, {
-      head: [['Week', 'Topic', 'Tasks', 'Status']],
-      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks.join('\n'), item.status]),
+      head: [['Week', 'Topic', 'Tasks']],
+      body: state.data.personalizedPlan.map(item => [item.week, item.topic, item.tasks.join('\n')]),
       startY: 20,
     });
     doc.save('my-onboarding-plan.pdf');
@@ -80,7 +103,6 @@ export function TraineeOnboardingPlan() {
         Week: item.week,
         Topic: item.topic,
         Tasks: item.tasks.join('\n'),
-        Status: item.status
     }));
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
@@ -88,40 +110,38 @@ export function TraineeOnboardingPlan() {
     XLSX.writeFile(workbook, 'my-onboarding-plan.xlsx');
   };
 
-  const handleFormAction = (formData: FormData) => {
-    if (!user?.email) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to create a plan.',
-      });
-      return;
-    }
-    formData.append('userEmail', user.email);
-    dispatch(formData);
-  };
-
-
   return (
     <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card className="shadow-lg">
-            <form ref={formRef} action={handleFormAction}>
+            <form ref={formRef} action={dispatch}>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Your Learning Goal</CardTitle>
                     <CardDescription>Tell the AI what you want to learn, and it will generate a plan for you.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="learningGoal" className="text-base">I want to learn...</Label>
                         <Textarea
                             id="learningGoal"
                             name="learningGoal"
                             placeholder="e.g., 'The basics of Python in 2 weeks', 'Advanced React state management in 1 month', or 'How to build a full-stack app with Next.js in 8 weeks'"
-                            rows={8}
+                            rows={4}
                             required
                             className="text-base"
                         />
                     </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="fresherProfile" className="text-base">My Profile / Skills</Label>
+                      <Textarea
+                        id="fresherProfile"
+                        name="fresherProfile"
+                        placeholder="Briefly describe your current skills and experience. e.g., 'I have some experience with HTML and CSS but I am new to JavaScript.'"
+                        rows={4}
+                        required
+                        className="text-base"
+                      />
+                    </div>
+                    <input type="hidden" name="trainingSchedule" value="N/A for trainee" />
                 </CardContent>
                 <CardFooter>
                     <SubmitButton />
@@ -159,7 +179,6 @@ export function TraineeOnboardingPlan() {
                             <TableHead className="w-[100px]">Week</TableHead>
                             <TableHead>Topic</TableHead>
                             <TableHead>Tasks</TableHead>
-                            <TableHead>Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -171,12 +190,6 @@ export function TraineeOnboardingPlan() {
                                     <ul className="list-disc pl-4 space-y-1">
                                       {item.tasks.map((task, i) => <li key={i}>{task}</li>)}
                                     </ul>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
-                                        <Clock className="h-3 w-3" />
-                                        {item.status}
-                                    </Badge>
                                 </TableCell>
                             </TableRow>
                         ))}

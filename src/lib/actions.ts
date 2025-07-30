@@ -1,15 +1,15 @@
 
 'use server';
 
-import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
+import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput, type OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
-import { saveOnboardingPlan as savePlan, getTraineeByEmail } from '@/services/trainee-service';
+import { saveOnboardingPlan as savePlan } from '@/services/trainee-service';
 import { z } from 'zod';
 
-
-const formSchema = z.object({
+const adminFormSchema = z.object({
+  fresherProfile: z.string().min(10, 'Please provide a profile of at least 10 characters.'),
   learningGoal: z.string().min(10, "Please provide a learning goal of at least 10 characters."),
-  userEmail: z.string().email("Invalid email address provided.")
+  trainingSchedule: z.string().min(10, "Please provide a schedule of at least 10 characters."),
 });
 
 type OnboardingPlanState = {
@@ -18,14 +18,15 @@ type OnboardingPlanState = {
   data?: GeneratePersonalizedOnboardingPlanOutput;
 }
 
-export async function createOnboardingPlan(
+export async function createOnboardingPlanForAdmin(
   prevState: OnboardingPlanState | undefined,
   formData: FormData
 ): Promise<OnboardingPlanState> {
     
-  const validatedFields = formSchema.safeParse({
+  const validatedFields = adminFormSchema.safeParse({
+    fresherProfile: formData.get('fresherProfile'),
     learningGoal: formData.get('learningGoal'),
-    userEmail: formData.get('userEmail'),
+    trainingSchedule: formData.get('trainingSchedule'),
   });
 
   if (!validatedFields.success) {
@@ -36,27 +37,11 @@ export async function createOnboardingPlan(
   }
 
   try {
-    const { userEmail, learningGoal } = validatedFields.data;
-
-    const trainee = await getTraineeByEmail(userEmail);
-    if (!trainee) {
-        return {
-            success: false,
-            message: 'Trainee profile not found.',
-        }
-    }
-
-    const result = await generatePersonalizedOnboardingPlan({
-      learningGoal: learningGoal,
-      fresherProfile: 'Not provided', // Placeholder as form was simplified
-      trainingSchedule: 'Not provided' // Placeholder as form was simplified
-    });
-
-    await savePlan(trainee.id, result.personalizedPlan);
+    const result = await generatePersonalizedOnboardingPlan(validatedFields.data);
     
     return { 
       success: true, 
-      message: 'Successfully generated and saved plan.',
+      message: 'Plan generated successfully. You can now assign it to trainees.',
       data: result 
     };
   } catch (error) {
@@ -65,6 +50,45 @@ export async function createOnboardingPlan(
        success: false,
        message: 'An unexpected error occurred. Please try again later.',
     };
+  }
+}
+
+type AssignPlanState = {
+  success: boolean;
+  message: string;
+}
+
+export async function assignOnboardingPlan(
+  prevState: AssignPlanState | undefined,
+  formData: FormData
+): Promise<AssignPlanState> {
+  
+  const planData = formData.get('plan');
+  const traineesData = formData.get('selectedTrainees');
+
+  if (!planData || !traineesData) {
+    return { success: false, message: 'Missing plan or trainee data.'}
+  }
+
+  try {
+    const plan = JSON.parse(planData as string) as OnboardingPlanItem[];
+    const traineeIds = JSON.parse(traineesData as string) as string[];
+
+    if (!Array.isArray(plan) || !Array.isArray(traineeIds)) {
+       return { success: false, message: 'Invalid data format.'}
+    }
+
+    // Server-side validation can be added here
+
+    for (const traineeId of traineeIds) {
+        await savePlan(traineeId, plan);
+    }
+    
+    return { success: true, message: `Plan successfully assigned to ${traineeIds.length} trainee(s).` };
+
+  } catch (error) {
+     console.error('Error assigning onboarding plan:', error);
+     return { success: false, message: 'An unexpected error occurred during assignment.' };
   }
 }
 
