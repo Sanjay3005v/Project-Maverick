@@ -36,9 +36,15 @@ export default function DailyQuizPage() {
             setTrainee(traineeData);
             const todayString = format(new Date(), 'yyyy-MM-dd');
             
-            if (todayQuiz && traineeData?.quizCompletions?.find(c => c.date === todayString)) {
-                 setSubmitted(true);
-                 // We can't reconstruct answers, just show the already-completed view
+            if (todayQuiz && traineeData?.quizCompletions) {
+                const todaysCompletion = traineeData.quizCompletions.find(c => c.date === todayString);
+                if (todaysCompletion) {
+                    setSubmitted(true);
+                    // We can't reconstruct answers, but we can show the score
+                    const questionsCount = todayQuiz.questions.length;
+                    const savedScore = Math.round((todaysCompletion.score / 100) * questionsCount);
+                    setScore(savedScore);
+                }
             }
         }
         setLoading(false);
