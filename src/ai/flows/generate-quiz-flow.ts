@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const GenerateQuizInputSchema = z.object({
   topic: z.string().describe('The topic for which to generate the quiz.'),
-  numQuestions: z.number().int().positive().default(5).describe('The number of questions to generate for the quiz.'),
+  numQuestions: z.number().int().positive().default(10).describe('The number of questions to generate for the quiz.'),
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 

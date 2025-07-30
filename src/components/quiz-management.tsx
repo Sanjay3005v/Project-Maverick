@@ -224,7 +224,7 @@ function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
         setLoading(true);
 
         try {
-            const result = await generateQuiz({ topic, numQuestions: 5 });
+            const result = await generateQuiz({ topic, numQuestions: 10 });
             await addQuiz(result);
             toast({ title: 'Success!', description: `AI has generated and saved a quiz on "${topic}".` });
             onQuizCreated();
@@ -239,7 +239,7 @@ function AIGeneratedQuizForm({ onQuizCreated }: { onQuizCreated: () => void }) {
     return (
         <CardContent className="space-y-6">
              <p className="text-sm text-muted-foreground">
-                Enter a topic, and the AI will generate a 5-question quiz for you.
+                Enter a topic, and the AI will generate a 10-question quiz for you.
             </p>
             <div className="space-y-2">
                 <Label htmlFor="ai-topic">Quiz Topic</Label>
