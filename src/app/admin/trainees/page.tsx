@@ -3,7 +3,7 @@
 
 import { ManageTraineeForm } from "@/components/manage-trainee-form";
 import { getTraineeById } from "@/services/trainee-service";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Trainee } from "@/services/trainee-service";
 import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -16,19 +16,20 @@ export default function ManageTraineesPage() {
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [loading, setLoading] = useState(true);
 
-   useEffect(() => {
+  const fetchTrainee = useCallback(async () => {
     if (traineeId) {
-      const fetchTrainee = async () => {
-        setLoading(true);
-        const fetchedTrainee = await getTraineeById(traineeId);
-        setTrainee(fetchedTrainee);
-        setLoading(false);
-      };
-      fetchTrainee();
+      setLoading(true);
+      const fetchedTrainee = await getTraineeById(traineeId);
+      setTrainee(fetchedTrainee);
+      setLoading(false);
     } else {
       setLoading(false);
     }
   }, [traineeId]);
+
+   useEffect(() => {
+    fetchTrainee();
+  }, [fetchTrainee]);
   
   const pageTitle = trainee ? `Edit Trainee: ${trainee.name}` : "Add New Trainee";
   const pageDescription = trainee
@@ -51,7 +52,7 @@ export default function ManageTraineesPage() {
         <p className="text-muted-foreground">{pageDescription}</p>
       </header>
       <section className="max-w-2xl mx-auto">
-        <ManageTraineeForm trainee={trainee} />
+        <ManageTraineeForm trainee={trainee} onTraineeUpdate={fetchTrainee} />
       </section>
     </div>
   );

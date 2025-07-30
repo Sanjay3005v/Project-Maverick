@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Pencil } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Link from "next/link";
@@ -17,12 +17,14 @@ import { format, parseISO } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { EditOnboardingPlanDialog } from "./edit-onboarding-plan-dialog";
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
+  onTraineeUpdate: () => void;
 }
 
-export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
+export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFormProps) {
   const [name, setName] = useState(trainee?.name || "");
   const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
@@ -181,8 +183,18 @@ export function ManageTraineeForm({ trainee }: ManageTraineeFormProps) {
         {isEditing && trainee.onboardingPlan && trainee.onboardingPlan.length > 0 && (
              <Card>
                 <CardHeader>
-                    <CardTitle>Assigned Onboarding Plan</CardTitle>
-                    <CardDescription>This is the personalized plan assigned to {trainee.name}.</CardDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>Assigned Onboarding Plan</CardTitle>
+                            <CardDescription>This is the personalized plan assigned to {trainee.name}.</CardDescription>
+                        </div>
+                        <EditOnboardingPlanDialog trainee={trainee} onPlanUpdated={onTraineeUpdate}>
+                            <Button variant="outline">
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit Plan
+                            </Button>
+                        </EditOnboardingPlanDialog>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="border rounded-lg">
