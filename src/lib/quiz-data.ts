@@ -1,5 +1,4 @@
 
-'use server';
 import {z} from 'zod';
 
 export const QuestionSchema = z.object({
