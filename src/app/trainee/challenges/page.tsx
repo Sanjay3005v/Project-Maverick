@@ -1,10 +1,35 @@
+
+'use client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { challenges } from "@/lib/challenges-data";
-import { Code2 } from "lucide-react";
+import { Challenge, getAllChallenges } from "@/services/challenge-service";
+import { Code2, LoaderCircle } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from 'react';
 
 export default function CodingChallengesPage() {
+    const [challenges, setChallenges] = useState<Challenge[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchChallenges = async () => {
+            setLoading(true);
+            const fetchedChallenges = await getAllChallenges();
+            setChallenges(fetchedChallenges);
+            setLoading(false);
+        }
+        fetchChallenges();
+    }, []);
+
+    if (loading) {
+        return (
+          <div className="flex justify-center items-center h-screen">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+            <p className="ml-4">Loading Challenges...</p>
+          </div>
+        );
+    }
+
   return (
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
@@ -12,8 +37,8 @@ export default function CodingChallengesPage() {
         <p className="text-muted-foreground">Sharpen your skills with these hands-on challenges.</p>
       </header>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {challenges.map((challenge, index) => (
-          <Card key={index} className="flex flex-col">
+        {challenges.map((challenge) => (
+          <Card key={challenge.id} className="flex flex-col">
             <CardHeader>
               <div className="flex justify-between items-start">
                   <CardTitle>{challenge.title}</CardTitle>

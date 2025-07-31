@@ -9,47 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Code2, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { LoaderCircle, Code2, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { evaluateCodeChallenge, EvaluateCodeChallengeOutput } from '@/ai/flows/evaluate-code-challenge';
+import { Challenge, getChallengeById } from '@/services/challenge-service';
 
-// Mock data for challenges - in a real app, this would be fetched from a database
-const challenges: Record<string, { title: string; description: string; testCases: string[] }> = {
-  'python-list-comprehension': {
-    title: 'Python List Comprehension',
-    description: 'Write a Python function to transform a list of numbers into a list of their squares using list comprehension.',
-    testCases: [
-      'Must be a function that accepts a list.',
-      'Must use list comprehension syntax.',
-      '[1, 2, 3] should return [1, 4, 9].',
-      'Should handle an empty list correctly.'
-    ],
-  },
-  'java-inheritance': {
-    title: 'Java Class Inheritance',
-    description: "Create a 'Dog' class that inherits from an 'Animal' class, overriding a method to make a specific sound.",
-    testCases: [
-      'Must define an Animal base class.',
-      'Dog class must extend Animal.',
-      "Animal's `makeSound()` should be overridden in Dog.",
-      "Dog's `makeSound()` should return 'Woof!'."
-    ],
-  },
-  'sql-join-query': {
-    title: 'SQL Join Query',
-    description: "Write a SQL query to join 'Orders' and 'Customers' tables on `customer_id`, returning the order ID and customer name.",
-    testCases: [
-      'Must SELECT Orders.OrderID and Customers.CustomerName.',
-      'Must JOIN the Orders and Customers tables.',
-      'The JOIN condition must be `Orders.CustomerID = Customers.CustomerID`.',
-    ],
-  },
-};
 
 export default function ChallengePage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
-  const [challenge, setChallenge] = useState<{ title: string; description: string, testCases: string[] } | null>(null);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,10 +26,12 @@ export default function ChallengePage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (id && challenges[id]) {
-      setChallenge(challenges[id]);
-    } else {
-      // Handle case where challenge is not found
+    if (id) {
+        const fetchChallenge = async () => {
+            const fetched = await getChallengeById(id);
+            setChallenge(fetched);
+        }
+        fetchChallenge();
     }
   }, [id]);
 
@@ -112,7 +83,7 @@ export default function ChallengePage() {
   if (!challenge) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoaderCircle className="h-8 w-8 animate-spin" />
         <p className="ml-4">Loading Challenge...</p>
       </div>
     );
@@ -167,7 +138,7 @@ export default function ChallengePage() {
                   </div>
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <Code2 className="mr-2 h-4 w-4" />
                     )}

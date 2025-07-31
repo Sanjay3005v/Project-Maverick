@@ -1,8 +1,7 @@
 
-import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, setDoc, writeBatch, query, where, limit, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, writeBatch, query, limit } from 'firebase/firestore';
+import { z } from 'zod';
 
 export const ChallengeSchema = z.object({
   id: z.string(),
@@ -12,13 +11,10 @@ export const ChallengeSchema = z.object({
   tags: z.array(z.string()).describe("A list of relevant tags or keywords (e.g., 'Python', 'Arrays', 'Sorting')."),
   testCases: z.array(z.string()).describe("A list of test cases or requirements the solution must fulfill."),
 });
-
 export type Challenge = z.infer<typeof ChallengeSchema>;
-
 
 const seedChallenges: Omit<Challenge, 'id'>[] = [
   {
-    id: "python-list-comprehension",
     title: "Python List Comprehension",
     description: "Write a Python function to transform a list of numbers into a list of their squares using list comprehension.",
     difficulty: "Easy",
@@ -31,7 +27,6 @@ const seedChallenges: Omit<Challenge, 'id'>[] = [
     ],
   },
   {
-    id: "java-inheritance",
     title: "Java Class Inheritance",
     description: "Create a 'Dog' class that inherits from an 'Animal' class, overriding a method to make a specific sound.",
     difficulty: "Medium",
@@ -44,7 +39,6 @@ const seedChallenges: Omit<Challenge, 'id'>[] = [
     ],
   },
   {
-    id: "sql-join-query",
     title: "SQL Join Query",
     description: "Write a SQL query to join 'Orders' and 'Customers' tables, returning the order ID and customer name.",
     difficulty: "Medium",
@@ -65,14 +59,13 @@ export async function seedInitialChallenges() {
         console.log("Seeding initial challenges...");
         const batch = writeBatch(db);
         seedChallenges.forEach(challengeData => {
-            const docRef = doc(challengesCollection, challengeData.id); // Use the existing ID
+            const docRef = doc(collection(db, 'challenges')); // Auto-generate ID
             batch.set(docRef, challengeData);
         });
         await batch.commit();
         console.log("Initial challenges seeded.");
     }
 }
-
 
 export async function getAllChallenges(): Promise<Challenge[]> {
     await seedInitialChallenges();
