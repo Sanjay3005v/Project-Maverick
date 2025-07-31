@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, Loader2, FileText, Users, UserPlus } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -86,7 +86,7 @@ export default function TraineeManagementPage() {
   if (loading) {
       return (
           <div className="flex justify-center items-center h-screen">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <LoaderCircle className="h-8 w-8 animate-spin" />
               <p className="ml-4">Loading Trainee Data...</p>
           </div>
       )
@@ -110,7 +110,7 @@ export default function TraineeManagementPage() {
                         A complete list of all trainees in the system. Search, filter, and manage them from one place.
                     </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <ReportDialog trainees={allTrainees}>
                        <Button>
                           <FileText className="mr-2 h-4 w-4" />

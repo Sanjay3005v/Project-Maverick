@@ -15,7 +15,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import * as XLSX from 'xlsx';
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
-import { generateQuiz as generateQuizFromDoc } from '@/ai/flows/generate-quiz-flow'; // Reusing the same flow for simplicity now
 
 
 // Manual Quiz Form Component
@@ -165,7 +164,7 @@ function AIGenerationForm({ onQuizCreated }: { onQuizCreated: () => void }) {
                  if (!documentContent.trim()) {
                     throw new Error("The uploaded file is empty or contains no readable text.");
                  }
-                 result = await generateQuizFromDoc({ topic, documentContent, numQuestions: 10 });
+                 result = await generateQuiz({ topic, documentContent, numQuestions: 10 });
                  toast({ title: 'Success!', description: `AI has generated a quiz from "${file.name}".` });
 
             } else {
@@ -313,7 +312,7 @@ export function QuizManagement() {
                   <h4 className="font-bold">{quiz.title}</h4>
                   <p className="text-sm text-muted-foreground">{quiz.topic} - {quiz.questions.length} questions</p>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 flex-wrap">
                     <EditQuizDialog quiz={quiz} onQuizUpdated={fetchQuizzes} />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

@@ -15,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Loader2, Wand2, Download } from 'lucide-react';
+import { LoaderCircle, Wand2, Download } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
 
 interface ReportDialogProps {
@@ -84,7 +84,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         <div className="py-4 max-h-[60vh] overflow-y-auto">
           {loading && (
             <div className="flex items-center justify-center h-48">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
               <p className="ml-4 text-muted-foreground">Generating your report...</p>
             </div>
           )}
@@ -103,7 +103,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
             </div>
           )}
         </div>
-        <DialogFooter className="sm:justify-between gap-2 pt-4 border-t">
+        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t">
             <div>
               {report && !loading && (
                   <Button variant="secondary" onClick={handleDownloadReport}>
@@ -112,14 +112,14 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
                   </Button>
               )}
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsOpen(false)}>
                     Close
                 </Button>
                 <Button onClick={handleGenerateReport} disabled={loading}>
                     {loading ? (
                     <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                         Regenerating...
                     </>
                     ) : (
