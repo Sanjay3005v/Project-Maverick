@@ -13,27 +13,43 @@ import { LoaderCircle, Code2, CheckCircle, XCircle, ArrowLeft } from 'lucide-rea
 import Link from 'next/link';
 import { evaluateCodeChallenge, EvaluateCodeChallengeOutput } from '@/ai/flows/evaluate-code-challenge';
 import { Challenge, getChallengeById } from '@/services/challenge-service';
-
+import { useAuth } from '@/hooks/use-auth';
+import { Trainee, getTraineeByEmail, markChallengeAsCompleted } from '@/services/trainee-service';
 
 export default function ChallengePage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+
   const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluateCodeChallengeOutput | null>(null);
-  const { toast } = useToast();
+  const [isCompleted, setIsCompleted] = useState(false);
+
 
   useEffect(() => {
-    if (id) {
-        const fetchChallenge = async () => {
-            const fetched = await getChallengeById(id);
-            setChallenge(fetched);
+    async function fetchData() {
+        if (id && user?.email) {
+            const [fetchedChallenge, fetchedTrainee] = await Promise.all([
+                getChallengeById(id),
+                getTraineeByEmail(user.email)
+            ]);
+            setChallenge(fetchedChallenge);
+            setTrainee(fetchedTrainee);
+
+            if (fetchedTrainee?.completedChallengeIds?.includes(id)) {
+                setIsCompleted(true);
+            }
         }
-        fetchChallenge();
     }
-  }, [id]);
+    if(!authLoading) {
+        fetchData();
+    }
+  }, [id, user, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +61,7 @@ export default function ChallengePage() {
       });
       return;
     }
+    if (!trainee || !challenge) return;
 
     setLoading(true);
     setResult(null);
@@ -57,6 +74,8 @@ export default function ChallengePage() {
       });
       setResult(evaluation);
       if (evaluation.status === 'Passed') {
+        await markChallengeAsCompleted(trainee.id, challenge.id);
+        setIsCompleted(true);
         toast({
             title: 'Congratulations! Good work, keep it up!',
             description: evaluation.feedback,
@@ -80,7 +99,7 @@ export default function ChallengePage() {
     }
   };
 
-  if (!challenge) {
+  if (!challenge || !trainee) {
     return (
       <div className="flex justify-center items-center h-screen">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -111,7 +130,7 @@ export default function ChallengePage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="language">Language</Label>
-                    <Select value={language} onValueChange={setLanguage}>
+                    <Select value={language} onValueChange={setLanguage} disabled={isCompleted}>
                       <SelectTrigger id="language" className="w-[180px]">
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
@@ -134,15 +153,16 @@ export default function ChallengePage() {
                       onChange={(e) => setCode(e.target.value)}
                       placeholder="Write your code here..."
                       className="font-mono h-96"
+                      disabled={isCompleted}
                     />
                   </div>
-                  <Button type="submit" disabled={loading} className="w-full">
+                  <Button type="submit" disabled={loading || isCompleted} className="w-full">
                     {loading ? (
                       <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <Code2 className="mr-2 h-4 w-4" />
                     )}
-                    Submit & Evaluate
+                    {isCompleted ? 'Challenge Completed' : 'Submit & Evaluate'}
                   </Button>
                 </div>
               </form>
@@ -161,6 +181,15 @@ export default function ChallengePage() {
                     </ul>
                 </CardContent>
             </Card>
+            {isCompleted && !result && (
+                 <div className="p-4 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
+                    <CheckCircle className="h-6 w-6" />
+                    <div>
+                        <h3 className="font-bold">Already Completed!</h3>
+                        <p className="text-sm">You have successfully completed this challenge.</p>
+                    </div>
+                  </div>
+            )}
             {result && (
             <Card>
               <CardHeader>

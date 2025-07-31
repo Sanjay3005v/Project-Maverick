@@ -23,6 +23,7 @@ export interface Trainee {
     avatarUrl?: string;
     assignedQuizIds?: string[];
     assignedChallengeIds?: string[];
+    completedChallengeIds?: string[];
 }
 
 const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
@@ -159,6 +160,7 @@ async function seedTrainees() {
                 quizCompletions: completionData,
                 assignedQuizIds: [],
                 assignedChallengeIds: [],
+                completedChallengeIds: [],
             });
             operationsPerformed = true;
         }
@@ -179,6 +181,9 @@ async function seedTrainees() {
         }
         if (!data.assignedChallengeIds) {
             updatePayload.assignedChallengeIds = [];
+        }
+        if (!data.completedChallengeIds) {
+            updatePayload.completedChallengeIds = [];
         }
 
         if (Object.keys(updatePayload).length > 0) {
@@ -259,6 +264,9 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
      if (!data.assignedChallengeIds) {
         updatePayload.assignedChallengeIds = [];
     }
+    if (!data.completedChallengeIds) {
+        updatePayload.completedChallengeIds = [];
+    }
 
     if (Object.keys(updatePayload).length > 0) {
         await updateDoc(traineeDoc.ref, updatePayload);
@@ -287,6 +295,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         quizCompletions: [],
         assignedQuizIds: [],
         assignedChallengeIds: [],
+        completedChallengeIds: [],
     });
     return docRef.id;
 }
@@ -350,4 +359,11 @@ export async function assignChallengeToTrainees(challengeId: string, traineeIds:
         });
     });
     await batch.commit();
+}
+
+export async function markChallengeAsCompleted(traineeId: string, challengeId: string): Promise<void> {
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await updateDoc(traineeRef, {
+        completedChallengeIds: arrayUnion(challengeId)
+    });
 }

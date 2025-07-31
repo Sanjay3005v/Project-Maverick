@@ -69,7 +69,7 @@ export default function TraineeDashboard() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   }
-  const completedChallenges = 3; // This would typically come from user data
+  const completedChallenges = trainee.completedChallengeIds?.length || 0;
   const totalChallenges = challenges.length;
 
 
