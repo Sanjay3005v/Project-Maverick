@@ -8,10 +8,13 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, X, LoaderCircle, Edit, Trash2, Wand2, Upload } from 'lucide-react';
+import { PlusCircle, X, LoaderCircle, Edit, Trash2, Wand2, Upload, Send } from 'lucide-react';
 import { Quiz, getAllQuizzes, setDailyQuiz, addQuiz, deleteQuiz } from '@/services/quiz-service';
+import { Trainee, getAllTrainees, assignQuizToTrainees } from '@/services/trainee-service';
 import { EditQuizDialog } from './edit-quiz-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Checkbox } from './ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import * as XLSX from 'xlsx';
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
@@ -234,28 +237,109 @@ function AIGenerationForm({ onQuizCreated }: { onQuizCreated: () => void }) {
     );
 }
 
+// Assign Quiz Dialog
+function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: Trainee[]; children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if(isOpen) {
+            // Pre-select trainees who already have this quiz assigned
+            const preselected = trainees
+                .filter(t => t.assignedQuizIds?.includes(quiz.id))
+                .map(t => t.id);
+            setSelectedTrainees(preselected);
+        }
+    }, [isOpen, quiz.id, trainees]);
+
+    const handleSelectTrainee = (traineeId: string) => {
+        setSelectedTrainees(prev =>
+            prev.includes(traineeId)
+                ? prev.filter(id => id !== traineeId)
+                : [...prev, traineeId]
+        );
+    };
+
+    const handleAssign = async () => {
+        setLoading(true);
+        try {
+            await assignQuizToTrainees(quiz.id, selectedTrainees);
+            toast({
+                title: "Quiz Assigned!",
+                description: `"${quiz.title}" has been assigned to ${selectedTrainees.length} trainee(s).`
+            });
+            setIsOpen(false);
+        } catch (error) {
+             toast({ variant: 'destructive', title: 'Assignment Failed' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Assign Quiz: {quiz.title}</DialogTitle>
+                    <DialogDescription>Select the trainees who should be assigned this quiz.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 max-h-80 overflow-y-auto my-4">
+                    {trainees.map(trainee => (
+                        <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                            <Checkbox
+                                id={`trainee-${trainee.id}`}
+                                checked={selectedTrainees.includes(trainee.id)}
+                                onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                            />
+                            <Label htmlFor={`trainee-${trainee.id}`} className="flex-1 cursor-pointer">
+                                <p className="font-medium">{trainee.name}</p>
+                                <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button onClick={handleAssign} disabled={loading}>
+                        {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Send className="mr-2"/>}
+                        Assign to {selectedTrainees.length} Trainee(s)
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 
 // Main Component
 export function QuizManagement() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  const fetchQuizzes = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const allQuizzes = await getAllQuizzes();
+    const [allQuizzes, allTrainees] = await Promise.all([
+        getAllQuizzes(),
+        getAllTrainees()
+    ]);
     setQuizzes(allQuizzes);
+    setTrainees(allTrainees);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchQuizzes();
+    fetchData();
   }, []);
 
   const handleSetDailyQuiz = async (quizId: string) => {
     try {
       await setDailyQuiz(quizId);
-      fetchQuizzes(); // Refetch to update UI state
+      fetchData(); // Refetch to update UI state
       toast({
           title: 'Daily Quiz Updated',
           description: `The daily quiz has been successfully updated.`,
@@ -272,7 +356,7 @@ export function QuizManagement() {
   const handleDeleteQuiz = async (quizId: string, quizTitle: string) => {
     try {
         await deleteQuiz(quizId);
-        fetchQuizzes(); // Refetch
+        fetchData(); // Refetch
         toast({
             title: "Quiz Deleted",
             description: `The quiz "${quizTitle}" has been deleted.`,
@@ -302,7 +386,7 @@ export function QuizManagement() {
           <CardHeader>
             <CardTitle>Existing Quizzes</CardTitle>
             <CardDescription>
-              Manage all available quizzes and set the daily quiz.
+              Manage all available quizzes, assign them to trainees, and set the daily quiz.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -312,8 +396,11 @@ export function QuizManagement() {
                   <h4 className="font-bold">{quiz.title}</h4>
                   <p className="text-sm text-muted-foreground">{quiz.topic} - {quiz.questions.length} questions</p>
                 </div>
-                <div className="flex gap-2 shrink-0 flex-wrap">
-                    <EditQuizDialog quiz={quiz} onQuizUpdated={fetchQuizzes} />
+                <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                    <EditQuizDialog quiz={quiz} onQuizUpdated={fetchData} />
+                    <AssignQuizDialog quiz={quiz} trainees={trainees}>
+                        <Button variant="outline"><Send className="mr-2"/> Assign</Button>
+                    </AssignQuizDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="icon"><Trash2 /></Button>
@@ -337,6 +424,7 @@ export function QuizManagement() {
                         onClick={() => handleSetDailyQuiz(quiz.id)}
                         disabled={quiz.isDailyQuiz}
                         variant={quiz.isDailyQuiz ? "secondary" : "default"}
+                        className="w-full sm:w-auto"
                     >
                       {quiz.isDailyQuiz ? 'Active Daily' : 'Set as Daily'}
                     </Button>
@@ -359,10 +447,10 @@ export function QuizManagement() {
                 <TabsTrigger value="ai">AI Generation</TabsTrigger>
             </TabsList>
             <TabsContent value="manual">
-                <ManualQuizForm onQuizCreated={fetchQuizzes} />
+                <ManualQuizForm onQuizCreated={fetchData} />
             </TabsContent>
             <TabsContent value="ai">
-                 <AIGenerationForm onQuizCreated={fetchQuizzes} />
+                 <AIGenerationForm onQuizCreated={fetchData} />
             </TabsContent>
         </Tabs>
       </Card>

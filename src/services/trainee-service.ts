@@ -21,6 +21,7 @@ export interface Trainee {
     onboardingPlan?: OnboardingPlanItem[];
     quizCompletions?: QuizCompletion[];
     avatarUrl?: string;
+    assignedQuizIds?: string[];
 }
 
 const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
@@ -155,21 +156,28 @@ async function seedTrainees() {
                 dob: new Date(trainee.dob as string),
                 // assessmentScore is not seeded here to avoid hydration mismatch
                 quizCompletions: completionData,
+                assignedQuizIds: [],
             });
             operationsPerformed = true;
         }
     });
 
-    // Update existing trainees if they are missing heatmap data
+    // Update existing trainees if they are missing heatmap data or assigned quizzes
     existingTraineesSnapshot.docs.forEach(doc => {
         const data = doc.data();
+        const updatePayload: Record<string, any> = {};
+
         if (!data.quizCompletions || data.quizCompletions.length === 0) {
-            const traineeRef = doc.ref;
-            const completionData = data.email === 'trainee@example.com' 
+            updatePayload.quizCompletions = data.email === 'trainee@example.com' 
                 ? DUMMY_COMPLETION_DATA 
                 : generateRandomCompletionData();
+        }
+        if (!data.assignedQuizIds) {
+            updatePayload.assignedQuizIds = [];
+        }
 
-            batch.update(traineeRef, { quizCompletions: completionData });
+        if (Object.keys(updatePayload).length > 0) {
+            batch.update(doc.ref, updatePayload);
             operationsPerformed = true;
         }
     });
@@ -178,7 +186,7 @@ async function seedTrainees() {
         await batch.commit();
         console.log("Database seeding/update completed successfully.");
     } else {
-        console.log("All trainees already exist and have heatmap data.");
+        console.log("All trainees already exist and have required data fields.");
     }
 }
 
@@ -234,23 +242,26 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
     
-    // If the trainee exists but is missing quizCompletions, add them.
-    // This is more robust than relying solely on the initial seed.
+    const updatePayload: Record<string, any> = {};
     if (!data.quizCompletions || data.quizCompletions.length === 0) {
-        const completionData = email === 'trainee@example.com'
+        updatePayload.quizCompletions = data.email === 'trainee@example.com'
             ? DUMMY_COMPLETION_DATA
             : generateRandomCompletionData();
-        
-        await updateDoc(traineeDoc.ref, { quizCompletions: completionData });
-        
-        // Return the trainee data with the newly added completions
+    }
+     if (!data.assignedQuizIds) {
+        updatePayload.assignedQuizIds = [];
+    }
+
+    if (Object.keys(updatePayload).length > 0) {
+        await updateDoc(traineeDoc.ref, updatePayload);
         return {
             id: traineeDoc.id,
             ...data,
-            quizCompletions: completionData,
+            ...updatePayload,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
     }
+    
 
     return {
         id: traineeDoc.id,
@@ -266,6 +277,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         dob: new Date(traineeData.dob as string),
         assessmentScore: traineeData.assessmentScore || null,
         quizCompletions: [],
+        assignedQuizIds: [],
     });
     return docRef.id;
 }
@@ -307,4 +319,15 @@ export async function saveOnboardingPlan(traineeId: string, plan: OnboardingPlan
 export async function updateUserAvatar(traineeId: string, avatarUrl: string): Promise<void> {
     const traineeRef = doc(db, 'trainees', traineeId);
     await updateDoc(traineeRef, { avatarUrl });
+}
+
+export async function assignQuizToTrainees(quizId: string, traineeIds: string[]): Promise<void> {
+    const batch = writeBatch(db);
+    traineeIds.forEach(traineeId => {
+        const traineeRef = doc(db, 'trainees', traineeId);
+        batch.update(traineeRef, {
+            assignedQuizIds: arrayUnion(quizId)
+        });
+    });
+    await batch.commit();
 }
