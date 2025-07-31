@@ -328,10 +328,10 @@ export function ChallengeManagement() {
             <CardTitle>Existing Challenges</CardTitle>
             <CardDescription>Manage and assign all available coding challenges.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto p-4">
             {challenges.map(challenge => (
               <div key={challenge.id} className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 w-full">
                   <h4 className="font-bold truncate">{challenge.title}</h4>
                   <p className="text-sm text-muted-foreground truncate">{challenge.description}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -339,7 +339,7 @@ export function ChallengeManagement() {
                     {challenge.tags.map(tag => <Badge key={tag} variant="outline">{tag}</Badge>)}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallenges}>
                     <Button variant="outline" size="icon"><Edit /></Button>
                   </EditChallengeDialog>
