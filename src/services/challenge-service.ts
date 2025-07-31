@@ -13,6 +13,18 @@ export const ChallengeSchema = z.object({
 });
 export type Challenge = z.infer<typeof ChallengeSchema>;
 
+
+// AI Flow Schemas
+export const GenerateChallengeInputSchema = z.object({
+  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks").'),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The desired difficulty level for the challenge.'),
+});
+export type GenerateChallengeInput = z.infer<typeof GenerateChallengeInputSchema>;
+
+export const GenerateChallengeOutputSchema = ChallengeSchema.omit({ id: true });
+export type GenerateChallengeOutput = z.infer<typeof GenerateChallengeOutputSchema>;
+
+
 const seedChallenges: Omit<Challenge, 'id'>[] = [
   {
     title: "Python List Comprehension",

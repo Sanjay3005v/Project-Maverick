@@ -9,17 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import { ChallengeSchema } from '@/services/challenge-service';
-
-export const GenerateChallengeInputSchema = z.object({
-  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks").'),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The desired difficulty level for the challenge.'),
-});
-export type GenerateChallengeInput = z.infer<typeof GenerateChallengeInputSchema>;
-
-export const GenerateChallengeOutputSchema = ChallengeSchema.omit({ id: true });
-export type GenerateChallengeOutput = z.infer<typeof GenerateChallengeOutputSchema>;
+import { GenerateChallengeInputSchema, GenerateChallengeOutputSchema, type GenerateChallengeInput, type GenerateChallengeOutput } from '@/services/challenge-service';
 
 export async function generateChallenge(input: GenerateChallengeInput): Promise<GenerateChallengeOutput> {
   return generateChallengeFlow(input);
