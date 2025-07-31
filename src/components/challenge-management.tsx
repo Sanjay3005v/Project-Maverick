@@ -330,16 +330,16 @@ export function ChallengeManagement() {
           </CardHeader>
           <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
             {challenges.map(challenge => (
-              <div key={challenge.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex-grow">
-                  <h4 className="font-bold">{challenge.title}</h4>
-                  <p className="text-sm text-muted-foreground">{challenge.description.substring(0, 100)}...</p>
+              <div key={challenge.id} className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold truncate">{challenge.title}</h4>
+                  <p className="text-sm text-muted-foreground truncate">{challenge.description}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Badge variant="secondary">{challenge.difficulty}</Badge>
                     {challenge.tags.map(tag => <Badge key={tag} variant="outline">{tag}</Badge>)}
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0 flex-wrap">
+                <div className="flex flex-wrap gap-2 shrink-0">
                   <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallenges}>
                     <Button variant="outline" size="icon"><Edit /></Button>
                   </EditChallengeDialog>

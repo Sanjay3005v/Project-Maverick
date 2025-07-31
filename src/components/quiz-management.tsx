@@ -447,14 +447,14 @@ export function QuizManagement() {
               Manage all available quizzes, assign them to trainees, and set the daily quiz.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
             {quizzes.map(quiz => (
-              <div key={quiz.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex-grow">
-                  <h4 className="font-bold">{quiz.title}</h4>
-                  <p className="text-sm text-muted-foreground">{quiz.topic} - {quiz.questions.length} questions</p>
+              <div key={quiz.id} className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold truncate">{quiz.title}</h4>
+                  <p className="text-sm text-muted-foreground truncate">{quiz.topic} - {quiz.questions.length} questions</p>
                 </div>
-                <div className="flex flex-wrap gap-2 shrink-0 justify-start">
+                <div className="flex flex-wrap gap-2 shrink-0">
                     <EditQuizDialog quiz={quiz} onQuizUpdated={fetchData} />
                     <AssignQuizDialog quiz={quiz} trainees={trainees}>
                         <Button variant="outline"><Send className="mr-2"/> Assign</Button>
@@ -482,7 +482,6 @@ export function QuizManagement() {
                         onClick={() => handleSetDailyQuiz(quiz.id)}
                         disabled={quiz.isDailyQuiz}
                         variant={quiz.isDailyQuiz ? "secondary" : "default"}
-                        className="w-full sm:w-auto"
                     >
                       {quiz.isDailyQuiz ? 'Active Daily' : 'Set as Daily'}
                     </Button>
