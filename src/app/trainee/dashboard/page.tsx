@@ -10,11 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpenCheck, Code2, FileText, Award, Route, Loader2, Trophy } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
-import { challenges } from '@/lib/challenges-data';
+import { getAllChallenges, Challenge } from '@/services/challenge-service';
 import { Heatmap } from '@/components/heatmap';
 import { AvatarUploader } from '@/components/avatar-uploader';
 
@@ -22,12 +22,17 @@ export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
 
   const fetchTrainee = async () => {
       if (user?.email) {
         setDataLoading(true);
-        const traineeData = await getTraineeByEmail(user.email);
+        const [traineeData, challengesData] = await Promise.all([
+            getTraineeByEmail(user.email),
+            getAllChallenges()
+        ]);
         setTrainee(traineeData);
+        setChallenges(challengesData);
         setDataLoading(false);
       }
   }
@@ -43,7 +48,7 @@ export default function TraineeDashboard() {
   if (authLoading || dataLoading) {
     return (
         <div className="flex justify-center items-center h-screen">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <LoaderCircle className="h-8 w-8 animate-spin" />
             <p className="ml-4">Loading Your Dashboard...</p>
         </div>
     )
