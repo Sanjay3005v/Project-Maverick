@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import * as XLSX from 'xlsx';
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { ScrollArea } from './ui/scroll-area';
 
 
 // Manual Quiz Form Component
@@ -304,7 +305,7 @@ function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Assign Quiz: {quiz.title}</DialogTitle>
                     <DialogDescription>Select the trainees who should be assigned this quiz.</DialogDescription>
@@ -331,31 +332,33 @@ function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: 
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto my-4 border-t border-b py-2">
-                     <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50">
-                        <Checkbox
-                            id="select-all-quiz"
-                            checked={isAllFilteredSelected}
-                            onCheckedChange={handleSelectAll}
-                        />
-                        <Label htmlFor="select-all-quiz" className="flex-1 cursor-pointer font-semibold">
-                            Select All ({filteredTrainees.length})
-                        </Label>
-                    </div>
-                    {filteredTrainees.map(trainee => (
-                        <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                <ScrollArea className="h-60 w-full rounded-md border">
+                    <div className="p-4 space-y-2">
+                        <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50">
                             <Checkbox
-                                id={`trainee-quiz-${trainee.id}`}
-                                checked={selectedTrainees.includes(trainee.id)}
-                                onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                                id="select-all-quiz"
+                                checked={isAllFilteredSelected}
+                                onCheckedChange={handleSelectAll}
                             />
-                            <Label htmlFor={`trainee-quiz-${trainee.id}`} className="flex-1 cursor-pointer">
-                                <p className="font-medium">{trainee.name}</p>
-                                <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                            <Label htmlFor="select-all-quiz" className="flex-1 cursor-pointer font-semibold">
+                                Select All ({filteredTrainees.length})
                             </Label>
                         </div>
-                    ))}
-                </div>
+                        {filteredTrainees.map(trainee => (
+                            <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                                <Checkbox
+                                    id={`trainee-quiz-${trainee.id}`}
+                                    checked={selectedTrainees.includes(trainee.id)}
+                                    onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                                />
+                                <Label htmlFor={`trainee-quiz-${trainee.id}`} className="flex-1 cursor-pointer">
+                                    <p className="font-medium">{trainee.name}</p>
+                                    <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
                     <Button onClick={handleAssign} disabled={loading || selectedTrainees.length === 0}>
@@ -447,11 +450,11 @@ export function QuizManagement() {
           <CardContent className="space-y-4">
             {quizzes.map(quiz => (
               <div key={quiz.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
+                <div className="flex-grow">
                   <h4 className="font-bold">{quiz.title}</h4>
                   <p className="text-sm text-muted-foreground">{quiz.topic} - {quiz.questions.length} questions</p>
                 </div>
-                <div className="flex gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                <div className="flex flex-wrap gap-2 shrink-0 justify-start">
                     <EditQuizDialog quiz={quiz} onQuizUpdated={fetchData} />
                     <AssignQuizDialog quiz={quiz} trainees={trainees}>
                         <Button variant="outline"><Send className="mr-2"/> Assign</Button>

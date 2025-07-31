@@ -26,6 +26,7 @@ import { Badge } from './ui/badge';
 import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/trainee-service';
 import { Checkbox } from './ui/checkbox';
 import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
+import { ScrollArea } from './ui/scroll-area';
 
 
 function AssignChallengeDialog({ challenge, trainees, children }: { challenge: Challenge; trainees: Trainee[]; children: React.ReactNode }) {
@@ -92,7 +93,7 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Assign Challenge: {challenge.title}</DialogTitle>
                     <DialogDescription>Select the trainees who should be assigned this challenge.</DialogDescription>
@@ -119,31 +120,33 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto my-4 border-t border-b py-2">
-                     <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50">
-                        <Checkbox
-                            id="select-all"
-                            checked={isAllFilteredSelected}
-                            onCheckedChange={handleSelectAll}
-                        />
-                        <Label htmlFor="select-all" className="flex-1 cursor-pointer font-semibold">
-                            Select All ({filteredTrainees.length})
-                        </Label>
-                    </div>
-                    {filteredTrainees.map(trainee => (
-                        <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                <ScrollArea className="h-60 w-full rounded-md border">
+                    <div className="p-4 space-y-2">
+                        <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50">
                             <Checkbox
-                                id={`trainee-${trainee.id}`}
-                                checked={selectedTrainees.includes(trainee.id)}
-                                onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                                id="select-all"
+                                checked={isAllFilteredSelected}
+                                onCheckedChange={handleSelectAll}
                             />
-                            <Label htmlFor={`trainee-${trainee.id}`} className="flex-1 cursor-pointer">
-                                <p className="font-medium">{trainee.name}</p>
-                                <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                            <Label htmlFor="select-all" className="flex-1 cursor-pointer font-semibold">
+                                Select All ({filteredTrainees.length})
                             </Label>
                         </div>
-                    ))}
-                </div>
+                        {filteredTrainees.map(trainee => (
+                            <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                                <Checkbox
+                                    id={`trainee-${trainee.id}`}
+                                    checked={selectedTrainees.includes(trainee.id)}
+                                    onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                                />
+                                <Label htmlFor={`trainee-${trainee.id}`} className="flex-1 cursor-pointer">
+                                    <p className="font-medium">{trainee.name}</p>
+                                    <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
                     <Button onClick={handleAssign} disabled={loading || selectedTrainees.length === 0}>
