@@ -25,6 +25,7 @@ import { Challenge, getAllChallenges, addChallenge, updateChallenge, deleteChall
 import { Badge } from './ui/badge';
 import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/trainee-service';
 import { Checkbox } from './ui/checkbox';
+import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
 
 
 function AssignChallengeDialog({ challenge, trainees, children }: { challenge: Challenge; trainees: Trainee[]; children: React.ReactNode }) {
@@ -263,7 +264,7 @@ export function ChallengeManagement() {
   const [aiDifficulty, setAiDifficulty] = useState('Medium');
   const { toast } = useToast();
 
-  const fetchData = async () => {
+  const fetchChallenges = async () => {
     setLoading(true);
     const [allChallenges, allTrainees] = await Promise.all([
       getAllChallenges(),
@@ -275,7 +276,7 @@ export function ChallengeManagement() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchChallenges();
   }, []);
 
   const handleGenerateWithAI = async () => {
@@ -287,7 +288,7 @@ export function ChallengeManagement() {
     try {
       const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty });
       await addChallenge(result);
-      fetchData();
+      fetchChallenges();
       toast({ title: 'Challenge Generated!', description: `AI has created a new challenge on "${result.title}".` });
       setAiTopic('');
     } catch (error) {
@@ -300,7 +301,7 @@ export function ChallengeManagement() {
   const handleDeleteChallenge = async (challengeId: string, challengeTitle: string) => {
     try {
       await deleteChallenge(challengeId);
-      fetchData();
+      fetchChallenges();
       toast({ title: "Challenge Deleted", description: `The challenge "${challengeTitle}" has been deleted.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete challenge." });
@@ -336,7 +337,7 @@ export function ChallengeManagement() {
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0 flex-wrap">
-                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchData}>
+                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallenges}>
                     <Button variant="outline" size="icon"><Edit /></Button>
                   </EditChallengeDialog>
                   <AssignChallengeDialog challenge={challenge} trainees={trainees}>
@@ -369,7 +370,7 @@ export function ChallengeManagement() {
             )}
           </CardContent>
            <CardFooter>
-                <EditChallengeDialog onChallengeUpdated={fetchData}>
+                <EditChallengeDialog onChallengeUpdated={fetchChallenges}>
                     <Button variant="outline" className="w-full">
                         <PlusCircle className="mr-2"/>
                         Create New Challenge Manually
