@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X } from 'lucide-react';
+import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import {
   Dialog,
@@ -24,6 +24,83 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Challenge, getAllChallenges, addChallenge, updateChallenge, deleteChallenge } from '@/services/challenge-service';
 import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
 import { Badge } from './ui/badge';
+import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/trainee-service';
+import { Checkbox } from './ui/checkbox';
+
+
+function AssignChallengeDialog({ challenge, trainees, children }: { challenge: Challenge; trainees: Trainee[]; children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if(isOpen) {
+            const preselected = trainees
+                .filter(t => t.assignedChallengeIds?.includes(challenge.id))
+                .map(t => t.id);
+            setSelectedTrainees(preselected);
+        }
+    }, [isOpen, challenge.id, trainees]);
+
+    const handleSelectTrainee = (traineeId: string) => {
+        setSelectedTrainees(prev =>
+            prev.includes(traineeId)
+                ? prev.filter(id => id !== traineeId)
+                : [...prev, traineeId]
+        );
+    };
+
+    const handleAssign = async () => {
+        setLoading(true);
+        try {
+            await assignChallengeToTrainees(challenge.id, selectedTrainees);
+            toast({
+                title: "Challenge Assigned!",
+                description: `"${challenge.title}" has been assigned to ${selectedTrainees.length} trainee(s).`
+            });
+            setIsOpen(false);
+        } catch (error) {
+             toast({ variant: 'destructive', title: 'Assignment Failed' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Assign Challenge: {challenge.title}</DialogTitle>
+                    <DialogDescription>Select the trainees who should be assigned this challenge.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 max-h-80 overflow-y-auto my-4">
+                    {trainees.map(trainee => (
+                        <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                            <Checkbox
+                                id={`trainee-${trainee.id}`}
+                                checked={selectedTrainees.includes(trainee.id)}
+                                onCheckedChange={() => handleSelectTrainee(trainee.id)}
+                            />
+                            <Label htmlFor={`trainee-${trainee.id}`} className="flex-1 cursor-pointer">
+                                <p className="font-medium">{trainee.name}</p>
+                                <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button onClick={handleAssign} disabled={loading}>
+                        {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Send className="mr-2"/>}
+                        Assign to {selectedTrainees.length} Trainee(s)
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 
 function EditChallengeDialog({ challenge, onChallengeUpdated, children }: { challenge?: Challenge, onChallengeUpdated: () => void, children: React.ReactNode }) {
@@ -126,21 +203,26 @@ function EditChallengeDialog({ challenge, onChallengeUpdated, children }: { chal
 
 export function ChallengeManagement() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiTopic, setAiTopic] = useState('');
   const [aiDifficulty, setAiDifficulty] = useState('Medium');
   const { toast } = useToast();
 
-  const fetchChallenges = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const allChallenges = await getAllChallenges();
+    const [allChallenges, allTrainees] = await Promise.all([
+      getAllChallenges(),
+      getAllTrainees()
+    ]);
     setChallenges(allChallenges);
+    setTrainees(allTrainees);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchChallenges();
+    fetchData();
   }, []);
 
   const handleGenerateWithAI = async () => {
@@ -152,7 +234,7 @@ export function ChallengeManagement() {
     try {
       const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty });
       await addChallenge(result);
-      fetchChallenges();
+      fetchData();
       toast({ title: 'Challenge Generated!', description: `AI has created a new challenge on "${result.title}".` });
       setAiTopic('');
     } catch (error) {
@@ -165,7 +247,7 @@ export function ChallengeManagement() {
   const handleDeleteChallenge = async (challengeId: string, challengeTitle: string) => {
     try {
       await deleteChallenge(challengeId);
-      fetchChallenges();
+      fetchData();
       toast({ title: "Challenge Deleted", description: `The challenge "${challengeTitle}" has been deleted.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete challenge." });
@@ -187,7 +269,7 @@ export function ChallengeManagement() {
         <Card>
           <CardHeader>
             <CardTitle>Existing Challenges</CardTitle>
-            <CardDescription>Manage all available coding challenges.</CardDescription>
+            <CardDescription>Manage and assign all available coding challenges.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
             {challenges.map(challenge => (
@@ -201,9 +283,12 @@ export function ChallengeManagement() {
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0 flex-wrap">
-                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallenges}>
+                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchData}>
                     <Button variant="outline" size="icon"><Edit /></Button>
                   </EditChallengeDialog>
+                  <AssignChallengeDialog challenge={challenge} trainees={trainees}>
+                     <Button variant="outline"><Send className="mr-2"/> Assign</Button>
+                  </AssignChallengeDialog>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="icon"><Trash2 /></Button>
@@ -231,7 +316,7 @@ export function ChallengeManagement() {
             )}
           </CardContent>
            <CardFooter>
-                <EditChallengeDialog onChallengeUpdated={fetchChallenges}>
+                <EditChallengeDialog onChallengeUpdated={fetchData}>
                     <Button variant="outline" className="w-full">
                         <PlusCircle className="mr-2"/>
                         Create New Challenge Manually

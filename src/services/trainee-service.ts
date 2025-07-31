@@ -22,6 +22,7 @@ export interface Trainee {
     quizCompletions?: QuizCompletion[];
     avatarUrl?: string;
     assignedQuizIds?: string[];
+    assignedChallengeIds?: string[];
 }
 
 const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
@@ -157,6 +158,7 @@ async function seedTrainees() {
                 // assessmentScore is not seeded here to avoid hydration mismatch
                 quizCompletions: completionData,
                 assignedQuizIds: [],
+                assignedChallengeIds: [],
             });
             operationsPerformed = true;
         }
@@ -174,6 +176,9 @@ async function seedTrainees() {
         }
         if (!data.assignedQuizIds) {
             updatePayload.assignedQuizIds = [];
+        }
+        if (!data.assignedChallengeIds) {
+            updatePayload.assignedChallengeIds = [];
         }
 
         if (Object.keys(updatePayload).length > 0) {
@@ -251,6 +256,9 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
      if (!data.assignedQuizIds) {
         updatePayload.assignedQuizIds = [];
     }
+     if (!data.assignedChallengeIds) {
+        updatePayload.assignedChallengeIds = [];
+    }
 
     if (Object.keys(updatePayload).length > 0) {
         await updateDoc(traineeDoc.ref, updatePayload);
@@ -278,6 +286,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         assessmentScore: traineeData.assessmentScore || null,
         quizCompletions: [],
         assignedQuizIds: [],
+        assignedChallengeIds: [],
     });
     return docRef.id;
 }
@@ -327,6 +336,17 @@ export async function assignQuizToTrainees(quizId: string, traineeIds: string[])
         const traineeRef = doc(db, 'trainees', traineeId);
         batch.update(traineeRef, {
             assignedQuizIds: arrayUnion(quizId)
+        });
+    });
+    await batch.commit();
+}
+
+export async function assignChallengeToTrainees(challengeId: string, traineeIds: string[]): Promise<void> {
+    const batch = writeBatch(db);
+    traineeIds.forEach(traineeId => {
+        const traineeRef = doc(db, 'trainees', traineeId);
+        batch.update(traineeRef, {
+            assignedChallengeIds: arrayUnion(challengeId)
         });
     });
     await batch.commit();
