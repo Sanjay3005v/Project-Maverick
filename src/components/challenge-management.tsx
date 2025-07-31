@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send } from 'lucide-react';
+import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send, Search } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import {
   Dialog,
@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Challenge, getAllChallenges, addChallenge, updateChallenge, deleteChallenge } from '@/services/challenge-service';
-import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
 import { Badge } from './ui/badge';
 import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/trainee-service';
 import { Checkbox } from './ui/checkbox';
@@ -33,6 +32,14 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
     const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [departmentFilter, setDepartmentFilter] = useState('all');
+
+    const filteredTrainees = useMemo(() => {
+        return trainees
+            .filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .filter(t => departmentFilter === 'all' || t.department === departmentFilter);
+    }, [trainees, searchTerm, departmentFilter]);
 
     useEffect(() => {
         if(isOpen) {
@@ -40,9 +47,11 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
                 .filter(t => t.assignedChallengeIds?.includes(challenge.id))
                 .map(t => t.id);
             setSelectedTrainees(preselected);
+            setSearchTerm('');
+            setDepartmentFilter('all');
         }
     }, [isOpen, challenge.id, trainees]);
-
+    
     const handleSelectTrainee = (traineeId: string) => {
         setSelectedTrainees(prev =>
             prev.includes(traineeId)
@@ -50,6 +59,18 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
                 : [...prev, traineeId]
         );
     };
+
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked) {
+            const allFilteredIds = filteredTrainees.map(t => t.id);
+            setSelectedTrainees(prev => [...new Set([...prev, ...allFilteredIds])]);
+        } else {
+            const allFilteredIdsSet = new Set(filteredTrainees.map(t => t.id));
+            setSelectedTrainees(prev => prev.filter(id => !allFilteredIdsSet.has(id)));
+        }
+    }
+    
+    const isAllFilteredSelected = filteredTrainees.length > 0 && filteredTrainees.every(t => selectedTrainees.includes(t.id));
 
     const handleAssign = async () => {
         setLoading(true);
@@ -70,13 +91,45 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Assign Challenge: {challenge.title}</DialogTitle>
                     <DialogDescription>Select the trainees who should be assigned this challenge.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-2 max-h-80 overflow-y-auto my-4">
-                    {trainees.map(trainee => (
+                <div className="flex flex-col sm:flex-row gap-4 my-4">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by name..." 
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <SelectTrigger className="w-full sm:w-[200px]">
+                            <SelectValue placeholder="Filter Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Departments</SelectItem>
+                            <SelectItem value="Engineering">Engineering</SelectItem>
+                            <SelectItem value="Product">Product</SelectItem>
+                            <SelectItem value="Design">Design</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto my-4 border-t border-b py-2">
+                     <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50">
+                        <Checkbox
+                            id="select-all"
+                            checked={isAllFilteredSelected}
+                            onCheckedChange={handleSelectAll}
+                        />
+                        <Label htmlFor="select-all" className="flex-1 cursor-pointer font-semibold">
+                            Select All ({filteredTrainees.length})
+                        </Label>
+                    </div>
+                    {filteredTrainees.map(trainee => (
                         <div key={trainee.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
                             <Checkbox
                                 id={`trainee-${trainee.id}`}
@@ -92,7 +145,7 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
                 </div>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button onClick={handleAssign} disabled={loading}>
+                    <Button onClick={handleAssign} disabled={loading || selectedTrainees.length === 0}>
                         {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Send className="mr-2"/>}
                         Assign to {selectedTrainees.length} Trainee(s)
                     </Button>
