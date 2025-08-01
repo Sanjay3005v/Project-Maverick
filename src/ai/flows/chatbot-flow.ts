@@ -5,22 +5,12 @@
  * @fileOverview A conversational chatbot for the Maverick Mindset application.
  *
  * - chat - A function that takes a user query and conversation history to generate a helpful response.
- * - ChatMessage - The type for a single message in the conversation.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { ChatMessage, ChatMessageSchema } from '@/lib/chatbot-schema';
 
-export const ChatMessageSchema = z.object({
-    role: z.enum(['user', 'model']),
-    content: z.string(),
-});
-export type ChatMessage = z.infer<typeof ChatMessageSchema>;
-
-const ChatRequestSchema = z.object({
-  history: z.array(ChatMessageSchema),
-  query: z.string(),
-});
 
 export async function chat(
     history: ChatMessage[],

@@ -8,7 +8,8 @@ import { MessageSquare, Send, LoaderCircle, X, Bot, User } from 'lucide-react';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { chat, ChatMessage } from '@/ai/flows/chatbot-flow';
+import { chat } from '@/ai/flows/chatbot-flow';
+import type { ChatMessage } from '@/lib/chatbot-schema';
 import { useAuth } from '@/hooks/use-auth';
 
 export function Chatbot() {
