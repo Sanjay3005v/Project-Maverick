@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, Trophy, Medal, Star } from 'lucide-react';
+import { Loader2, Trophy, Medal } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function TopPerformersPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [departmentFilter, setDepartmentFilter] = useState('all');
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -31,10 +33,11 @@ export default function TopPerformersPage() {
   }
 
   const topPerformers = useMemo(() => {
-    return [...trainees]
+    return trainees
+      .filter(trainee => departmentFilter === 'all' || trainee.department === departmentFilter)
       .sort((a, b) => b.progress - a.progress)
       .slice(0, 10);
-  }, [trainees]);
+  }, [trainees, departmentFilter]);
   
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
@@ -67,13 +70,30 @@ export default function TopPerformersPage() {
       </header>
       <Card>
         <CardHeader>
-            <CardTitle>
-                <Trophy className="mr-2 h-6 w-6 text-primary" />
-                Leaderboard
-            </CardTitle>
-            <CardDescription>
-                This leaderboard showcases the trainees who are leading the cohort in their onboarding progress.
-            </CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <CardTitle>
+                  <Trophy className="mr-2 h-6 w-6 text-primary" />
+                  Leaderboard
+              </CardTitle>
+              <CardDescription>
+                  This leaderboard showcases the trainees who are leading the cohort in their onboarding progress.
+              </CardDescription>
+            </div>
+            <div className="w-full sm:w-auto">
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                      <SelectValue placeholder="Filter by Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">All Departments</SelectItem>
+                      <SelectItem value="Engineering">Engineering</SelectItem>
+                      <SelectItem value="Product">Product</SelectItem>
+                      <SelectItem value="Design">Design</SelectItem>
+                  </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
@@ -87,13 +107,18 @@ export default function TopPerformersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                 {topPerformers.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24">No trainees found for this department.</TableCell>
+                    </TableRow>
+                )}
                 {topPerformers.map((trainee, index) => (
                   <TableRow key={trainee.id}>
                     <TableCell className="font-bold text-lg">{getRankBadge(index + 1)}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-4">
                             <Avatar>
-                                <AvatarImage src={`https://placehold.co/40x40.png?text=${getInitials(trainee.name)}`} data-ai-hint="person avatar" />
+                                <AvatarImage src={trainee.avatarUrl} data-ai-hint="person avatar" />
                                 <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{trainee.name}</span>
