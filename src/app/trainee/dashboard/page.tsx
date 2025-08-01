@@ -10,19 +10,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 import { getAllChallenges, Challenge } from '@/services/challenge-service';
 import { Heatmap } from '@/components/heatmap';
 import { AvatarUploader } from '@/components/avatar-uploader';
+import { getBadgesForTrainee, Badge } from '@/lib/badges';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
 
   const fetchTrainee = async () => {
       if (user?.email) {
@@ -33,6 +36,9 @@ export default function TraineeDashboard() {
         ]);
         setTrainee(traineeData);
         setChallenges(challengesData);
+        if (traineeData) {
+            setEarnedBadges(getBadgesForTrainee(traineeData, challengesData.length));
+        }
         setDataLoading(false);
       }
   }
@@ -110,7 +116,7 @@ export default function TraineeDashboard() {
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/trainee/onboarding-plan">
             <Card className="hover:border-primary transition-colors h-full">
                 <CardHeader>
@@ -190,6 +196,39 @@ export default function TraineeDashboard() {
             </Card>
         </Link>
       </section>
+
+      {earnedBadges.length > 0 && (
+        <section>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Your Achievements</CardTitle>
+                    <CardDescription>A collection of badges you've earned for your hard work and performance.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TooltipProvider>
+                    <div className="flex flex-wrap gap-6">
+                        {earnedBadges.map((badge) => (
+                           <Tooltip key={badge.name} delayDuration={100}>
+                            <TooltipTrigger>
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ backgroundColor: badge.bgColor }}>
+                                        <badge.icon className="h-8 w-8" style={{ color: badge.color }} />
+                                    </div>
+                                    <p className="text-sm font-medium">{badge.name}</p>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{badge.description}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        ))}
+                    </div>
+                   </TooltipProvider>
+                </CardContent>
+            </Card>
+        </section>
+      )}
+
     </div>
   );
 }
