@@ -46,7 +46,7 @@ export default function CertificationsPage() {
     // Main Header
     doc.setFontSize(30);
     doc.setFont("helvetica", "bold");
-    doc.text("React Basics Certification", pageWidth / 2, 60, { align: "center" });
+    doc.text("Training Completion Certificate", pageWidth / 2, 60, { align: "center" });
 
     // Body Text
     doc.setFontSize(14);
@@ -66,7 +66,7 @@ export default function CertificationsPage() {
     doc.text(`(${trainee.department} Department)`, pageWidth / 2, 120, { align: "center" });
 
     // Completion Text
-    const completionText = `has successfully completed the "React Basics" course and demonstrated\nproficiency in fundamental concepts.`;
+    const completionText = `has successfully completed the required training modules and demonstrated\nproficiency in the core skills.`;
     doc.setFontSize(12);
     doc.text(completionText, pageWidth / 2, 140, { align: "center" });
 
@@ -83,7 +83,7 @@ export default function CertificationsPage() {
     doc.text("Maverick Mindset", pageWidth - 15, footerY, { align: 'right' });
 
 
-    doc.save(`${trainee.name}-react-basics-certificate.pdf`);
+    doc.save(`${trainee.name}-training-completion-certificate.pdf`);
   };
   
   if (authLoading || dataLoading) {
@@ -104,11 +104,11 @@ export default function CertificationsPage() {
       <Card className="max-w-md mx-auto">
         <CardHeader className="items-center text-center">
             <Award className="w-16 h-16 text-primary" />
-          <CardTitle>React Basics Certification</CardTitle>
+          <CardTitle>Training Completion Certificate</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-muted-foreground mb-4">
-            This certifies that you have successfully completed the React Basics course and demonstrated proficiency in fundamental concepts.
+            This certifies that you have successfully completed the required training modules and demonstrated proficiency in the core skills.
           </p>
           <p className="text-sm">Issued on: {new Date().toLocaleDateString()}</p>
           <Button className="mt-6 w-full" onClick={handleDownload} disabled={!trainee}>
