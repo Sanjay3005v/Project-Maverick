@@ -54,15 +54,6 @@ export default function CertificationsPage() {
     doc.setFontSize(22);
     doc.text("Hexaware", pageWidth / 2, 30, { align: 'center' });
     
-    // Signature Line
-    const signLineY = 45;
-    doc.setDrawColor(textColor);
-    doc.setLineWidth(0.2);
-    doc.line(pageWidth - 70, signLineY, pageWidth - 20, signLineY);
-    doc.setFontSize(10);
-    doc.text("Authorized Signature", pageWidth - 45, signLineY + 5, { align: 'center' });
-
-
     // Main Title
     doc.setFontSize(32);
     doc.setTextColor(textColor);
@@ -93,18 +84,21 @@ export default function CertificationsPage() {
     const splitText = doc.splitTextToSize(completionText, pageWidth - 60);
     doc.text(splitText, pageWidth / 2, 155, { align: "center" });
 
-    // Footer lines
-    const lineY = pageHeight - 60;
+    const footerY = pageHeight - 60;
     doc.setDrawColor(textColor);
-    doc.line(30, lineY, 90, lineY); // Line for Date
+    doc.setLineWidth(0.2);
 
-    // Footer labels
+    // Issue Date
+    doc.line(30, footerY, 90, footerY); // Line for Date
     doc.setFontSize(10);
-    doc.text("Issue Date", 60, lineY + 5, { align: "center" });
-
-    // Footer values
+    doc.text("Issue Date", 60, footerY + 5, { align: "center" });
     doc.setFontSize(12);
-    doc.text(new Date().toLocaleDateString(), 60, lineY - 2, { align: "center" });
+    doc.text(new Date().toLocaleDateString(), 60, footerY - 2, { align: "center" });
+
+    // Authorized Signature
+    doc.line(pageWidth - 90, footerY, pageWidth - 30, footerY);
+    doc.setFontSize(10);
+    doc.text("Authorized Signature", pageWidth - 60, footerY + 5, { align: "center" });
 
 
     doc.save(`${trainee.name}-training-completion-certificate.pdf`);
