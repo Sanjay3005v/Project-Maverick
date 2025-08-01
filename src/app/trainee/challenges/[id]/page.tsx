@@ -29,6 +29,7 @@ export default function ChallengePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluateCodeChallengeOutput | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isSqlChallenge, setIsSqlChallenge] = useState(false);
 
 
   useEffect(() => {
@@ -40,6 +41,11 @@ export default function ChallengePage() {
             ]);
             setChallenge(fetchedChallenge);
             setTrainee(fetchedTrainee);
+
+            if (fetchedChallenge?.tags.map(t => t.toLowerCase()).includes('sql')) {
+              setLanguage('sql');
+              setIsSqlChallenge(true);
+            }
 
             if (fetchedTrainee?.completedChallengeIds?.includes(id)) {
                 setIsCompleted(true);
@@ -130,18 +136,24 @@ export default function ChallengePage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="language">Language</Label>
-                    <Select value={language} onValueChange={setLanguage} disabled={isCompleted}>
+                    <Select value={language} onValueChange={setLanguage} disabled={isCompleted || isSqlChallenge}>
                       <SelectTrigger id="language" className="w-[180px]">
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="python">Python</SelectItem>
-                        <SelectItem value="java">Java</SelectItem>
-                        <SelectItem value="sql">SQL</SelectItem>
-                        <SelectItem value="c">C</SelectItem>
-                        <SelectItem value="cpp">C++</SelectItem>
-                        <SelectItem value="php">PHP</SelectItem>
-                        <SelectItem value="javascript">JavaScript</SelectItem>
+                        {isSqlChallenge ? (
+                            <SelectItem value="sql">SQL</SelectItem>
+                        ) : (
+                            <>
+                                <SelectItem value="python">Python</SelectItem>
+                                <SelectItem value="java">Java</SelectItem>
+                                <SelectItem value="sql">SQL</SelectItem>
+                                <SelectItem value="c">C</SelectItem>
+                                <SelectItem value="cpp">C++</SelectItem>
+                                <SelectItem value="php">PHP</SelectItem>
+                                <SelectItem value="javascript">JavaScript</SelectItem>
+                            </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
