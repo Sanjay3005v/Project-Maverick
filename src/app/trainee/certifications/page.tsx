@@ -51,56 +51,60 @@ export default function CertificationsPage() {
     // Header
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text("Maverick Mindset", pageWidth / 2, 30, { align: 'center' });
+    doc.setFontSize(22);
+    doc.text("Hexaware", pageWidth / 2, 30, { align: 'center' });
+    
+    // Signature Line
+    const signLineY = 45;
+    doc.setDrawColor(textColor);
+    doc.setLineWidth(0.2);
+    doc.line(pageWidth - 70, signLineY, pageWidth - 20, signLineY);
+    doc.setFontSize(10);
+    doc.text("Authorized Signature", pageWidth - 45, signLineY + 5, { align: 'center' });
+
 
     // Main Title
     doc.setFontSize(32);
     doc.setTextColor(textColor);
-    doc.text("Certificate of Completion", pageWidth / 2, 60, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text("Certificate of Completion", pageWidth / 2, 80, { align: 'center' });
 
     // Subtitle
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
-    doc.text("This certificate is proudly presented to", pageWidth / 2, 85, { align: 'center' });
+    doc.text("This certificate is proudly presented to", pageWidth / 2, 100, { align: 'center' });
     
     // Trainee Name
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryColor);
-    doc.text(trainee.name, pageWidth / 2, 105, { align: 'center' });
+    doc.text(trainee.name, pageWidth / 2, 120, { align: 'center' });
     
     // Department
     doc.setFontSize(12);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(textColor);
-    doc.text(`(${trainee.department} Department)`, pageWidth / 2, 115, { align: 'center' });
+    doc.text(`(${trainee.department} Department)`, pageWidth / 2, 130, { align: 'center' });
 
     // Completion Text
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     const completionText = `For successfully completing the comprehensive onboarding program and demonstrating exceptional skill and dedication.`;
     const splitText = doc.splitTextToSize(completionText, pageWidth - 60);
-    doc.text(splitText, pageWidth / 2, 140, { align: "center" });
+    doc.text(splitText, pageWidth / 2, 155, { align: "center" });
 
     // Footer lines
     const lineY = pageHeight - 60;
     doc.setDrawColor(textColor);
     doc.line(30, lineY, 90, lineY); // Line for Date
-    doc.line(pageWidth - 90, lineY, pageWidth - 30, lineY); // Line for Signature
 
     // Footer labels
     doc.setFontSize(10);
     doc.text("Issue Date", 60, lineY + 5, { align: "center" });
-    doc.text("Training Director", pageWidth - 60, lineY + 5, { align: "center" });
 
     // Footer values
     doc.setFontSize(12);
     doc.text(new Date().toLocaleDateString(), 60, lineY - 2, { align: "center" });
-
-    // Add a stylized signature (as text)
-    doc.setFont("cursive", "normal");
-    doc.text("A. Supervisor", pageWidth - 60, lineY - 2, { align: "center" });
 
 
     doc.save(`${trainee.name}-training-completion-certificate.pdf`);
