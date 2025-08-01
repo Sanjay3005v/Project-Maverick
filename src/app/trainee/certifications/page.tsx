@@ -34,53 +34,72 @@ export default function CertificationsPage() {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const primaryColor = '#29ABE2'; // Saturated Blue from your theme
+    const accentColor = '#00C698'; // Analogous Cyan
+    const textColor = '#333333';
 
-    // Border
-    doc.rect(5, 5, pageWidth - 10, doc.internal.pageSize.getHeight() - 10);
+    // Decorative border
+    doc.setDrawColor(primaryColor);
+    doc.setLineWidth(1.5);
+    doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
+    
+    doc.setDrawColor(accentColor);
+    doc.setLineWidth(0.5);
+    doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
+    
+    // Header
+    doc.setTextColor(primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text("Maverick Mindset", pageWidth / 2, 30, { align: 'center' });
 
-    // Hexaware Company Name (Top Left)
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Hexaware", 15, 20);
+    // Main Title
+    doc.setFontSize(32);
+    doc.setTextColor(textColor);
+    doc.text("Certificate of Completion", pageWidth / 2, 60, { align: 'center' });
 
-    // Main Header
-    doc.setFontSize(30);
-    doc.setFont("helvetica", "bold");
-    doc.text("Training Completion Certificate", pageWidth / 2, 60, { align: "center" });
-
-    // Body Text
+    // Subtitle
     doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text("This certifies that", pageWidth / 2, 90, { align: "center" });
-
+    doc.setFont('helvetica', 'normal');
+    doc.text("This certificate is proudly presented to", pageWidth / 2, 85, { align: 'center' });
+    
     // Trainee Name
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(63, 131, 248); // Primary color
-    doc.text(trainee.name, pageWidth / 2, 110, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-
-    // Trainee Department
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text(`(${trainee.department} Department)`, pageWidth / 2, 120, { align: "center" });
+    doc.setFontSize(28);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryColor);
+    doc.text(trainee.name, pageWidth / 2, 105, { align: 'center' });
+    
+    // Department
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(textColor);
+    doc.text(`(${trainee.department} Department)`, pageWidth / 2, 115, { align: 'center' });
 
     // Completion Text
-    const completionText = `has successfully completed the required training modules and demonstrated\nproficiency in the core skills.`;
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
+    const completionText = `For successfully completing the comprehensive onboarding program and demonstrating exceptional skill and dedication.`;
     doc.text(completionText, pageWidth / 2, 140, { align: "center" });
 
-    // Footer
-    const issueDate = "7/26/2025";
-    const footerY = doc.internal.pageSize.getHeight() - 30;
+    // Footer lines
+    const lineY = pageHeight - 60;
+    doc.setDrawColor(textColor);
+    doc.line(30, lineY, 90, lineY); // Line for Date
+    doc.line(pageWidth - 90, lineY, pageWidth - 30, lineY); // Line for Signature
 
-    // Issue Date
+    // Footer labels
     doc.setFontSize(10);
-    doc.text(`Issued on: ${issueDate}`, 15, footerY);
+    doc.text("Issue Date", 60, lineY + 5, { align: "center" });
+    doc.text("Training Director", pageWidth - 60, lineY + 5, { align: "center" });
 
-    // Maverick Mindset Name
-    doc.setFont("helvetica", "bold");
-    doc.text("Maverick Mindset", pageWidth - 15, footerY, { align: 'right' });
+    // Footer values
+    doc.setFontSize(12);
+    doc.text(new Date().toLocaleDateString(), 60, lineY - 2, { align: "center" });
+
+    // Add a stylized signature (as text)
+    doc.setFont("cursive", "normal");
+    doc.text("A. Supervisor", pageWidth - 60, lineY - 2, { align: "center" });
 
 
     doc.save(`${trainee.name}-training-completion-certificate.pdf`);
