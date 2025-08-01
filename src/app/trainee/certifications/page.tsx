@@ -35,8 +35,8 @@ export default function CertificationsPage() {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const primaryColor = '#29ABE2'; // Saturated Blue from your theme
-    const accentColor = '#00C698'; // Analogous Cyan
+    const primaryColor = '#29ABE2'; 
+    const accentColor = '#00C698'; 
     const textColor = '#333333';
 
     // Decorative border
@@ -80,7 +80,8 @@ export default function CertificationsPage() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     const completionText = `For successfully completing the comprehensive onboarding program and demonstrating exceptional skill and dedication.`;
-    doc.text(completionText, pageWidth / 2, 140, { align: "center" });
+    const splitText = doc.splitTextToSize(completionText, pageWidth - 60);
+    doc.text(splitText, pageWidth / 2, 140, { align: "center" });
 
     // Footer lines
     const lineY = pageHeight - 60;
