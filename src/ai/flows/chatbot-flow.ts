@@ -42,11 +42,11 @@ The application has two main user roles:
 When a user asks a question, use this information to provide a helpful response. If you don't know the answer, say that you are an AI assistant focused on this application and cannot answer the question. Do not make up features. Keep your answers brief and to the point.
 `;
 
-    const {output} = await ai.generate({
+    const response = await ai.generate({
         model: 'googleai/gemini-2.0-flash',
         prompt: query,
         system: systemPrompt,
         history: history.map(m => ({...m, content: [{text: m.content}]})),
     });
-    return output!;
+    return response.text;
 }
