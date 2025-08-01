@@ -14,11 +14,14 @@ import { ChatMessage, ChatMessageSchema } from '@/lib/chatbot-schema';
 
 export async function chat(
     history: ChatMessage[],
-    query: string
+    query: string,
+    pathname: string
 ): Promise<string> {
     const systemPrompt = `You are a friendly and helpful AI assistant for the "Maverick Mindset" application, a platform for onboarding new trainees.
 
 Your goal is to answer user questions about the application's features and help them navigate. Be concise and clear in your explanations.
+
+The user is currently on the page: "${pathname}". Use this information to provide a more relevant and contextual answer. For example, if they are on the '/admin/dashboard' page and ask "what can I do here?", explain the features available on the admin dashboard.
 
 The application has two main user roles:
 1.  **Administrators**: They manage the entire onboarding process. They can:

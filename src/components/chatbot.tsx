@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { chat } from '@/ai/flows/chatbot-flow';
 import type { ChatMessage } from '@/lib/chatbot-schema';
 import { useAuth } from '@/hooks/use-auth';
+import { usePathname } from 'next/navigation';
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +20,7 @@ export function Chatbot() {
   const [loading, setLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const pathname = usePathname();
 
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function Chatbot() {
     setLoading(true);
 
     try {
-        const response = await chat([...messages, userMessage], input);
+        const response = await chat([...messages, userMessage], input, pathname);
         const botMessage: ChatMessage = { role: 'model', content: response };
         setMessages(prev => [...prev, botMessage]);
     } catch (error) {
