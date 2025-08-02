@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, Timestamp, orderBy, query, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, Timestamp, orderBy, query, doc, getDoc, updateDoc } from 'firebase/firestore';
 
 export interface Submission {
     id: string;
@@ -34,10 +34,12 @@ export async function getAllSubmissions(): Promise<Submission[]> {
     const submissionSnapshot = await getDocs(q);
     const submissionList = submissionSnapshot.docs.map(doc => {
         const data = doc.data();
+        const review = data.review ? { ...data.review, reviewedAt: data.review.reviewedAt.toDate() } : undefined;
         return {
             id: doc.id,
             ...data,
             submittedAt: data.submittedAt.toDate(),
+            review,
         } as Submission
     });
     return submissionList;
@@ -58,4 +60,14 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
             reviewedAt: data.review.reviewedAt.toDate(),
         } : undefined,
     } as Submission;
+}
+
+export async function addReviewToSubmission(submissionId: string, review: { score: number, feedback: string }): Promise<void> {
+    const submissionRef = doc(db, 'submissions', submissionId);
+    await updateDoc(submissionRef, {
+        review: {
+            ...review,
+            reviewedAt: Timestamp.fromDate(new Date()),
+        }
+    });
 }

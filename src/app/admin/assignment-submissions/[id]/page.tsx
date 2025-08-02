@@ -5,11 +5,72 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, ArrowLeft, User, Calendar, File, Download, MessageSquare, Star } from 'lucide-react';
+import { Loader2, ArrowLeft, User, Calendar, File, Download, MessageSquare, Star, Send } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { Submission, getSubmissionById } from '@/services/submission-service';
+import { Submission, getSubmissionById, addReviewToSubmission } from '@/services/submission-service';
 import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/hooks/use-toast';
+
+function ReviewForm({ submissionId, onReviewAdded }: { submissionId: string; onReviewAdded: () => void }) {
+  const [score, setScore] = useState(85);
+  const [feedback, setFeedback] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.trim()) {
+      toast({ variant: 'destructive', title: 'Feedback is required' });
+      return;
+    }
+    setLoading(true);
+    try {
+      await addReviewToSubmission(submissionId, { score, feedback });
+      toast({ title: 'Review Submitted!', description: 'The trainee will be notified.' });
+      onReviewAdded();
+      setFeedback('');
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Submission Failed' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <Label htmlFor="score">Score: {score}/100</Label>
+        <Slider
+          id="score"
+          min={0}
+          max={100}
+          step={1}
+          value={[score]}
+          onValueChange={(value) => setScore(value[0])}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="feedback">Feedback</Label>
+        <Textarea
+          id="feedback"
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          placeholder="Provide constructive feedback for the trainee..."
+          rows={5}
+        />
+      </div>
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? <Loader2 className="animate-spin mr-2" /> : <Send className="mr-2" />}
+        Submit Review
+      </Button>
+    </form>
+  );
+}
+
 
 export default function SubmissionReviewPage() {
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -17,16 +78,17 @@ export default function SubmissionReviewPage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
 
-  useEffect(() => {
+  const fetchSubmission = async () => {
     if (id) {
-      const fetchSubmission = async () => {
         setLoading(true);
         const fetchedSubmission = await getSubmissionById(id);
         setSubmission(fetchedSubmission);
         setLoading(false);
-      };
-      fetchSubmission();
     }
+  };
+
+  useEffect(() => {
+    fetchSubmission();
   }, [id]);
 
   const formatFileSize = (bytes: number) => {
@@ -123,9 +185,7 @@ export default function SubmissionReviewPage() {
                      <CardDescription>Provide your review for this submission.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg bg-muted/50">
-                        <p className="text-muted-foreground">Feedback form coming soon.</p>
-                    </div>
+                    <ReviewForm submissionId={id} onReviewAdded={fetchSubmission} />
                 </CardContent>
             </Card>
 
