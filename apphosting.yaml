@@ -1,13 +1,17 @@
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
+  # minInstances: 0 means your app will scale to zero when idle, which is very cost-effective.
   minInstances: 0
-  # Set memory to 1024MiB to prevent build failures.
+  # We are setting memory to 1024MiB (from the default 512MiB) to prevent build failures
+  # that can occur with larger Next.js applications. The cost impact is minimal
+  # due to the pay-per-use model and the generous free tier.
   memoryMiB: 1024
 
 # Environment variables and secrets.
 # These variables are securely sourced from Google Secret Manager.
-# You must create these secrets in your GCP project.
+# You must create these secrets in your GCP project before deploying.
+# See the README.md for instructions on how to create them.
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: NEXT_PUBLIC_FIREBASE_API_KEY
