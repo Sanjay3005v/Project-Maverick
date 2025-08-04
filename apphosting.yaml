@@ -13,19 +13,47 @@ runConfig:
 # You must create these secrets in your GCP project before deploying.
 # See the README.md for instructions on how to create them.
 env:
+  - variable: FIREBASE_CONFIG
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: NEXT_PUBLIC_FIREBASE_API_KEY
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     secret: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     secret: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
     secret: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
     secret: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     secret: NEXT_PUBLIC_FIREBASE_APP_ID
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     secret: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    availability:
+    -   BUILD
+    -   RUNTIME
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
+    availability:
+    -   BUILD
+    -   RUNTIME
