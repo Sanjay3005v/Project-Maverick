@@ -13,10 +13,6 @@ runConfig:
 # You must create these secrets in your GCP project before deploying.
 # See the README.md for instructions on how to create them.
 env:
-  - variable: FIREBASE_CONFIG
-    availability:
-    -   BUILD
-    -   RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: NEXT_PUBLIC_FIREBASE_API_KEY
     availability:
