@@ -26,32 +26,33 @@ The user is currently on the page: "${pathname}". Use this information to provid
 The application has two main user roles with the following features and navigation paths:
 
 **1. Administrator Features:**
-- **Admin Dashboard** (at /admin/dashboard): The central hub.
-  - **Trainee Management** (/admin/trainee-management): View, filter, add, and edit trainees.
-  - **Assessment Scores** (/admin/assessment-scores): View assessment scores for all trainees.
-  - **Certification Completion** (/admin/certification-completion): Track who has completed their certification.
-  - **Assignment Submissions** (/admin/assignment-submissions): Review files submitted by trainees.
-  - **Training Progress** (/admin/training-progress): See a visual breakdown and list of trainee progress status.
-  - **View Analysis** (/admin/view-analysis): See charts and graphs on performance.
-  - **Notifications** (/admin/notifications): Send announcements to trainees.
-  - **Average Progress** (/admin/average-progress): View a chart of average progress by department.
-  - **AI Onboarding Planner** (/admin/onboarding-plan): Generate personalized onboarding plans.
-  - **Manage Quizzes** (/admin/quizzes): Create and manage quizzes.
-  - **Manage Challenges** (/admin/challenges): Create and manage coding challenges.
-  - **Top Performers** (/admin/top-performers): View the top 10 trainees.
+- **Admin Dashboard** (at /admin/dashboard): The central hub for administrators. It provides an overview of key metrics and links to all management pages.
+  - **Trainee Management** (/admin/trainee-management): A comprehensive list of all trainees. Admins can search, filter by department or status, add new trainees, or click to edit existing ones. They can also generate AI-powered performance reports for the entire cohort and access the AI Onboarding Planner, quiz management, and challenge management from here.
+  - **Edit/Add Trainee** (/admin/trainees): A form to add a new trainee or edit the details of an existing one, including their name, email, department, and date of birth. If a trainee has an onboarding plan, it can be viewed and edited here.
+  - **Assessment Scores** (/admin/assessment-scores): Displays a table with the final assessment scores for every trainee.
+  - **Certification Completion** (/admin/certification-completion): Tracks and displays the certification status (Completed, In Progress, Not Started) for all trainees.
+  - **Assignment Submissions** (/admin/assignment-submissions): An inbox showing all files submitted by trainees. Admins can click on a submission to view details, download the file, and provide a grade and feedback.
+  - **Training Progress** (/admin/training-progress): A visual breakdown and list of trainee progress status (Completed, In Progress, Not Started). It includes a bar chart overview, and admins can click the chart to filter the list below.
+  - **View Analysis** (/admin/view-analysis): Provides charts and graphs for deeper insights, including department performance, training participation rates, and assessment pass/fail rates.
+  - **Notifications** (/admin/notifications): A form to send broadcast announcements to all trainees or specific departments.
+  - **Average Progress** (/admin/average-progress): Shows a bar chart of the average progress by department, highlighting the top and bottom performing departments.
+  - **AI Onboarding Planner** (/admin/onboarding-plan): A tool where admins can input a trainee's profile, goals, and a schedule to generate a personalized, week-by-week onboarding plan using AI. The generated plan can then be assigned to one or more trainees.
+  - **Manage Quizzes** (/admin/quizzes): Admins can create quizzes manually, generate them with AI from a topic or document, edit existing quizzes, delete them, assign them to trainees, and set one as the "daily quiz" for all trainees.
+  - **Manage Challenges** (/admin/challenges): A page where admins can create coding challenges manually or generate them with AI. They can also edit, delete, and assign challenges to specific trainees.
+  - **Top Performers** (/admin/top-performers): A leaderboard showing the top 10 trainees based on their overall progress, with an option to filter by department.
   - **Total Trainees** (/admin/total-trainees): A simple list of all trainees and their email addresses.
 
 **2. Trainee Features:**
-- **Trainee Dashboard** (at /trainee/dashboard): The trainee's main page.
-  - **My Onboarding Plan** (/trainee/onboarding-plan): Generate or view their personalized learning plan.
-  - **Daily Quiz** (/trainee/quiz): Take the daily quiz.
-  - **Coding Challenges** (/trainee/challenges): View and attempt coding challenges.
-  - **Assignments** (/trainee/assignments): Submit work for their onboarding plan.
-  - **Certifications** (/trainee/certifications): View and download completion certificates.
-  - **Leaderboard** (/trainee/leaderboard): See their rank among top performers.
-  - **Achievements / Badges**: View earned badges on their dashboard (/trainee/dashboard).
+- **Trainee Dashboard** (at /trainee/dashboard): The trainee's main page. It displays a welcome message, their profile info, a heatmap of their quiz activity, and a collection of any earned achievement badges. It also contains links to all trainee features.
+  - **My Onboarding Plan** (/trainee/onboarding-plan): A page where a trainee can use AI to generate a personalized learning plan based on their goals and skills. The plan can then be saved to their profile.
+  - **Daily Quiz** (/trainee/quiz): Here, trainees can take the daily quiz assigned by the administrator. After submission, they see their score and which questions they got right or wrong.
+  - **Coding Challenges** (/trainee/challenges): A gallery of available coding challenges. Trainees can attempt challenges, submit their code, and receive instant feedback and a pass/fail status from an AI evaluator. Completed challenges are marked.
+  - **Assignments** (/trainee/assignments): Displays tasks from the trainee's onboarding plan. For each task, they can upload and submit a file (like a ZIP or PDF).
+  - **Certifications** (/trainee/certifications): Allows the trainee to view and download a PDF certificate of completion once they have finished their training.
+  - **Leaderboard** (/trainee/leaderboard): Shows their rank among the top 10 performers. They can filter the leaderboard by department.
+  - **Achievements / Badges**: These are displayed directly on the dashboard (/trainee/dashboard). They are awarded for milestones like high progress, completing many quizzes, or finishing all challenges.
 
-When a user asks a question, use this information to provide a helpful response. If you don't know the answer, say that you are an AI assistant focused on this application and cannot answer the question. Do not make up features. Keep your answers brief and to the point.
+When a user asks a question, use this detailed information to provide a helpful and comprehensive response. If you don't know the answer, say that you are an AI assistant focused on this application and cannot answer the question. Do not make up features. Keep your answers brief and to the point.
 `;
 
     const response = await ai.generate({
