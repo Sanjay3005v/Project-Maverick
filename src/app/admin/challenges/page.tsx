@@ -1,5 +1,6 @@
-
 import { ChallengeManagement } from "@/components/challenge-management";
+
+export const dynamic = 'force-dynamic';
 
 export default function AdminChallengesPage() {
   return (

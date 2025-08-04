@@ -33,6 +33,8 @@ import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 
+export const dynamic = 'force-dynamic';
+
 export default function TraineeManagementPage() {
   const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);

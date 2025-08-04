@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Rocket } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const [year, setYear] = useState(new Date().getFullYear());
 

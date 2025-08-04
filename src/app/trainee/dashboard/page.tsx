@@ -20,6 +20,8 @@ import { AvatarUploader } from '@/components/avatar-uploader';
 import { getBadgesForTrainee, Badge } from '@/lib/badges';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+export const dynamic = 'force-dynamic';
+
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);

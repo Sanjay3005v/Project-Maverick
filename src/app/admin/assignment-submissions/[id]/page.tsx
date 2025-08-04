@@ -15,6 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 
+export const dynamic = 'force-dynamic';
+
 function ReviewForm({ submissionId, onReviewAdded }: { submissionId: string; onReviewAdded: () => void }) {
   const [score, setScore] = useState(85);
   const [feedback, setFeedback] = useState('');

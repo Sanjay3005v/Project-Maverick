@@ -9,6 +9,8 @@ import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { LoaderCircle, ClipboardCheck } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 // Function to generate a random score for demonstration
 const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // Score between 60 and 100
 

@@ -10,6 +10,8 @@ import { Loader2, Users, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 
+export const dynamic = 'force-dynamic';
+
 export default function TotalTraineesPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);

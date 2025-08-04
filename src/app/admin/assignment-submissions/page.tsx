@@ -12,6 +12,7 @@ import { Submission, getAllSubmissions } from '@/services/submission-service';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
 
 export default function AssignmentSubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -99,7 +100,7 @@ export default function AssignmentSubmissionsPage() {
                         </div>
                     </TableCell>
                     <TableCell>
-                      {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(submission.submittedAt.toString()), { addSuffix: true })}
                     </TableCell>
                     <TableCell className="text-right">
                         <Badge variant={submission.review ? 'default' : 'secondary'} className={submission.review ? 'bg-green-500' : ''}>

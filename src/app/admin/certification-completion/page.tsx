@@ -10,6 +10,8 @@ import { Loader2, CheckCircle, Clock, Award, Circle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
+export const dynamic = 'force-dynamic';
+
 type CompletionStatus = 'Completed' | 'In Progress' | 'Not Started';
 
 // Function to generate a *consistent* random completion status for demonstration

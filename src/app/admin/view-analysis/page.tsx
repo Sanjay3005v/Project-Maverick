@@ -8,8 +8,10 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { LoaderCircle, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Bar, BarChart, CartesianGrid, Pie, PieChart, Cell, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, Cell, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import type { ChartConfig } from '@/components/ui/chart';
+
+export const dynamic = 'force-dynamic';
 
 const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // 60-100
 const generateConsistentCompletion = (id: string) => {
@@ -123,13 +125,15 @@ export default function ViewAnalysisPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={departmentChartConfig} className="w-full h-[300px]">
-                    <BarChart data={analysisData.departmentProgress} margin={{ top: 20, right: 20, left: -10, bottom: 5 }} accessibilityLayer>
-                        <CartesianGrid vertical={false} />
-                        <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-                        <YAxis domain={[0, 100]} unit="%" />
-                        <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                        <Bar dataKey="progress" radius={4} />
-                    </BarChart>
+                    <ResponsiveContainer>
+                        <BarChart data={analysisData.departmentProgress} margin={{ top: 20, right: 20, left: -10, bottom: 5 }} accessibilityLayer>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                            <YAxis domain={[0, 100]} unit="%" />
+                            <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                            <Bar dataKey="progress" radius={4} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
         </Card>

@@ -16,6 +16,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
+export const dynamic = 'force-dynamic';
+
 function FileUploader({ assignmentTitle, trainee, onUploadSuccess }: { assignmentTitle: string, trainee: Trainee, onUploadSuccess: (title: string) => void }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);

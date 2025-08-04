@@ -1,6 +1,7 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,9 @@ import { Challenge, getChallengeById } from '@/services/challenge-service';
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail, markChallengeAsCompleted } from '@/services/trainee-service';
 
-export default function ChallengePage() {
+export const dynamic = 'force-dynamic';
+
+function ChallengeContent() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const { user, loading: authLoading } = useAuth();
@@ -115,7 +118,7 @@ export default function ChallengePage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
+    <>
       <header className="mb-8">
          <Link href="/trainee/challenges" className="flex items-center text-muted-foreground hover:text-foreground mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -230,6 +233,16 @@ export default function ChallengePage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
+}
+
+export default function ChallengePage() {
+    return (
+        <div className="container mx-auto p-4 md:p-8">
+            <Suspense fallback={<div className="flex justify-center items-center h-screen"><LoaderCircle className="h-8 w-8 animate-spin" /><p className="ml-4">Loading Challenge...</p></div>}>
+                <ChallengeContent />
+            </Suspense>
+        </div>
+    );
 }

@@ -14,6 +14,8 @@ import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 import { useAuth } from "@/hooks/use-auth";
 
+export const dynamic = 'force-dynamic';
+
 type TraineeWithCompletion = Trainee & { certificationCompleted?: boolean };
 
 // Function to generate a *consistent* random completion status for demonstration

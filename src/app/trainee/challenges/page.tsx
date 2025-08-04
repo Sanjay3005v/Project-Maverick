@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Trainee, getTraineeByEmail } from "@/services/trainee-service";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = 'force-dynamic';
+
 export default function CodingChallengesPage() {
     const [challenges, setChallenges] = useState<Challenge[]>([]);
     const [trainee, setTrainee] = useState<Trainee | null>(null);

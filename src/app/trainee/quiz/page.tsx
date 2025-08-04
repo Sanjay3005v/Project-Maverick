@@ -14,6 +14,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { getTraineeByEmail, updateTraineeProgress, Trainee, addQuizCompletion } from '@/services/trainee-service';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export default function DailyQuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);

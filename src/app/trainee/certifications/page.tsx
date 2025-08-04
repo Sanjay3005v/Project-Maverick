@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { getTraineeByEmail, Trainee } from "@/services/trainee-service";
 import { useEffect, useState }from "react";
 
+export const dynamic = 'force-dynamic';
+
 export default function CertificationsPage() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);

@@ -14,6 +14,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
+export const dynamic = 'force-dynamic';
+
 const departmentChartConfig = {
   progress: { label: 'Avg. Progress' },
   Engineering: { label: 'Engineering', color: 'hsl(var(--chart-1))' },

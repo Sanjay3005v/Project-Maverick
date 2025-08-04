@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
+export const dynamic = 'force-dynamic';
+
 type TrainingStatus = 'Completed' | 'In Progress' | 'Not Started';
 
 // Function to generate a *consistent* random completion status for demonstration

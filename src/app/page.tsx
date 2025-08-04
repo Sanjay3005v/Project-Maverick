@@ -1,19 +1,17 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+function Redirector() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -26,15 +24,38 @@ export default function Home() {
       }
     }
   }, [user, loading, router]);
+  
+  return null;
+}
+
+export default function Home() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   if (!isClient) {
-    return null;
+    return (
+       <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin" />
-      <p className="ml-4">Loading...</p>
-    </div>
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Loading...</p>
+      </div>
+    }>
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-4">Redirecting...</p>
+      </div>
+      <Redirector />
+    </Suspense>
   );
 }
