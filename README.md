@@ -1,3 +1,4 @@
+
 # Maverick Mindset - AI-Powered Onboarding
 
 Maverick Mindset is a modern, AI-driven platform designed to revolutionize the onboarding experience for new trainees. It provides personalized training plans, progress tracking, and interactive learning modules, all managed through a clean and intuitive interface for both trainees and administrators.
