@@ -10,6 +10,10 @@ export const dynamic = 'force-dynamic';
 export default function LoginPage() {
   const [year, setYear] = useState(new Date().getFullYear());
 
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <header className="text-center mb-12">

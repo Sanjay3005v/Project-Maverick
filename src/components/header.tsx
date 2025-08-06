@@ -1,26 +1,15 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Rocket, LayoutDashboard, LoaderCircle, LogIn } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { UserSettings } from "./user-settings";
 
 export function Header() {
   const { user, loading } = useAuth();
-  const { toast } = useToast();
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const isUserAdmin = user?.email?.includes('admin');
 
   return (
@@ -32,39 +21,35 @@ export function Header() {
         </Link>
         <nav className="ml-auto flex items-center gap-4">
            <ThemeToggle />
-           {isClient && (
-             <>
-              {loading ? (
-                <LoaderCircle className="h-5 w-5 animate-spin" />
-              ) : user ? (
-                <>
-                  {isUserAdmin ? (
-                      <Link href="/admin/dashboard" passHref>
-                        <Button variant="ghost">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Admin
-                        </Button>
-                      </Link>
-                  ) : (
-                      <Link href="/trainee/dashboard" passHref>
-                        <Button variant="ghost">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Trainee
-                        </Button>
-                      </Link>
-                  )}
-                  <UserSettings />
-                </>
-              ) : (
-                <Link href="/login" passHref>
-                  <Button>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Get Started
-                  </Button>
-                </Link>
-              )}
-             </>
-           )}
+            {loading ? (
+              <LoaderCircle className="h-5 w-5 animate-spin" />
+            ) : user ? (
+              <>
+                {isUserAdmin ? (
+                    <Link href="/admin/dashboard" passHref>
+                      <Button variant="ghost">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Admin
+                      </Button>
+                    </Link>
+                ) : (
+                    <Link href="/trainee/dashboard" passHref>
+                      <Button variant="ghost">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Trainee
+                      </Button>
+                    </Link>
+                )}
+                <UserSettings />
+              </>
+            ) : (
+              <Link href="/login" passHref>
+                <Button>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Get Started
+                </Button>
+              </Link>
+            )}
         </nav>
       </div>
     </header>
