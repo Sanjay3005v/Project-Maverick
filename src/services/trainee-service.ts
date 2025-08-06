@@ -235,18 +235,8 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        await seedTrainees();
-        const retrySnapshot = await getDocs(q);
-        if (retrySnapshot.empty) {
-            return null;
-        }
-        const traineeDoc = retrySnapshot.docs[0];
-        const data = traineeDoc.data();
-         return {
-            id: traineeDoc.id,
-            ...data,
-            dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
-        } as Trainee;
+        // Don't auto-seed here anymore, as it can interfere with new user creation flow
+        return null;
     }
 
     const traineeDoc = querySnapshot.docs[0];
@@ -296,6 +286,8 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         assignedQuizIds: [],
         assignedChallengeIds: [],
         completedChallengeIds: [],
+        onboardingPlan: [],
+        avatarUrl: ''
     });
     return docRef.id;
 }
