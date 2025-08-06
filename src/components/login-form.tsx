@@ -62,19 +62,12 @@ export function LoginForm() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        if (user.email?.includes('admin')) {
-             toast({
-                variant: 'destructive',
-                title: 'Admin Login',
-                description: 'Please use email and password to log in as an administrator.',
-            });
-            await auth.signOut();
-            return;
-        }
+        // Admins should still use email/password, but we won't block them here.
+        // We'll rely on the AuthProvider to redirect them correctly.
 
         // Check if trainee exists, if not, create one
         let trainee = await getTraineeByEmail(user.email!);
-        if (!trainee) {
+        if (!trainee && !user.email?.includes('admin')) { // Only create a profile if they are not an admin
             await addTrainee({
                 name: user.displayName || 'New Trainee',
                 email: user.email!,
@@ -87,16 +80,17 @@ export function LoginForm() {
         
         toast({
             title: "Login Successful",
-            description: `Welcome, ${user.displayName || 'Trainee'}!`,
+            description: `Welcome, ${user.displayName || 'User'}!`,
         });
 
-        router.push("/trainee/dashboard");
+        const isUserAdmin = user.email?.includes('admin');
+        router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
 
     } catch (error: any) {
         toast({
             variant: "destructive",
             title: "Google Login Failed",
-            description: "Could not sign in with Google. Please try again.",
+            description: error.code || "Could not sign in with Google. Please ensure popup are enabled and try again.",
         });
     } finally {
         setLoading(false);
