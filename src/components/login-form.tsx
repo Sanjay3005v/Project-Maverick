@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -94,6 +95,9 @@ export function LoginForm() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      'prompt': 'select_account'
+    });
     try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
