@@ -2,36 +2,18 @@
 "use client";
 
 import Link from "next/link";
-import { Rocket, LayoutDashboard, LogOut, LogIn, LoaderCircle } from "lucide-react";
+import { Rocket, LayoutDashboard, LoaderCircle, LogIn } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
+import { UserSettings } from "./user-settings";
 
 export function Header() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
-      router.push('/login');
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error Signing Out",
-        description: "There was a problem signing out. Please try again.",
-      });
-    }
-  };
 
   const isUserAdmin = user?.email?.includes('admin');
 
@@ -63,10 +45,7 @@ export function Header() {
                     </Button>
                   </Link>
               )}
-              <Button onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </Button>
+              <UserSettings />
             </>
           ) : (
             <Link href="/login" passHref>
