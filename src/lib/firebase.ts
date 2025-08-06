@@ -22,12 +22,11 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Explicitly set the auth domain. This can resolve stubborn "unauthorized-domain" errors.
-if (firebaseConfig.authDomain) {
-    auth.config.authDomain = firebaseConfig.authDomain;
+// Connect to emulators if in development
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  console.log("Connecting to Firebase Auth Emulator");
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
 }
 
 
 export { app, auth, db, storage };
-
-    
