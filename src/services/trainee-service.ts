@@ -26,41 +26,6 @@ export interface Trainee {
     completedChallengeIds?: string[];
 }
 
-const DUMMY_COMPLETION_DATA: QuizCompletion[] = [
-    { date: '2024-07-23', score: 85 }, { date: '2024-07-24', score: 92 },
-    { date: '2024-07-25', score: 78 }, { date: '2024-07-26', score: 95 },
-    { date: '2024-07-27', score: 60 }, { date: '2024-07-28', score: 72 },
-    { date: '2024-07-29', score: 88 }, { date: '2024-01-05', score: 55 },
-    { date: '2024-01-06', score: 90 }, { date: '2024-01-15', score: 68 },
-    { date: '2024-01-20', score: 76 }, { date: '2024-02-01', score: 91 },
-    { date: '2024-02-02', score: 82 }, { date: '2024-02-03', score: 79 },
-    { date: '2024-02-10', score: 94 }, { date: '2024-02-11', score: 65 },
-    { date: '2024-02-19', score: 81 }, { date: '2024-02-28', score: 70 },
-    { date: '2024-03-01', score: 88 }, { date: '2024-03-05', score: 93 },
-    { date: '2024-03-06', score: 77 }, { date: '2024-03-07', score: 85 },
-    { date: '2024-03-12', score: 96 }, { date: '2024-03-13', score: 69 },
-    { date: '2024-03-20', score: 80 }, { date: '2024-03-21', score: 89 },
-    { date: '2024-03-30', score: 74 }, { date: '2024-04-04', score: 98 },
-    { date: '2024-04-05', score: 81 }, { date: '2024-04-06', score: 73 },
-    { date: '2024-04-07', score: 86 }, { date: '2024-04-14', score: 90 },
-    { date: '2024-04-15', score: 66 }, { date: '2024-04-22', score: 79 },
-    { date: '2024-04-23', score: 84 }, { date: '2024-04-24', score: 92 },
-    { date: '2024-04-29', score: 71 }, { date: '2024-05-01', score: 87 },
-    { date: '2024-05-02', score: 94 }, { date: '2024-05-05', score: 75 },
-    { date: '2024-05-10', score: 83 }, { date: '2024-05-11', score: 91 },
-    { date: '2024-05-12', score: 88 }, { date: '2024-05-18', score: 68 },
-    { date: '2024-05-25', score: 95 }, { date: '2024-06-03', score: 80 },
-    { date: '2024-06-04', score: 78 }, { date: '2024-06-09', score: 92 },
-    { date: '2024-06-15', score: 85 }, { date: '2024-06-20', score: 89 },
-    { date: '2024-06-21', score: 76 }, { date: '2024-06-22', score: 94 },
-    { date: '2024-06-29', score: 70 }, { date: '2024-06-30', score: 81 },
-    { date: '2024-07-01', score: 93 }, { date: '2024-07-05', score: 86 },
-    { date: '2024-07-06', score: 79 }, { date: '2024-07-10', score: 97 },
-    { date: '2024-07-13', score: 65 }, { date: '2024-07-14', score: 88 },
-    { date: '2024-07-20', score: 91 }, { date: '2024-07-21', score: 84 },
-    { date: '2024-07-22', score: 77 },
-];
-
 const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
     { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
     { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', progress: 72, dob: '1999-08-20' },
@@ -111,29 +76,6 @@ const getStatusForProgress = (progress: number) => {
     return 'Need Attention';
 }
 
-const generateRandomCompletionData = (): QuizCompletion[] => {
-    const data: QuizCompletion[] = [];
-    const today = new Date();
-    const yearStart = new Date(today.getFullYear(), 0, 1);
-    const totalDays = Math.floor((today.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24));
-    
-    const numberOfEntries = Math.floor(Math.random() * 80) + 20; // 20-100 entries
-
-    for (let i = 0; i < numberOfEntries; i++) {
-        const randomDay = Math.floor(Math.random() * totalDays);
-        const date = new Date(yearStart.getTime());
-        date.setDate(date.getDate() + randomDay);
-        
-        data.push({
-            date: date.toISOString().split('T')[0],
-            score: Math.floor(Math.random() * 61) + 40 // Score between 40 and 100
-        });
-    }
-    // Remove duplicates by date
-    const uniqueData = Array.from(new Map(data.map(item => [item.date, item])).values());
-    return uniqueData;
-}
-
 const traineesCollection = collection(db, 'trainees');
 
 async function seedTrainees() {
@@ -148,16 +90,11 @@ async function seedTrainees() {
     dummyTrainees.forEach(trainee => {
         if (!existingTraineesMap.has(trainee.email)) {
             const docRef = doc(traineesCollection);
-            const completionData = trainee.email === 'trainee@example.com' 
-                ? DUMMY_COMPLETION_DATA 
-                : generateRandomCompletionData();
-
             batch.set(docRef, {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
-                // assessmentScore is not seeded here to avoid hydration mismatch
-                quizCompletions: completionData,
+                quizCompletions: [],
                 assignedQuizIds: [],
                 assignedChallengeIds: [],
                 completedChallengeIds: [],
@@ -166,15 +103,13 @@ async function seedTrainees() {
         }
     });
 
-    // Update existing trainees if they are missing heatmap data or assigned quizzes
+    // Update existing trainees if they are missing required array fields
     existingTraineesSnapshot.docs.forEach(doc => {
         const data = doc.data();
         const updatePayload: Record<string, any> = {};
 
-        if (!data.quizCompletions || data.quizCompletions.length === 0) {
-            updatePayload.quizCompletions = data.email === 'trainee@example.com' 
-                ? DUMMY_COMPLETION_DATA 
-                : generateRandomCompletionData();
+        if (!data.quizCompletions) {
+            updatePayload.quizCompletions = [];
         }
         if (!data.assignedQuizIds) {
             updatePayload.assignedQuizIds = [];
