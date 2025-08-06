@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,11 +96,21 @@ export function LoginForm() {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
-      'prompt': 'select_account'
+      prompt: "select_account",
     });
+
     try {
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (!credential) {
+            throw new Error("Could not get credential from Google sign in result.");
+        }
+        
+        // Sign in with the credential.
+        const userCredential = await signInWithCredential(auth, credential);
+        const user = userCredential.user;
+
 
         // Check if trainee exists, if not, create one
         let trainee = await getTraineeByEmail(user.email!);
