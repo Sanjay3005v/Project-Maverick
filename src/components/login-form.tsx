@@ -64,7 +64,7 @@ export function LoginForm() {
 
         // Check if trainee exists, if not, create one
         let trainee = await getTraineeByEmail(user.email!);
-        if (!trainee && !user.email?.includes('admin')) { // Only create a profile if they are not an admin
+        if (!trainee && !user.email?.includes('admin')) {
             await addTrainee({
                 name: user.displayName || 'New Trainee',
                 email: user.email!,
@@ -87,7 +87,7 @@ export function LoginForm() {
         toast({
             variant: "destructive",
             title: "Google Login Failed",
-            description: error.code || "Could not sign in with Google. Please ensure popup are enabled and try again.",
+            description: `Error: ${error.code} - ${error.message}. Please ensure popups are enabled and you have authorized the domain in the Firebase console.`,
         });
     } finally {
         setLoading(false);
