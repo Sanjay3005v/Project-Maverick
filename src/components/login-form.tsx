@@ -62,9 +62,6 @@ export function LoginForm() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        // Admins should still use email/password, but we won't block them here.
-        // We'll rely on the AuthProvider to redirect them correctly.
-
         // Check if trainee exists, if not, create one
         let trainee = await getTraineeByEmail(user.email!);
         if (!trainee && !user.email?.includes('admin')) { // Only create a profile if they are not an admin
