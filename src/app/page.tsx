@@ -2,8 +2,8 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
@@ -29,21 +29,6 @@ function Redirector() {
 }
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return (
-       <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <Suspense fallback={
       <div className="flex h-screen w-full items-center justify-center">
