@@ -25,7 +25,11 @@ const storage = getStorage(app);
 // Connect to emulators if in development
 if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
   console.log("Connecting to Firebase Auth Emulator");
-  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  try {
+    connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  } catch(e) {
+    console.warn("Could not connect to auth emulator", e);
+  }
 }
 
 

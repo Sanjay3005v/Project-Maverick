@@ -8,19 +8,76 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
-import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
+import { Trainee, getTraineeByEmail, deleteTraineeAccount } from '@/services/trainee-service';
 import { getAllChallenges, Challenge } from '@/services/challenge-service';
 import { Heatmap } from '@/components/heatmap';
 import { AvatarUploader } from '@/components/avatar-uploader';
 import { getBadgesForTrainee, Badge } from '@/lib/badges';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
+
+function DeleteAccountButton({ traineeId }: { traineeId: string }) {
+    const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
+    const router = useRouter();
+
+    const handleDelete = async () => {
+        setLoading(true);
+        try {
+            await deleteTraineeAccount(traineeId);
+            toast({
+                title: 'Account Deleted',
+                description: 'Your account has been permanently deleted.',
+            });
+            // The auth provider will handle redirecting to /login
+            router.push('/login');
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Deletion Failed',
+                description: error.message || 'An unexpected error occurred.',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-2" /> Delete Account
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account and all of your data from our servers.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} disabled={loading}>
+                        {loading ? <LoaderCircle className="animate-spin mr-2"/> : null}
+                        Continue
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
 
 export default function TraineeDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -84,7 +141,7 @@ export default function TraineeDashboard() {
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8">
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 flex flex-col">
           <CardHeader className="flex flex-row items-center gap-4 space-y-0">
             <div className="relative group">
                 <Avatar className="h-16 w-16">
@@ -100,11 +157,14 @@ export default function TraineeDashboard() {
               <CardDescription>Trainee, {trainee.department} Department</CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow">
             <p className="text-muted-foreground">
               Your personalized journey at Maverick Mindset starts now. Stay on top of your tasks and make the most of your onboarding.
             </p>
           </CardContent>
+          <CardFooter>
+            <DeleteAccountButton traineeId={trainee.id} />
+          </CardFooter>
         </Card>
 
         <Card className="lg:col-span-2">

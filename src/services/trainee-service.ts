@@ -1,8 +1,9 @@
 
 'use server';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import { deleteUser } from 'firebase/auth';
 
 export interface QuizCompletion {
     date: string;
@@ -26,7 +27,7 @@ export interface Trainee {
     completedChallengeIds?: string[];
 }
 
-const dummyTrainees: Omit<Trainee, 'id' | 'status'>[] = [
+const dummyTrainees: Omit<Trainee, 'id' | 'status' | 'quizCompletions'>[] = [
     { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
     { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', progress: 72, dob: '1999-08-20' },
     { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Design', progress: 95, dob: '1997-03-15' },
@@ -290,4 +291,25 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     await updateDoc(traineeRef, {
         completedChallengeIds: arrayUnion(challengeId)
     });
+}
+
+export async function deleteTraineeAccount(traineeId: string): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("No authenticated user found. Please sign in again.");
+    }
+    
+    // Check if the trainee document being deleted corresponds to the currently logged-in user.
+    // This is a security check.
+    const trainee = await getTraineeById(traineeId);
+    if (!trainee || trainee.email !== user.email) {
+        throw new Error("You are not authorized to delete this account.");
+    }
+
+    // First, delete the Firestore document for the trainee
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await deleteDoc(traineeRef);
+
+    // Then, delete the user from Firebase Authentication
+    await deleteUser(user);
 }
