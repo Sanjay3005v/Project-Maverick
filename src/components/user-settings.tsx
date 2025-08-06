@@ -24,13 +24,13 @@ import { AvatarUploader } from './avatar-uploader';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
-function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDeleted: () => void }) {
+function DeleteAccountDialog({ trainee, onDeleted, isGoogleSignIn }: { trainee: Trainee; onDeleted: () => void; isGoogleSignIn: boolean; }) {
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState('');
     const { toast } = useToast();
 
     const handleDelete = async () => {
-        if (!password) {
+        if (!isGoogleSignIn && !password) {
             toast({
                 variant: 'destructive',
                 title: 'Password Required',
@@ -41,7 +41,7 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
 
         setLoading(true);
         try {
-            await deleteTraineeAccount(trainee.id, trainee.email, password);
+            await deleteTraineeAccount(trainee.id, trainee.email, isGoogleSignIn ? undefined : password);
             toast({
                 title: 'Account Deleted',
                 description: 'Your account has been permanently deleted.',
@@ -49,10 +49,13 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
             onDeleted();
         } catch (error: any) {
             let description = 'An unexpected error occurred.';
-            if (error.code === 'auth/wrong-password' || error.message.includes('wrong-password')) {
+            if (error.code === 'auth/wrong-password') {
                 description = 'The password you entered is incorrect. Please try again.';
             } else if (error.code === 'auth/requires-recent-login') {
                 description = 'This operation is sensitive and requires recent authentication. Please sign out and sign back in to delete your account.'
+            }
+             else if (error.code === 'auth/reauthenticate-timeout') {
+                description = 'Re-authentication timed out. Please try again.';
             }
             toast({
                 variant: 'destructive',
@@ -79,19 +82,25 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action is permanent and cannot be undone. To confirm, please enter your password.
+                        This action is permanent and cannot be undone. 
+                        {isGoogleSignIn 
+                            ? " This is a sensitive operation and may require you to sign in again to confirm."
+                            : " To confirm, please enter your password."
+                        }
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="space-y-2">
-                    <Label htmlFor="password-confirm" className="sr-only">Password</Label>
-                    <Input 
-                        id="password-confirm"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
+                {!isGoogleSignIn && (
+                    <div className="space-y-2">
+                        <Label htmlFor="password-confirm" className="sr-only">Password</Label>
+                        <Input 
+                            id="password-confirm"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+                )}
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-destructive hover:bg-destructive/90">
@@ -144,6 +153,7 @@ export function UserSettings() {
   };
 
   const isUserAdmin = user?.email?.includes('admin');
+  const isGoogleSignIn = user?.providerData.some(provider => provider.providerId === 'google.com');
 
   return (
     <DropdownMenu>
@@ -180,7 +190,7 @@ export function UserSettings() {
         {!isUserAdmin && trainee && (
             <>
                 <DropdownMenuSeparator />
-                <DeleteAccountDialog trainee={trainee} onDeleted={handleSignOut} />
+                <DeleteAccountDialog trainee={trainee} onDeleted={handleSignOut} isGoogleSignIn={!!isGoogleSignIn} />
             </>
         )}
       </DropdownMenuContent>

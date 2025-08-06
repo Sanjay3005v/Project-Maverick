@@ -80,59 +80,26 @@ const getStatusForProgress = (progress: number) => {
 const traineesCollection = collection(db, 'trainees');
 
 async function seedTrainees() {
-    console.log("Checking and seeding trainees...");
-    const existingTraineesSnapshot = await getDocs(traineesCollection);
-    const existingTraineesMap = new Map(existingTraineesSnapshot.docs.map(doc => [doc.data().email, {id: doc.id, ...doc.data()}]));
-
-    const batch = writeBatch(db);
-    let operationsPerformed = false;
-
-    // Add new trainees who don't exist
-    dummyTrainees.forEach(trainee => {
-        if (!existingTraineesMap.has(trainee.email)) {
-            const docRef = doc(traineesCollection);
-            batch.set(docRef, {
-                ...trainee,
-                status: getStatusForProgress(trainee.progress),
-                dob: new Date(trainee.dob as string),
-                quizCompletions: [],
-                assignedQuizIds: [],
-                assignedChallengeIds: [],
-                completedChallengeIds: [],
-            });
-            operationsPerformed = true;
-        }
-    });
-
-    // Update existing trainees if they are missing required array fields
-    existingTraineesSnapshot.docs.forEach(doc => {
-        const data = doc.data();
-        const updatePayload: Record<string, any> = {};
-
-        if (!data.quizCompletions) {
-            updatePayload.quizCompletions = [];
-        }
-        if (!data.assignedQuizIds) {
-            updatePayload.assignedQuizIds = [];
-        }
-        if (!data.assignedChallengeIds) {
-            updatePayload.assignedChallengeIds = [];
-        }
-        if (!data.completedChallengeIds) {
-            updatePayload.completedChallengeIds = [];
-        }
-
-        if (Object.keys(updatePayload).length > 0) {
-            batch.update(doc.ref, updatePayload);
-            operationsPerformed = true;
-        }
-    });
-
-    if (operationsPerformed) {
+    const traineesSnapshot = await getDocs(query(traineesCollection, limit(1)));
+    if (traineesSnapshot.empty) {
+        console.log("Seeding initial trainees...");
+        const batch = writeBatch(db);
+        dummyTrainees.forEach(trainee => {
+            if (!trainee.email.includes('admin')) {
+                const docRef = doc(traineesCollection);
+                batch.set(docRef, {
+                    ...trainee,
+                    status: getStatusForProgress(trainee.progress),
+                    dob: new Date(trainee.dob as string),
+                    quizCompletions: [],
+                    assignedQuizIds: [],
+                    assignedChallengeIds: [],
+                    completedChallengeIds: [],
+                });
+            }
+        });
         await batch.commit();
-        console.log("Database seeding/update completed successfully.");
-    } else {
-        console.log("All trainees already exist and have required data fields.");
+        console.log("Initial trainees seeded.");
     }
 }
 
@@ -171,41 +138,33 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
+        // If no trainee exists, check if this is an admin user.
+        // This is a simplified check for the demo.
+        if(email.includes('admin')) {
+            return {
+                id: 'admin-user',
+                name: 'Admin User',
+                email: email,
+                department: 'Administration',
+                progress: 100,
+                status: 'On Track',
+                dob: new Date().toISOString().split('T')[0],
+            }
+        }
         return null;
     }
 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
     
-    const updatePayload: Record<string, any> = {};
-
-    if (!data.assignedQuizIds) {
-        updatePayload.assignedQuizIds = [];
-    }
-     if (!data.assignedChallengeIds) {
-        updatePayload.assignedChallengeIds = [];
-    }
-    if (!data.completedChallengeIds) {
-        updatePayload.completedChallengeIds = [];
-    }
-     if (!data.quizCompletions) {
-        updatePayload.quizCompletions = [];
-    }
-
-    if (Object.keys(updatePayload).length > 0) {
-        await updateDoc(traineeDoc.ref, updatePayload);
-        return {
-            id: traineeDoc.id,
-            ...data,
-            ...updatePayload,
-            dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
-        } as Trainee;
-    }
-    
     return {
         id: traineeDoc.id,
         ...data,
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        quizCompletions: data.quizCompletions || [],
+        assignedQuizIds: data.assignedQuizIds || [],
+        assignedChallengeIds: data.assignedChallengeIds || [],
+        completedChallengeIds: data.completedChallengeIds || [],
     } as Trainee;
 }
 
@@ -308,10 +267,8 @@ export async function deleteTraineeAccount(traineeId: string, email: string, pas
         await reauthenticateWithCredential(user, credential);
     }
     
-    // First, delete the Firestore document for the trainee
     const traineeRef = doc(db, 'trainees', traineeId);
     await deleteDoc(traineeRef);
 
-    // Then, delete the user from Firebase Authentication
     await deleteUser(user);
 }
