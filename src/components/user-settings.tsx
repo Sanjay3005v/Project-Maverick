@@ -21,28 +21,47 @@ import { useRouter } from 'next/navigation';
 import { Settings, LogOut, Trash2, LoaderCircle } from 'lucide-react';
 import { getTraineeByEmail, deleteTraineeAccount, Trainee } from '@/services/trainee-service';
 import { AvatarUploader } from './avatar-uploader';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
-function DeleteAccountDialog({ traineeId, onDeleted }: { traineeId: string; onDeleted: () => void }) {
+function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDeleted: () => void }) {
     const [loading, setLoading] = useState(false);
+    const [password, setPassword] = useState('');
     const { toast } = useToast();
 
     const handleDelete = async () => {
+        if (!password) {
+            toast({
+                variant: 'destructive',
+                title: 'Password Required',
+                description: 'Please enter your password to confirm account deletion.',
+            });
+            return;
+        }
+
         setLoading(true);
         try {
-            await deleteTraineeAccount(traineeId);
+            await deleteTraineeAccount(trainee.id, trainee.email, password);
             toast({
                 title: 'Account Deleted',
                 description: 'Your account has been permanently deleted.',
             });
             onDeleted();
         } catch (error: any) {
+            let description = 'An unexpected error occurred.';
+            if (error.code === 'auth/wrong-password' || error.message.includes('wrong-password')) {
+                description = 'The password you entered is incorrect. Please try again.';
+            } else if (error.code === 'auth/requires-recent-login') {
+                description = 'This operation is sensitive and requires recent authentication. Please sign out and sign back in to delete your account.'
+            }
             toast({
                 variant: 'destructive',
                 title: 'Deletion Failed',
-                description: error.message || 'An unexpected error occurred.',
+                description: description,
             });
         } finally {
             setLoading(false);
+            setPassword('');
         }
     };
 
@@ -60,9 +79,19 @@ function DeleteAccountDialog({ traineeId, onDeleted }: { traineeId: string; onDe
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your account and all of your data from our servers.
+                        This action is permanent and cannot be undone. To confirm, please enter your password.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                <div className="space-y-2">
+                    <Label htmlFor="password-confirm" className="sr-only">Password</Label>
+                    <Input 
+                        id="password-confirm"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-destructive hover:bg-destructive/90">
@@ -151,7 +180,7 @@ export function UserSettings() {
         {!isUserAdmin && trainee && (
             <>
                 <DropdownMenuSeparator />
-                <DeleteAccountDialog traineeId={trainee.id} onDeleted={handleSignOut} />
+                <DeleteAccountDialog trainee={trainee} onDeleted={handleSignOut} />
             </>
         )}
       </DropdownMenuContent>

@@ -3,7 +3,7 @@
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
-import { deleteUser } from 'firebase/auth';
+import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 export interface QuizCompletion {
     date: string;
@@ -293,19 +293,21 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     });
 }
 
-export async function deleteTraineeAccount(traineeId: string): Promise<void> {
+export async function deleteTraineeAccount(traineeId: string, email: string, password?: string): Promise<void> {
     const user = auth.currentUser;
     if (!user) {
         throw new Error("No authenticated user found. Please sign in again.");
     }
     
-    // Check if the trainee document being deleted corresponds to the currently logged-in user.
-    // This is a security check.
-    const trainee = await getTraineeById(traineeId);
-    if (!trainee || trainee.email !== user.email) {
+    if (traineeId && user.email !== email) {
         throw new Error("You are not authorized to delete this account.");
     }
 
+    if (password) {
+        const credential = EmailAuthProvider.credential(user.email!, password);
+        await reauthenticateWithCredential(user, credential);
+    }
+    
     // First, delete the Firestore document for the trainee
     const traineeRef = doc(db, 'trainees', traineeId);
     await deleteDoc(traineeRef);
