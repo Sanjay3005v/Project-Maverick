@@ -235,7 +235,6 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        // Don't auto-seed here anymore, as it can interfere with new user creation flow
         return null;
     }
 
@@ -243,12 +242,8 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const data = traineeDoc.data();
     
     const updatePayload: Record<string, any> = {};
-    if (!data.quizCompletions || data.quizCompletions.length === 0) {
-        updatePayload.quizCompletions = data.email === 'trainee@example.com'
-            ? DUMMY_COMPLETION_DATA
-            : generateRandomCompletionData();
-    }
-     if (!data.assignedQuizIds) {
+
+    if (!data.assignedQuizIds) {
         updatePayload.assignedQuizIds = [];
     }
      if (!data.assignedChallengeIds) {
@@ -256,6 +251,9 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     }
     if (!data.completedChallengeIds) {
         updatePayload.completedChallengeIds = [];
+    }
+     if (!data.quizCompletions) {
+        updatePayload.quizCompletions = [];
     }
 
     if (Object.keys(updatePayload).length > 0) {
@@ -268,7 +266,6 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
         } as Trainee;
     }
     
-
     return {
         id: traineeDoc.id,
         ...data,
