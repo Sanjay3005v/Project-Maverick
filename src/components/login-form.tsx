@@ -45,22 +45,13 @@ function PasswordResetDialog() {
       await sendPasswordResetEmail(auth, email);
       toast({
         title: 'Password Reset Email Sent',
-        description: 'Check your inbox (and spam folder) for a link to reset your password.',
+        description: 'If an account exists for this email, you will receive a reset link. Check your spam folder.',
       });
       setIsOpen(false);
     } catch (error: any) {
       let description = 'An unexpected error occurred. Please try again.';
       if (error.code === 'auth/invalid-email') {
         description = 'The email address you entered is not valid.';
-      } else if (error.code === 'auth/user-not-found') {
-        // We still show a success message for security reasons
-        // to prevent email enumeration attacks.
-         toast({
-            title: 'Password Reset Email Sent',
-            description: 'If an account exists for this email, you will receive a reset link.',
-        });
-        setIsOpen(false);
-        return; // Exit early
       }
       toast({
         variant: 'destructive',
@@ -75,7 +66,7 @@ function PasswordResetDialog() {
    return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" className="px-0 text-white/80 hover:text-white">Forgot your password?</Button>
+        <Button variant="link" className="px-0">Forgot your password?</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handlePasswordReset}>
@@ -182,26 +173,26 @@ export function LoginForm() {
 
   return (
     <div className={cn(
-        "bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[580px]",
-        "right-panel-active" // This class name will be toggled by JS in a real scenario
+        "bg-card rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[580px]",
+        isSignUp ? "right-panel-active" : ""
     )}
-     id="container" // ID for JS to target
+     id="container" 
     >
         {/* Sign Up Form */}
         <div className={cn(
-            "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
             "sign-up-container"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-transparent h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold font-headline mb-4 text-slate-800">Create Account</h1>
-                <span className="text-slate-600 mb-4 text-sm">Use your email for registration</span>
+            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
+                <span className="text-muted-foreground mb-4 text-sm">Use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
                     value={name} 
                     onChange={e => setName(e.target.value)}
                     required
-                    className="my-2 bg-slate-200/80 border-0" 
+                    className="my-2" 
                 />
                 <Input 
                     type="email" 
@@ -209,7 +200,7 @@ export function LoginForm() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="my-2 bg-slate-200/80 border-0"
+                    className="my-2"
                 />
                 <Input 
                     type="password" 
@@ -217,7 +208,7 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="my-2 bg-slate-200/80 border-0"
+                    className="my-2"
                 />
                 <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : <UserPlus />}
@@ -228,19 +219,19 @@ export function LoginForm() {
 
         {/* Sign In Form */}
         <div className={cn(
-            "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 z-20",
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20",
             "sign-in-container"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-transparent h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold font-headline mb-4 text-slate-800">Sign In</h1>
-                <span className="text-slate-600 mb-4 text-sm">or use your account</span>
+            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
+                 <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
                  <Input 
                     type="email" 
                     placeholder="Email" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="my-2 bg-slate-200/80 border-0"
+                    className="my-2"
                 />
                 <Input 
                     type="password" 
@@ -248,7 +239,7 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="my-2 bg-slate-200/80 border-0"
+                    className="my-2"
                 />
                 <PasswordResetDialog />
                  <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
@@ -264,7 +255,7 @@ export function LoginForm() {
             "overlay-container"
         )}>
             <div className={cn(
-                "bg-gradient-to-br from-primary to-rose-500 relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
+                "bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
                  "overlay"
             )}>
                 <div className={cn(
@@ -273,8 +264,8 @@ export function LoginForm() {
                 )}>
                     <Rocket className="h-16 w-16 mb-4" />
                     <h1 className="text-3xl font-bold font-headline">Welcome Back!</h1>
-                    <p className="text-sm my-4">Log in to resume your journey and continue making progress.</p>
-                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" id="signIn">Sign In</Button>
+                    <p className="text-sm my-4">Log in to resume your journey with Maverick Mindset.</p>
+                    <Button variant="ghost" className="rounded-full px-12" id="signIn" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
 
                 <div className={cn(
@@ -284,31 +275,10 @@ export function LoginForm() {
                     <Rocket className="h-16 w-16 mb-4" />
                     <h1 className="text-3xl font-bold font-headline">Hello, Trainee!</h1>
                     <p className="text-sm my-4">Enter your details and start your journey with us today.</p>
-                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" id="signUp">Sign Up</Button>
+                     <Button variant="ghost" className="rounded-full px-12" id="signUp" onClick={() => setIsSignUp(true)}>Sign Up</Button>
                 </div>
             </div>
         </div>
-
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              const signUpButton = document.getElementById('signUp');
-              const signInButton = document.getElementById('signIn');
-              const container = document.getElementById('container');
-
-              if (signUpButton && signInButton && container) {
-                  signUpButton.addEventListener('click', () => {
-                      container.classList.add('right-panel-active');
-                  });
-
-                  signInButton.addEventListener('click', () => {
-                      container.classList.remove('right-panel-active');
-                  });
-              }
-            `,
-          }}
-        />
-
         <style jsx>{`
             .right-panel-active .sign-in-container {
                 transform: translateX(100%);

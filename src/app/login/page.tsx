@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   return (
     <main 
-        className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-orange-400 to-rose-500"
+        className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary"
     >
       <LoginForm />
     </main>
