@@ -28,10 +28,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
+import { GetOnTrackDialog } from "@/components/get-on-track-dialog";
 
 export const dynamic = 'force-dynamic';
 
@@ -42,13 +43,14 @@ export default function TraineeManagementPage() {
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const fetchTrainees = async () => {
+    setLoading(true);
+    const trainees = await getAllTrainees();
+    setAllTrainees(trainees);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchTrainees = async () => {
-      setLoading(true);
-      const trainees = await getAllTrainees();
-      setAllTrainees(trainees);
-      setLoading(false);
-    };
     fetchTrainees();
   }, []);
 
@@ -210,6 +212,13 @@ export default function TraineeManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
+                        { (fresher.status === 'At Risk' || fresher.status === 'Need Attention') &&
+                          <GetOnTrackDialog trainee={fresher} onPlanAssigned={fetchTrainees}>
+                            <Button variant="secondary" size="sm" className="mr-2">
+                              <Sparkles className="mr-2 h-4 w-4" /> Get On Track
+                            </Button>
+                          </GetOnTrackDialog>
+                        }
                         <Link href={`/admin/trainees?id=${fresher.id}`}>
                            <Button variant="ghost" size="icon">
                                 <UserCog className="h-4 w-4" />

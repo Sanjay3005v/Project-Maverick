@@ -8,3 +8,4 @@ import '@/ai/flows/evaluate-code-challenge.ts';
 import '@/ai/flows/generate-quiz-flow.ts';
 import '@/ai/flows/generate-challenge-flow.ts';
 import '@/ai/flows/chatbot-flow.ts';
+import '@/ai/flows/generate-catch-up-plan.ts';
