@@ -7,7 +7,7 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, LogIn, Mail } from "lucide-react";
+import { Loader2, UserPlus, LogIn, Mail, Rocket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,7 @@ function PasswordResetDialog() {
    return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" className="px-0">Forgot your password?</Button>
+        <Button variant="link" className="px-0 text-white/80 hover:text-white">Forgot your password?</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handlePasswordReset}>
@@ -182,24 +182,26 @@ export function LoginForm() {
 
   return (
     <div className={cn(
-        "bg-background rounded-lg shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[520px]",
-        isSignUp && "right-panel-active"
-    )}>
+        "bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[580px]",
+        "right-panel-active" // This class name will be toggled by JS in a real scenario
+    )}
+     id="container" // ID for JS to target
+    >
         {/* Sign Up Form */}
         <div className={cn(
             "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
-            isSignUp && "transform translate-x-full opacity-100 z-20"
+            "sign-up-container"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-background h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
-                <span>or use your email for registration</span>
+            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-transparent h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4 text-slate-800">Create Account</h1>
+                <span className="text-slate-600 mb-4 text-sm">Use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
                     value={name} 
                     onChange={e => setName(e.target.value)}
                     required
-                    className="my-2" 
+                    className="my-2 bg-slate-200/80 border-0" 
                 />
                 <Input 
                     type="email" 
@@ -207,7 +209,7 @@ export function LoginForm() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="my-2" 
+                    className="my-2 bg-slate-200/80 border-0"
                 />
                 <Input 
                     type="password" 
@@ -215,7 +217,7 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="my-2" 
+                    className="my-2 bg-slate-200/80 border-0"
                 />
                 <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : <UserPlus />}
@@ -227,18 +229,18 @@ export function LoginForm() {
         {/* Sign In Form */}
         <div className={cn(
             "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 z-20",
-            isSignUp && "transform -translate-x-full opacity-0"
+            "sign-in-container"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-background h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
-                <span>or use your account</span>
+            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-transparent h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4 text-slate-800">Sign In</h1>
+                <span className="text-slate-600 mb-4 text-sm">or use your account</span>
                  <Input 
                     type="email" 
                     placeholder="Email" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="my-2" 
+                    className="my-2 bg-slate-200/80 border-0"
                 />
                 <Input 
                     type="password" 
@@ -246,7 +248,7 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="my-2" 
+                    className="my-2 bg-slate-200/80 border-0"
                 />
                 <PasswordResetDialog />
                  <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
@@ -259,34 +261,53 @@ export function LoginForm() {
         {/* Overlay */}
         <div className={cn(
             "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
-            isSignUp && "-translate-x-full"
+            "overlay-container"
         )}>
             <div className={cn(
-                "bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
-                 isSignUp && "translate-x-1/2"
+                "bg-gradient-to-br from-primary to-rose-500 relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
+                 "overlay"
             )}>
-                 {/* Overlay Left */}
                 <div className={cn(
                     "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
-                    "transform -translate-x-1/5",
-                    isSignUp && "transform translate-x-0"
+                    "overlay-panel overlay-left"
                 )}>
+                    <Rocket className="h-16 w-16 mb-4" />
                     <h1 className="text-3xl font-bold font-headline">Welcome Back!</h1>
-                    <p className="text-sm my-4">To keep connected with us please login with your personal info</p>
-                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setIsSignUp(false)}>Sign In</Button>
+                    <p className="text-sm my-4">Log in to resume your journey and continue making progress.</p>
+                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" id="signIn">Sign In</Button>
                 </div>
 
-                {/* Overlay Right */}
                 <div className={cn(
                     "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
-                    isSignUp && "transform translate-x-1/5"
+                    "overlay-panel overlay-right"
                 )}>
+                    <Rocket className="h-16 w-16 mb-4" />
                     <h1 className="text-3xl font-bold font-headline">Hello, Trainee!</h1>
-                    <p className="text-sm my-4">Enter your personal details and start your journey with us</p>
-                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setIsSignUp(true)}>Sign Up</Button>
+                    <p className="text-sm my-4">Enter your details and start your journey with us today.</p>
+                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" id="signUp">Sign Up</Button>
                 </div>
             </div>
         </div>
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              const signUpButton = document.getElementById('signUp');
+              const signInButton = document.getElementById('signIn');
+              const container = document.getElementById('container');
+
+              if (signUpButton && signInButton && container) {
+                  signUpButton.addEventListener('click', () => {
+                      container.classList.add('right-panel-active');
+                  });
+
+                  signInButton.addEventListener('click', () => {
+                      container.classList.remove('right-panel-active');
+                  });
+              }
+            `,
+          }}
+        />
 
         <style jsx>{`
             .right-panel-active .sign-in-container {
@@ -296,7 +317,7 @@ export function LoginForm() {
                 transform: translateX(100%);
                 opacity: 1;
                 z-index: 5;
-                animation: show 0.7s;
+                animation: show 0.6s;
             }
             @keyframes show {
                 0%, 49.99% {
@@ -317,8 +338,14 @@ export function LoginForm() {
             .right-panel-active .overlay-left {
                 transform: translateX(0);
             }
+            .overlay-left {
+                transform: translateX(-20%);
+            }
             .right-panel-active .overlay-right {
                 transform: translateX(20%);
+            }
+            .overlay-right {
+                transform: translateX(0);
             }
         `}</style>
     </div>
