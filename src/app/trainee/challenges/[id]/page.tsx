@@ -45,9 +45,21 @@ function ChallengeContent() {
             setChallenge(fetchedChallenge);
             setTrainee(fetchedTrainee);
 
-            if (fetchedChallenge?.tags.map(t => t.toLowerCase()).includes('sql')) {
-              setLanguage('sql');
-              setIsSqlChallenge(true);
+            if (fetchedChallenge) {
+                const supportedLanguages = ['python', 'java', 'javascript', 'sql', 'c', 'cpp', 'php'];
+                const lowercasedTags = fetchedChallenge.tags.map(t => t.toLowerCase());
+                const foundLanguage = supportedLanguages.find(lang => lowercasedTags.includes(lang));
+
+                if (foundLanguage) {
+                    setLanguage(foundLanguage);
+                    if (foundLanguage === 'sql') {
+                        setIsSqlChallenge(true);
+                    } else {
+                        setIsSqlChallenge(false);
+                    }
+                } else {
+                    setIsSqlChallenge(false);
+                }
             }
 
             if (fetchedTrainee?.completedChallengeIds?.includes(id)) {
