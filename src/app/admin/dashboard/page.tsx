@@ -150,18 +150,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/admin/notifications">
-          <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Notifications</CardTitle>
-              <Bell className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Send Alerts</div>
-              <p className="text-xs text-muted-foreground">Broadcast announcements to trainees</p>
-            </CardContent>
-          </Card>
-        </Link>
          <Link href="/admin/messages">
             <Card className="cursor-pointer hover:border-primary transition-colors h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -170,7 +158,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">View Inbox</div>
-                    <p className="text-xs text-muted-foreground">Chat with your trainees</p>
+                    <p className="text-xs text-muted-foreground">Chat with trainees and send announcements</p>
                 </CardContent>
             </Card>
         </Link>
