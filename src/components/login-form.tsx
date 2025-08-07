@@ -6,96 +6,11 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswor
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogIn, UserPlus } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "./ui/dialog";
-
-function PasswordResetDialog() {
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
-    const { toast } = useToast();
-
-    const handlePasswordReset = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) {
-            toast({
-                variant: 'destructive',
-                title: 'Email Required',
-                description: 'Please enter your email address.',
-            });
-            return;
-        }
-        setLoading(true);
-        try {
-            await sendPasswordResetEmail(auth, email);
-            toast({
-                title: 'Password Reset Email Sent',
-                description: 'If an account exists for this email, a reset link has been sent. Please check your inbox (and spam folder).',
-            });
-            setIsOpen(false);
-        } catch (error: any) {
-             let description = 'Failed to send password reset email. Please try again later.';
-             if (error.code === 'auth/invalid-email') {
-                description = 'The email address you entered is not valid.';
-             } else if (error.code === 'auth/network-request-failed') {
-                description = 'A network error occurred. Please check your connection.';
-             }
-             toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: description,
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    return (
-         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button type="button" variant="link" size="sm" className="p-0 h-auto">
-                    Forgot Password?
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <form onSubmit={handlePasswordReset}>
-                    <DialogHeader>
-                        <DialogTitle>Reset Your Password</DialogTitle>
-                        <DialogDescription>
-                            Enter your email address below, and we'll send you a link to reset your password.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="my-4">
-                        <Label htmlFor="reset-email">Email Address</Label>
-                        <Input 
-                            id="reset-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                            required
-                        />
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={loading}>
-                            {loading ? <Loader2 className="mr-2 animate-spin" /> : null}
-                            Send Reset Link
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    )
-}
-
+import { cn } from "@/lib/utils";
 
 export function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -106,12 +21,11 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleAuthAction = async (e: React.FormEvent) => {
+  const handleAuthAction = async (e: React.FormEvent, isSignUpAction: boolean) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUp) {
-      // Handle Sign Up
+    if (isSignUpAction) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -150,7 +64,7 @@ export function LoginForm() {
 
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${isUserAdmin ? 'Admin' : 'Trainee'}!`,
+          description: `Welcome back!`,
         });
         
         router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
@@ -168,65 +82,112 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full">
-        <CardHeader className="p-0 mb-6">
-            <CardTitle className="text-2xl font-headline">{isSignUp ? "Create Account" : "Login"}</CardTitle>
-            <CardDescription>
-                 {isSignUp ? "Fill in your details to get started." : "Enter your credentials to access your dashboard."}
-            </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleAuthAction}>
-            <CardContent className="grid gap-4 p-0">
-                 {isSignUp && (
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                            id="name"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                    </div>
-                 )}
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4 p-0 mt-6">
-                <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : isSignUp ? (
-                       <UserPlus className="mr-2 h-4 w-4" />
-                    ) : (
-                        <LogIn className="mr-2 h-4 w-4" />
-                    )}
-                    {isSignUp ? "Sign Up" : "Login"}
+    <div className={cn(
+        "bg-white rounded-xl shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[520px]",
+        "transition-all duration-700 ease-in-out",
+        isSignUp && "right-panel-active"
+    )}>
+        {/* Sign Up Form */}
+        <div className={cn(
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
+            isSignUp && "transform translate-x-full opacity-100 z-20"
+        )}>
+            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-white h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold mb-4">Create Account</h1>
+                <span>or use your email for registration</span>
+                <Input 
+                    type="text" 
+                    placeholder="Name" 
+                    value={name} 
+                    onChange={e => setName(e.target.value)}
+                    required
+                    className="bg-gray-100 border-none my-2" 
+                />
+                <Input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    className="bg-gray-100 border-none my-2" 
+                />
+                <Input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    className="bg-gray-100 border-none my-2" 
+                />
+                <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
+                    {loading && <Loader2 className="animate-spin mr-2" />}
+                    Sign Up
                 </Button>
-                <div className="w-full flex justify-between items-center">
-                     <Button type="button" variant="link" onClick={() => setIsSignUp(!isSignUp)} disabled={loading} className="p-0 h-auto">
-                        {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
-                    </Button>
-                     {!isSignUp && <PasswordResetDialog />}
+            </form>
+        </div>
+
+        {/* Sign In Form */}
+        <div className={cn(
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20",
+            isSignUp && "transform -translate-x-full opacity-0"
+        )}>
+            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-white h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold mb-4">Sign in</h1>
+                <span>or use your account</span>
+                 <Input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    className="bg-gray-100 border-none my-2" 
+                />
+                <Input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    className="bg-gray-100 border-none my-2" 
+                />
+                 <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
+                    {loading && <Loader2 className="animate-spin mr-2" />}
+                    Sign In
+                </Button>
+            </form>
+        </div>
+        
+        {/* Overlay */}
+        <div className={cn(
+            "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
+            isSignUp && "-translate-x-full"
+        )}>
+            <div className={cn(
+                "bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
+                 isSignUp && "translate-x-1/2"
+            )}>
+                 {/* Overlay Left */}
+                <div className={cn(
+                    "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-white transition-transform duration-700 ease-in-out",
+                    "transform -translate-x-1/5",
+                    isSignUp && "transform translate-x-0"
+                )}>
+                    <h1 className="text-3xl font-bold">Welcome Back!</h1>
+                    <p className="text-sm my-4">To keep connected with us please login with your personal info</p>
+                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-white text-white" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
-            </CardFooter>
-        </form>
+
+                {/* Overlay Right */}
+                <div className={cn(
+                    "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-white transition-transform duration-700 ease-in-out",
+                    isSignUp && "transform translate-x-1/5"
+                )}>
+                    <h1 className="text-3xl font-bold">Hello, Friend!</h1>
+                    <p className="text-sm my-4">Enter your personal details and start your journey with us</p>
+                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-white text-white" onClick={() => setIsSignUp(true)}>Sign Up</Button>
+                </div>
+            </div>
+        </div>
     </div>
   );
 }
