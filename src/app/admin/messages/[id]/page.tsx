@@ -31,11 +31,17 @@ function ChatBubble({ message }: { message: Message }) {
   const avatarText = isAdmin ? 'A' : 'T';
 
   const getMessageDate = (timestamp: any) => {
-    if (timestamp && typeof timestamp.toDate === 'function') {
+    if (!timestamp) return null;
+    if (typeof timestamp.toDate === 'function') {
       return timestamp.toDate();
     }
-    return new Date(timestamp);
+    // Attempt to convert from other formats, ensure it's valid
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? null : date;
   }
+  
+  const messageDate = getMessageDate(message.createdAt);
+
 
   return (
     <div className={`flex items-start gap-3 ${bubbleAlignment}`}>
@@ -49,7 +55,7 @@ function ChatBubble({ message }: { message: Message }) {
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className={`text-xs text-muted-foreground mt-1 ${isAdmin ? 'text-right' : 'text-left'}`}>
-          {format(getMessageDate(message.createdAt), 'p')}
+          {messageDate ? format(messageDate, 'p') : ''}
         </p>
       </div>
       {isAdmin && (
