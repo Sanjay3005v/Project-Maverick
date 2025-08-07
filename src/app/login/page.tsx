@@ -31,10 +31,10 @@ export default function LoginPage() {
 
   return (
     <main 
-        className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary"
+        className="flex flex-col items-center justify-center min-h-screen p-4 bg-background"
         style={{
              background: `
-                radial-gradient(circle at 10% 20%, rgb(204, 221, 238) 0%, rgb(231, 239, 249) 90.1%)
+                radial-gradient(circle at 10% 20%, hsl(var(--secondary)) 0%, hsl(var(--background)) 90.1%)
              `
         }}
     >
