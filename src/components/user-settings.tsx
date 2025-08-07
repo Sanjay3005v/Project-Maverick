@@ -24,13 +24,13 @@ import { AvatarUploader } from './avatar-uploader';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
-function DeleteAccountDialog({ trainee, onDeleted, isGoogleSignIn }: { trainee: Trainee; onDeleted: () => void; isGoogleSignIn: boolean; }) {
+function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDeleted: () => void; }) {
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState('');
     const { toast } = useToast();
 
     const handleDelete = async () => {
-        if (!isGoogleSignIn && !password) {
+        if (!password) {
             toast({
                 variant: 'destructive',
                 title: 'Password Required',
@@ -41,7 +41,7 @@ function DeleteAccountDialog({ trainee, onDeleted, isGoogleSignIn }: { trainee: 
 
         setLoading(true);
         try {
-            await deleteTraineeAccount(trainee.id, trainee.email, isGoogleSignIn ? undefined : password);
+            await deleteTraineeAccount(trainee.id, trainee.email, password);
             toast({
                 title: 'Account Deleted',
                 description: 'Your account has been permanently deleted.',
@@ -82,25 +82,19 @@ function DeleteAccountDialog({ trainee, onDeleted, isGoogleSignIn }: { trainee: 
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action is permanent and cannot be undone. 
-                        {isGoogleSignIn 
-                            ? " This is a sensitive operation and may require you to sign in again to confirm."
-                            : " To confirm, please enter your password."
-                        }
+                        This action is permanent and cannot be undone. To confirm, please enter your password.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                {!isGoogleSignIn && (
-                    <div className="space-y-2">
-                        <Label htmlFor="password-confirm" className="sr-only">Password</Label>
-                        <Input 
-                            id="password-confirm"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </div>
-                )}
+                <div className="space-y-2">
+                    <Label htmlFor="password-confirm" className="sr-only">Password</Label>
+                    <Input 
+                        id="password-confirm"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-destructive hover:bg-destructive/90">
@@ -153,7 +147,6 @@ export function UserSettings() {
   };
 
   const isUserAdmin = user?.email?.includes('admin');
-  const isGoogleSignIn = user?.providerData.some(provider => provider.providerId === 'google.com');
 
   return (
     <DropdownMenu>
@@ -190,7 +183,7 @@ export function UserSettings() {
         {!isUserAdmin && trainee && (
             <>
                 <DropdownMenuSeparator />
-                <DeleteAccountDialog trainee={trainee} onDeleted={handleSignOut} isGoogleSignIn={!!isGoogleSignIn} />
+                <DeleteAccountDialog trainee={trainee} onDeleted={handleSignOut} />
             </>
         )}
       </DropdownMenuContent>
