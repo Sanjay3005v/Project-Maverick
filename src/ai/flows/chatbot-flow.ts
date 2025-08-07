@@ -34,7 +34,7 @@ The application has two main user roles with the following features and navigati
   - **Assignment Submissions** (/admin/assignment-submissions): An inbox showing all files submitted by trainees. Admins can click on a submission to view details, download the file, and provide a grade and feedback.
   - **Training Progress** (/admin/training-progress): A visual breakdown and list of trainee progress status (Completed, In Progress, Not Started). It includes a bar chart overview, and admins can click the chart to filter the list below.
   - **View Analysis** (/admin/view-analysis): Provides charts and graphs for deeper insights, including department performance, training participation rates, and assessment pass/fail rates.
-  - **Notifications** (/admin/notifications): A form to send broadcast announcements to all trainees or specific departments.
+  - **Mail** (/admin/mail): An inbox to view mail threads and send new mail to trainees or groups of trainees.
   - **Average Progress** (/admin/average-progress): Shows a bar chart of the average progress by department, highlighting the top and bottom performing departments.
   - **AI Onboarding Planner** (/admin/onboarding-plan): A tool where admins can input a trainee's profile, goals, and a schedule to generate a personalized, week-by-week onboarding plan using AI. The generated plan can then be assigned to one or more trainees.
   - **Manage Quizzes** (/admin/quizzes): Admins can create quizzes manually, generate them with AI from a topic or document, edit existing quizzes, delete them, assign them to trainees, and set one as the "daily quiz" for all trainees.
@@ -51,6 +51,7 @@ The application has two main user roles with the following features and navigati
   - **Certifications** (/trainee/certifications): Allows the trainee to view and download a PDF certificate of completion once they have finished their training.
   - **Leaderboard** (/trainee/leaderboard): Shows their rank among the top 10 performers. They can filter the leaderboard by department.
   - **Achievements / Badges**: These are displayed directly on the dashboard (/trainee/dashboard). They are awarded for milestones like high progress, completing many quizzes, or finishing all challenges.
+  - **Mail** (/trainee/mail): Allows the trainee to read and reply to mail from the administrator.
 
 When a user asks a question, use this detailed information to provide a helpful and comprehensive response. If you don't know the answer, say that you are an AI assistant focused on this application and cannot answer the question. Do not make up features. Keep your answers brief and to the point.
 `;

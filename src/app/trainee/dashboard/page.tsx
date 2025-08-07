@@ -11,7 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star, MessageSquare } from "lucide-react";
+import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star, Mail } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
@@ -193,16 +193,16 @@ export default function TraineeDashboard() {
                 </CardContent>
             </Card>
         </Link>
-        <Link href="/trainee/messages">
+        <Link href="/trainee/mail">
             <Card className="hover:border-primary transition-colors h-full">
                 <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-headline">Messages</CardTitle>
-                    <MessageSquare className="h-6 w-6 text-muted-foreground" />
+                    <CardTitle className="text-lg font-headline">Mail</CardTitle>
+                    <Mail className="h-6 w-6 text-muted-foreground" />
                 </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">Chat with the admin</p>
+                  <p className="text-sm text-muted-foreground">Check your admin mail</p>
                 </CardContent>
             </Card>
         </Link>

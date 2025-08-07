@@ -2,88 +2,85 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
 import {
   Message,
   getMessages,
   sendMessage,
-  markAsReadByAdmin,
-  getConversationForTrainee,
-  Conversation,
+  markAsReadByTrainee,
 } from '@/services/messaging-service';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Send, ArrowLeft, Bot, User } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Loader2, Send, Bot, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { Trainee, getTraineeByEmail } from '@/services/trainee-service';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-function ChatBubble({ message }: { message: Message }) {
+function ChatBubble({ message, traineeName }: { message: Message, traineeName: string }) {
   const isAdmin = message.senderId === 'admin';
-  const bubbleAlignment = isAdmin ? 'justify-end' : 'justify-start';
+  const bubbleAlignment = isAdmin ? 'justify-start' : 'justify-end';
   const bubbleColor = isAdmin
-    ? 'bg-primary text-primary-foreground'
-    : 'bg-muted';
-  const avatarText = isAdmin ? 'A' : 'T';
+    ? 'bg-muted'
+    : 'bg-primary text-primary-foreground';
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
   const messageDate = message.createdAt ? new Date(message.createdAt) : null;
 
   return (
     <div className={`flex items-start gap-3 ${bubbleAlignment}`}>
-      {!isAdmin && (
+      {isAdmin && (
         <Avatar className="border">
-          <AvatarFallback>{avatarText}</AvatarFallback>
+          <AvatarFallback>A</AvatarFallback>
         </Avatar>
       )}
       <div className="flex flex-col">
         <div className={`rounded-lg p-3 max-w-xs md:max-w-md ${bubbleColor}`}>
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
-        <p className={`text-xs text-muted-foreground mt-1 ${isAdmin ? 'text-right' : 'text-left'}`}>
+         <p className={`text-xs text-muted-foreground mt-1 ${isAdmin ? 'text-left' : 'text-right'}`}>
           {messageDate ? format(messageDate, 'p') : ''}
         </p>
       </div>
-      {isAdmin && (
+      {!isAdmin && (
         <Avatar className="border">
-          <AvatarFallback>{avatarText}</AvatarFallback>
+            <AvatarFallback>{getInitials(traineeName)}</AvatarFallback>
         </Avatar>
       )}
     </div>
   );
 }
 
-export default function AdminMessagePage() {
-  const params = useParams();
-  const traineeId = params.id as string;
-  const { user } = useAuth();
+export default function TraineeMailPage() {
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
-  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = async () => {
-    if (!traineeId) return;
-    const [conv, msgs] = await Promise.all([
-      getConversationForTrainee(traineeId),
-      getMessages(traineeId),
-    ]);
-    setConversation(conv);
-    setMessages(msgs);
-    markAsReadByAdmin(traineeId);
+  const fetchTraineeAndMessages = async (email: string) => {
+    const traineeData = await getTraineeByEmail(email);
+    setTrainee(traineeData);
+    if (traineeData) {
+      const msgs = await getMessages(traineeData.id);
+      setMessages(msgs);
+      markAsReadByTrainee(traineeData.id);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchMessages();
-  }, [traineeId]);
+    if (user?.email && !authLoading) {
+      fetchTraineeAndMessages(user.email);
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,49 +88,57 @@ export default function AdminMessagePage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user || !conversation) return;
+    if (!newMessage.trim() || !trainee) return;
     setSending(true);
 
     try {
-      await sendMessage(
-        traineeId,
-        conversation.traineeName,
-        'admin',
-        newMessage
-      );
+      await sendMessage(trainee.id, trainee.name, trainee.id, newMessage);
       setNewMessage('');
-      fetchMessages(); // Refetch messages to show the new one
+      fetchTraineeAndMessages(trainee.email); // Refetch messages
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to send message.',
+        description: 'Failed to send mail.',
       });
     } finally {
       setSending(false);
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
+  
+  if (!trainee) {
+     return (
+       <div className="container mx-auto p-4 md:p-8 text-center">
+         <p>Could not load your profile. Please contact an administrator.</p>
+         <Link href="/trainee/dashboard" className="mt-4 inline-block">
+            <Button variant="outline">Back to Dashboard</Button>
+         </Link>
+       </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8 h-full flex flex-col">
        <header className="mb-4">
-         <Link href="/admin/messages" className="flex items-center text-muted-foreground hover:text-foreground mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to All Messages
-        </Link>
-        <h1 className="text-3xl font-bold">Conversation with {conversation?.traineeName}</h1>
+        <h1 className="text-3xl font-bold">Mail</h1>
+        <p className="text-muted-foreground">Your mail thread with the site administrator.</p>
       </header>
       <div className="flex-1 overflow-y-auto p-4 space-y-6 border rounded-lg bg-background">
+        {messages.length === 0 && (
+            <div className="text-center text-muted-foreground py-12">
+                No mail yet. Send a message to start the conversation!
+            </div>
+        )}
         {messages.map((message) => (
-          <ChatBubble key={message.id} message={message} />
+          <ChatBubble key={message.id} message={message} traineeName={trainee.name} />
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -141,7 +146,7 @@ export default function AdminMessagePage() {
         <Input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
+          placeholder="Type your message to the admin..."
           disabled={sending}
         />
         <Button type="submit" disabled={sending}>

@@ -8,7 +8,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from '@/components/ui/card';
 import {
   Table,
@@ -18,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, MessageSquare, Dot, Edit, Send } from 'lucide-react';
+import { Loader2, Mail, Dot, Edit, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Conversation, getConversations, sendMessage } from '@/services/messaging-service';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
@@ -90,14 +89,14 @@ function NewMessageDialog({ trainees }: { trainees: Trainee[] }) {
       for (const traineeId of selectedTrainees) {
         const trainee = trainees.find(t => t.id === traineeId);
         if (trainee) {
-          const fullMessage = subject ? `${subject}\n\n${message}` : message;
+          const fullMessage = subject ? `Subject: ${subject}\n\n${message}` : message;
           await sendMessage(trainee.id, trainee.name, 'admin', fullMessage);
         }
       }
 
       toast({
-        title: 'Messages Sent!',
-        description: `Your message has been sent to ${selectedTrainees.length} trainee(s).`,
+        title: 'Mail Sent!',
+        description: `Your mail has been sent to ${selectedTrainees.length} trainee(s).`,
       });
       setSubject('');
       setMessage('');
@@ -108,7 +107,7 @@ function NewMessageDialog({ trainees }: { trainees: Trainee[] }) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to send messages.'
+        description: 'Failed to send mail.'
       });
     } finally {
       setLoading(false);
@@ -119,14 +118,14 @@ function NewMessageDialog({ trainees }: { trainees: Trainee[] }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button><Edit className="mr-2" /> New Message</Button>
+        <Button><Edit className="mr-2" /> New Mail</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Send a New Message</DialogTitle>
+            <DialogTitle>Compose New Mail</DialogTitle>
             <DialogDescription>
-              Compose and send a message to one or more trainees.
+              Compose and send mail to one or more trainees.
             </DialogDescription>
           </DialogHeader>
 
@@ -214,7 +213,7 @@ function NewMessageDialog({ trainees }: { trainees: Trainee[] }) {
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminMessagesPage() {
+export default function AdminMailPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,14 +235,14 @@ export default function AdminMessagesPage() {
   }, []);
 
   const handleRowClick = (traineeId: string) => {
-    router.push(`/admin/messages/${traineeId}`);
+    router.push(`/admin/mail/${traineeId}`);
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-4">Loading Conversations...</p>
+        <p className="ml-4">Loading Mail...</p>
       </div>
     );
   }
@@ -251,9 +250,9 @@ export default function AdminMessagesPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-headline font-bold">Messages</h1>
+        <h1 className="text-4xl font-headline font-bold">Mail</h1>
         <p className="text-muted-foreground">
-          View conversations and send new messages to trainees.
+          View mail threads and send new mail to trainees.
         </p>
       </header>
       <Card>
@@ -261,11 +260,11 @@ export default function AdminMessagesPage() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>
-                <MessageSquare className="mr-2 h-6 w-6" />
-                Conversation Inbox
+                <Mail className="mr-2 h-6 w-6" />
+                Inbox
               </CardTitle>
               <CardDescription>
-                This list shows all conversations with trainees.
+                This list shows all mail threads with trainees.
               </CardDescription>
             </div>
             <NewMessageDialog trainees={trainees} />
@@ -286,7 +285,7 @@ export default function AdminMessagesPage() {
                 {conversations.length === 0 && !loading && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center h-24">
-                      No conversations yet.
+                      No mail threads yet.
                     </TableCell>
                   </TableRow>
                 )}
@@ -309,7 +308,7 @@ export default function AdminMessagesPage() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      {!convo.isReadByAdmin && <Badge>New Message</Badge>}
+                      {!convo.isReadByAdmin && <Badge>New Mail</Badge>}
                     </TableCell>
                   </TableRow>
                 ))}
