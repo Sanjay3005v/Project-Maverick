@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,84 @@ import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "./ui/dialog";
+
+function PasswordResetDialog() {
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const { toast } = useToast();
+
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) {
+            toast({
+                variant: 'destructive',
+                title: 'Email Required',
+                description: 'Please enter your email address.',
+            });
+            return;
+        }
+        setLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, email);
+            toast({
+                title: 'Password Reset Email Sent',
+                description: 'Please check your inbox for instructions to reset your password.',
+            });
+            setIsOpen(false);
+        } catch (error: any) {
+             toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to send password reset email. Please check the email address.',
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+         <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button type="button" variant="link" size="sm" className="p-0 h-auto">
+                    Forgot Password?
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <form onSubmit={handlePasswordReset}>
+                    <DialogHeader>
+                        <DialogTitle>Reset Your Password</DialogTitle>
+                        <DialogDescription>
+                            Enter your email address below, and we'll send you a link to reset your password.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="my-4">
+                        <Label htmlFor="reset-email">Email Address</Label>
+                        <Input 
+                            id="reset-email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            required
+                        />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? <Loader2 className="mr-2 animate-spin" /> : null}
+                            Send Reset Link
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 
 export function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -135,9 +213,12 @@ export function LoginForm() {
                     )}
                     {isSignUp ? "Sign Up" : "Login"}
                 </Button>
-                <Button type="button" variant="link" onClick={() => setIsSignUp(!isSignUp)} disabled={loading}>
-                    {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
-                </Button>
+                <div className="w-full flex justify-between items-center">
+                     <Button type="button" variant="link" onClick={() => setIsSignUp(!isSignUp)} disabled={loading} className="p-0 h-auto">
+                        {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+                    </Button>
+                     {!isSignUp && <PasswordResetDialog />}
+                </div>
             </CardFooter>
         </form>
     </div>
