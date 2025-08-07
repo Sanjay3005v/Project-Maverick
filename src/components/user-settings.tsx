@@ -41,7 +41,7 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
 
         setLoading(true);
         try {
-            await deleteTraineeAccount(trainee.id, trainee.email, password);
+            await deleteTraineeAccount(trainee.id, password);
             toast({
                 title: 'Account Deleted',
                 description: 'Your account has been permanently deleted.',
@@ -49,9 +49,9 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
             onDeleted();
         } catch (error: any) {
             let description = 'An unexpected error occurred.';
-            if (error.code === 'auth/wrong-password') {
+            if (error.code === 'auth/wrong-password' || error.message.includes('wrong-password')) {
                 description = 'The password you entered is incorrect. Please try again.';
-            } else if (error.code === 'auth/requires-recent-login') {
+            } else if (error.code === 'auth/requires-recent-login' || error.message.includes('requires-recent-login')) {
                 description = 'This operation is sensitive and requires recent authentication. Please sign out and sign back in to delete your account.'
             }
              else if (error.code === 'auth/reauthenticate-timeout') {

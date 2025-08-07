@@ -252,23 +252,25 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     });
 }
 
-export async function deleteTraineeAccount(traineeId: string, email: string, password?: string): Promise<void> {
+export async function deleteTraineeAccount(traineeId: string, password?: string): Promise<void> {
     const user = auth.currentUser;
     if (!user) {
         throw new Error("No authenticated user found. Please sign in again.");
     }
     
-    if (traineeId && user.email !== email) {
-        throw new Error("You are not authorized to delete this account.");
-    }
-
-    if (password) {
-        const credential = EmailAuthProvider.credential(user.email!, password);
+    // Re-authenticate user for security reasons before deleting account.
+    if (password && user.email) {
+        const credential = EmailAuthProvider.credential(user.email, password);
         await reauthenticateWithCredential(user, credential);
+    } else {
+        // This case should ideally not be hit if password is required by UI
+        throw new Error("Password is required for account deletion.");
     }
     
+    // Delete Firestore document
     const traineeRef = doc(db, 'trainees', traineeId);
     await deleteDoc(traineeRef);
 
+    // Finally, delete the Firebase Auth user
     await deleteUser(user);
 }
