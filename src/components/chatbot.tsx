@@ -12,6 +12,7 @@ import { chat } from '@/ai/flows/chatbot-flow';
 import type { ChatMessage } from '@/lib/chatbot-schema';
 import { useAuth } from '@/hooks/use-auth';
 import { usePathname } from 'next/navigation';
+import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,13 @@ export function Chatbot() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const pathname = usePathname();
+  const [trainee, setTrainee] = useState<Trainee | null>(null);
 
+  useEffect(() => {
+    if (user?.email) {
+      getTraineeByEmail(user.email).then(setTrainee);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -54,7 +61,7 @@ export function Chatbot() {
   };
   
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('');
+    return name?.split(' ').map(n => n[0]).join('') || 'U';
   }
 
 
@@ -101,8 +108,8 @@ export function Chatbot() {
                   </div>
                    {message.role === 'user' && user && (
                      <Avatar className="border">
-                        <AvatarImage src={(user as any).avatarUrl} />
-                        <AvatarFallback>{getInitials(user.displayName || 'User')}</AvatarFallback>
+                        <AvatarImage src={trainee?.avatarUrl} />
+                        <AvatarFallback>{getInitials(trainee?.name || user?.displayName || '')}</AvatarFallback>
                     </Avatar>
                   )}
                 </div>
