@@ -84,15 +84,15 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-        <CardHeader>
+    <div className="w-full">
+        <CardHeader className="p-0 mb-6">
             <CardTitle className="text-2xl font-headline">{isSignUp ? "Create Account" : "Login"}</CardTitle>
             <CardDescription>
-                 {isSignUp ? "Fill in your details to get started." : "Please enter your credentials to access your dashboard."}
+                 {isSignUp ? "Fill in your details to get started." : "Enter your credentials to access your dashboard."}
             </CardDescription>
         </CardHeader>
         <form onSubmit={handleAuthAction}>
-            <CardContent className="grid gap-4">
+            <CardContent className="grid gap-4 p-0">
                  {isSignUp && (
                     <div className="grid gap-2">
                         <Label htmlFor="name">Full Name</Label>
@@ -124,7 +124,7 @@ export function LoginForm() {
                     />
                 </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter className="flex flex-col gap-4 p-0 mt-6">
                 <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -140,6 +140,6 @@ export function LoginForm() {
                 </Button>
             </CardFooter>
         </form>
-    </Card>
+    </div>
   );
 }

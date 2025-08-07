@@ -20,6 +20,7 @@ import { Heatmap } from '@/components/heatmap';
 import { getBadgesForTrainee, Badge } from '@/lib/badges';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
