@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,45 +95,14 @@ export function LoginForm() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
-
     try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        // Check if trainee exists, if not, create one
-        let trainee = await getTraineeByEmail(user.email!);
-        if (!trainee && !user.email?.includes('admin')) {
-            await addTrainee({
-                name: user.displayName || 'New Trainee',
-                email: user.email!,
-                department: 'Design', // Default department
-                progress: 0,
-                status: 'On Track',
-                dob: new Date().toISOString().split('T')[0], // Default DOB
-            });
-        }
-        
-        toast({
-            title: "Login Successful",
-            description: `Welcome, ${user.displayName || 'User'}!`,
-        });
-
-        const isUserAdmin = user.email?.includes('admin');
-        router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
-
-    } catch (error: any) {
-        let errorMessage = 'An unexpected error occurred.';
-        if (error.code === 'auth/popup-closed-by-user') {
-            errorMessage = 'The login popup was closed before completion. Please try again.';
-        } else if (error.code === 'auth/cancelled-popup-request') {
-            errorMessage = 'Multiple login attempts detected. Please try again.';
-        }
+        await signInWithRedirect(auth, provider);
+    } catch (error) {
         toast({
             variant: "destructive",
             title: "Google Login Failed",
-            description: errorMessage,
+            description: 'Could not start the Google sign-in process. Please try again.',
         });
-    } finally {
         setLoading(false);
     }
   }

@@ -2,17 +2,74 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Rocket } from 'lucide-react';
+import { Rocket, Loader2 } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
+import { useToast } from '@/hooks/use-toast';
+import { getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
+import { addTrainee, getTraineeByEmail } from '@/services/trainee-service';
 
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
   const [year, setYear] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     setYear(new Date().getFullYear());
-  }, []);
+
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          toast({
+            title: 'Login Successful',
+            description: `Welcome back, ${user.displayName || 'User'}!`,
+          });
+          
+          let trainee = await getTraineeByEmail(user.email!);
+          if (!trainee && !user.email?.includes('admin')) {
+              await addTrainee({
+                  name: user.displayName || 'New Trainee',
+                  email: user.email!,
+                  department: 'Design', 
+                  progress: 0,
+                  status: 'On Track',
+                  dob: new Date().toISOString().split('T')[0],
+              });
+          }
+
+          const isUserAdmin = user.email?.includes('admin');
+          router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+        } else {
+            setLoading(false);
+        }
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Could not sign in with Google. Please try again.',
+        });
+        setLoading(false);
+      }
+    };
+
+    handleRedirectResult();
+  }, [router, toast]);
+
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <p className="text-muted-foreground mt-4">Completing login...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
