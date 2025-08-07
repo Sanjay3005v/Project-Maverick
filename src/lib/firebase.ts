@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -18,21 +18,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = initializeAuth(app, {
-  persistence: indexedDBLocalPersistence
-});
+const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// Connect to emulators only in a local development environment.
-if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-  try {
-    // We only connect to the auth emulator. You can connect to others (like Firestore) here if needed.
-    connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-  } catch(e) {
-    // This can happen with hot-reloading. It's safe to ignore.
-  }
-}
-
 
 export { app, auth, db, storage };

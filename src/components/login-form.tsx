@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,22 +95,10 @@ export function LoginForm() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
 
     try {
         const result = await signInWithPopup(auth, provider);
-        // This gives you a Google Access Token. You can use it to access the Google API.
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (!credential) {
-            throw new Error("Could not get credential from Google sign in result.");
-        }
-        
-        // Sign in with the credential.
-        const userCredential = await signInWithCredential(auth, credential);
-        const user = userCredential.user;
-
+        const user = result.user;
 
         // Check if trainee exists, if not, create one
         let trainee = await getTraineeByEmail(user.email!);
@@ -134,10 +122,16 @@ export function LoginForm() {
         router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
 
     } catch (error: any) {
+        let errorMessage = 'An unexpected error occurred.';
+        if (error.code === 'auth/popup-closed-by-user') {
+            errorMessage = 'The login popup was closed before completion. Please try again.';
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            errorMessage = 'Multiple login attempts detected. Please try again.';
+        }
         toast({
             variant: "destructive",
             title: "Google Login Failed",
-            description: `Error: ${error.code} - ${error.message}. Please ensure popups are enabled and you have authorized the domain in the Firebase console.`,
+            description: errorMessage,
         });
     } finally {
         setLoading(false);
