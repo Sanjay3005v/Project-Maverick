@@ -13,8 +13,7 @@ import { addTrainee, getTraineeByEmail } from '@/services/trainee-service';
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start in loading state
   const { toast } = useToast();
   const router = useRouter();
 
@@ -44,11 +43,20 @@ export default function LoginPage() {
               });
           }
           
+          // Navigate away and we don't need to setLoading(false)
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
-          // No need to set loading to false here, as we are navigating away.
+
         } else {
-          // This block runs when the user first visits the login page
-          setLoading(false);
+          // This block runs if there's no redirect result (e.g., direct navigation)
+          // It's also possible the auth state is still being checked, so we check auth.currentUser
+          if (auth.currentUser) {
+            // User is already logged in, redirect them away from the login page
+             const isUserAdmin = auth.currentUser.email?.includes('admin');
+             router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+          } else {
+            // Not logged in, and no redirect result, so show the login form
+            setLoading(false);
+          }
         }
       } catch (error: any) {
         toast({
@@ -68,7 +76,7 @@ export default function LoginPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="text-muted-foreground mt-4">Checking authentication status...</p>
+        <p className="text-muted-foreground mt-4">Completing login...</p>
       </div>
     )
   }
