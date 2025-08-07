@@ -66,9 +66,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@layer components {
-    .card:hover {
-        @apply border-primary/50;
-    }
-}

@@ -7,10 +7,110 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserPlus, LogIn, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Label } from "./ui/label";
+
+
+function PasswordResetDialog() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'Email required',
+        description: 'Please enter your email address.',
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: 'Password Reset Email Sent',
+        description: 'Check your inbox (and spam folder) for a link to reset your password.',
+      });
+      setIsOpen(false);
+    } catch (error: any) {
+      let description = 'An unexpected error occurred. Please try again.';
+      if (error.code === 'auth/invalid-email') {
+        description = 'The email address you entered is not valid.';
+      } else if (error.code === 'auth/user-not-found') {
+        // We still show a success message for security reasons
+        // to prevent email enumeration attacks.
+         toast({
+            title: 'Password Reset Email Sent',
+            description: 'If an account exists for this email, you will receive a reset link.',
+        });
+        setIsOpen(false);
+        return; // Exit early
+      }
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+   return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="link" className="px-0">Forgot your password?</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <form onSubmit={handlePasswordReset}>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we will send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="reset-email" className="sr-only">Email</Label>
+            <Input 
+              id="reset-email" 
+              type="email" 
+              placeholder="you@example.com" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              required
+            />
+          </div>
+          <DialogFooter>
+             <DialogClose asChild>
+                <Button type="button" variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="animate-spin mr-2" />}
+              Send Reset Link
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -56,7 +156,6 @@ export function LoginForm() {
         setLoading(false);
       }
     } else {
-      // Handle Login
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -73,7 +172,7 @@ export function LoginForm() {
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: error.message,
+          description: "Invalid email or password. Please try again.",
         });
       } finally {
         setLoading(false);
@@ -83,17 +182,16 @@ export function LoginForm() {
 
   return (
     <div className={cn(
-        "bg-white rounded-xl shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[520px]",
-        "transition-all duration-700 ease-in-out",
+        "bg-background rounded-lg shadow-2xl relative overflow-hidden w-full max-w-4xl min-h-[520px]",
         isSignUp && "right-panel-active"
     )}>
         {/* Sign Up Form */}
         <div className={cn(
-            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
+            "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
             isSignUp && "transform translate-x-full opacity-100 z-20"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-white h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold mb-4">Create Account</h1>
+            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-background h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
                 <span>or use your email for registration</span>
                 <Input 
                     type="text" 
@@ -101,7 +199,7 @@ export function LoginForm() {
                     value={name} 
                     onChange={e => setName(e.target.value)}
                     required
-                    className="bg-gray-100 border-none my-2" 
+                    className="my-2" 
                 />
                 <Input 
                     type="email" 
@@ -109,7 +207,7 @@ export function LoginForm() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="bg-gray-100 border-none my-2" 
+                    className="my-2" 
                 />
                 <Input 
                     type="password" 
@@ -117,10 +215,10 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="bg-gray-100 border-none my-2" 
+                    className="my-2" 
                 />
                 <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
-                    {loading && <Loader2 className="animate-spin mr-2" />}
+                    {loading ? <Loader2 className="animate-spin" /> : <UserPlus />}
                     Sign Up
                 </Button>
             </form>
@@ -128,11 +226,11 @@ export function LoginForm() {
 
         {/* Sign In Form */}
         <div className={cn(
-            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20",
+            "absolute top-0 h-full transition-transform duration-700 ease-in-out left-0 w-1/2 z-20",
             isSignUp && "transform -translate-x-full opacity-0"
         )}>
-            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-white h-full flex flex-col justify-center items-center px-12">
-                <h1 className="text-3xl font-bold mb-4">Sign in</h1>
+            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-background h-full flex flex-col justify-center items-center px-12">
+                <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
                 <span>or use your account</span>
                  <Input 
                     type="email" 
@@ -140,7 +238,7 @@ export function LoginForm() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="bg-gray-100 border-none my-2" 
+                    className="my-2" 
                 />
                 <Input 
                     type="password" 
@@ -148,10 +246,11 @@ export function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="bg-gray-100 border-none my-2" 
+                    className="my-2" 
                 />
+                <PasswordResetDialog />
                  <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
-                    {loading && <Loader2 className="animate-spin mr-2" />}
+                    {loading ? <Loader2 className="animate-spin" /> : <LogIn />}
                     Sign In
                 </Button>
             </form>
@@ -168,26 +267,60 @@ export function LoginForm() {
             )}>
                  {/* Overlay Left */}
                 <div className={cn(
-                    "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-white transition-transform duration-700 ease-in-out",
+                    "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
                     "transform -translate-x-1/5",
                     isSignUp && "transform translate-x-0"
                 )}>
-                    <h1 className="text-3xl font-bold">Welcome Back!</h1>
+                    <h1 className="text-3xl font-bold font-headline">Welcome Back!</h1>
                     <p className="text-sm my-4">To keep connected with us please login with your personal info</p>
-                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-white text-white" onClick={() => setIsSignUp(false)}>Sign In</Button>
+                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
 
                 {/* Overlay Right */}
                 <div className={cn(
-                    "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-white transition-transform duration-700 ease-in-out",
+                    "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
                     isSignUp && "transform translate-x-1/5"
                 )}>
-                    <h1 className="text-3xl font-bold">Hello, Friend!</h1>
+                    <h1 className="text-3xl font-bold font-headline">Hello, Trainee!</h1>
                     <p className="text-sm my-4">Enter your personal details and start your journey with us</p>
-                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-white text-white" onClick={() => setIsSignUp(true)}>Sign Up</Button>
+                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setIsSignUp(true)}>Sign Up</Button>
                 </div>
             </div>
         </div>
+
+        <style jsx>{`
+            .right-panel-active .sign-in-container {
+                transform: translateX(100%);
+            }
+            .right-panel-active .sign-up-container {
+                transform: translateX(100%);
+                opacity: 1;
+                z-index: 5;
+                animation: show 0.7s;
+            }
+            @keyframes show {
+                0%, 49.99% {
+                    opacity: 0;
+                    z-index: 1;
+                }
+                50%, 100% {
+                    opacity: 1;
+                    z-index: 5;
+                }
+            }
+            .right-panel-active .overlay-container {
+                transform: translateX(-100%);
+            }
+            .right-panel-active .overlay {
+                transform: translateX(50%);
+            }
+            .right-panel-active .overlay-left {
+                transform: translateX(0);
+            }
+            .right-panel-active .overlay-right {
+                transform: translateX(20%);
+            }
+        `}</style>
     </div>
   );
 }

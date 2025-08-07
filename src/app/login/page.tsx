@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 import { useAuth } from '@/hooks/use-auth';
@@ -31,13 +31,7 @@ export default function LoginPage() {
 
   return (
     <main 
-        className="flex flex-col items-center justify-center min-h-screen p-4"
-        style={{
-            backgroundImage: "url('https://placehold.co/1920x1080/a0d2eb/4a5759.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-        }}
-        data-ai-hint="abstract background"
+        className="flex flex-col items-center justify-center min-h-screen p-4 bg-muted/40"
     >
       <LoginForm />
     </main>
