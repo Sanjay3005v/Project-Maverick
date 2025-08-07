@@ -9,7 +9,6 @@ import {
   getDocs,
   doc,
   addDoc,
-  updateDoc,
   Timestamp,
   orderBy,
   limit,
@@ -79,11 +78,11 @@ export async function sendMessage(
   });
 
   // Update or create the conversation document
-  const conversationData: Omit<FirestoreConversation, 'id'> = {
+  const conversationData = {
     traineeId,
     traineeName,
     lastMessage: content,
-    lastMessageAt: Timestamp.now(),
+    lastMessageAt: serverTimestamp(),
     isReadByAdmin: senderId === 'admin',
     isReadByTrainee: senderId === traineeId,
   };
@@ -159,7 +158,7 @@ export async function getMessages(
  */
 export async function markAsReadByAdmin(conversationId: string) {
   const conversationRef = doc(db, 'conversations', conversationId);
-  await updateDoc(conversationRef, { isReadByAdmin: true });
+  await setDoc(conversationRef, { isReadByAdmin: true }, { merge: true });
 }
 
 /**
@@ -167,5 +166,5 @@ export async function markAsReadByAdmin(conversationId: string) {
  */
 export async function markAsReadByTrainee(conversationId: string) {
   const conversationRef = doc(db, 'conversations', conversationId);
-  await updateDoc(conversationRef, { isReadByTrainee: true });
+  await setDoc(conversationRef, { isReadByTrainee: true }, { merge: true });
 }
