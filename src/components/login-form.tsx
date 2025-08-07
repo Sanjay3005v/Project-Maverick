@@ -262,8 +262,8 @@ export function LoginForm() {
                     "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
                     "overlay-panel overlay-left"
                 )}>
-                    <h1 className="text-3xl font-bold font-headline">Welcome Back!</h1>
-                    <p className="text-sm my-4">Log in to resume your journey with Maverick Mindset.</p>
+                    <h1 className="text-3xl font-bold font-headline">Your Journey Continues!</h1>
+                    <p className="text-sm my-4">Log in to keep developing your skills and pushing boundaries.</p>
                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signIn" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
 
@@ -271,8 +271,8 @@ export function LoginForm() {
                     "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
                     "overlay-panel overlay-right"
                 )}>
-                    <h1 className="text-3xl font-bold font-headline">Hello, Trainee!</h1>
-                    <p className="text-sm my-4">Enter your details and start your journey with us today.</p>
+                    <h1 className="text-3xl font-bold font-headline">Forge Your Path!</h1>
+                    <p className="text-sm my-4">Unleash your potential. Sign up to begin your personalized onboarding experience.</p>
                      <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signUp" onClick={() => setIsSignUp(true)}>Sign Up</Button>
                 </div>
             </div>
