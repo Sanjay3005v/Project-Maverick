@@ -105,7 +105,7 @@ export default function AdminMessagesPage() {
                       {convo.lastMessage}
                     </TableCell>
                     <TableCell>
-                      {formatDistanceToNow(convo.lastMessageAt.toDate(), {
+                      {formatDistanceToNow(new Date(convo.lastMessageAt), {
                         addSuffix: true,
                       })}
                     </TableCell>

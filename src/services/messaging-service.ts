@@ -18,22 +18,43 @@ import {
   setDoc,
 } from 'firebase/firestore';
 
+// Interface for Client Components - uses string for dates
 export interface Message {
   id: string;
   senderId: string; // 'admin' or trainee's ID
   content: string;
-  createdAt: Timestamp;
+  createdAt: string; // ISO string
 }
 
+// Interface for Client Components - uses string for dates
 export interface Conversation {
   id: string; // traineeId
   traineeId: string;
   traineeName: string;
   lastMessage: string;
-  lastMessageAt: Timestamp;
+  lastMessageAt: string; // ISO string
   isReadByAdmin: boolean;
   isReadByTrainee: boolean;
 }
+
+// Internal type for server-side data
+interface FirestoreMessage {
+  id: string;
+  senderId: string;
+  content: string;
+  createdAt: Timestamp;
+}
+
+interface FirestoreConversation {
+    id: string;
+    traineeId: string;
+    traineeName: string;
+    lastMessage: string;
+    lastMessageAt: Timestamp;
+    isReadByAdmin: boolean;
+    isReadByTrainee: boolean;
+}
+
 
 const conversationsCollection = collection(db, 'conversations');
 
@@ -58,7 +79,7 @@ export async function sendMessage(
   });
 
   // Update or create the conversation document
-  const conversationData: Omit<Conversation, 'id'> = {
+  const conversationData: Omit<FirestoreConversation, 'id'> = {
     traineeId,
     traineeName,
     lastMessage: content,
@@ -77,12 +98,14 @@ export async function getConversations(): Promise<Conversation[]> {
   const q = query(conversationsCollection, orderBy('lastMessageAt', 'desc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-      } as Conversation)
-  );
+    (doc) => {
+        const data = doc.data() as FirestoreConversation;
+        return {
+            id: doc.id,
+            ...data,
+            lastMessageAt: data.lastMessageAt.toDate().toISOString(),
+        } as Conversation;
+    });
 }
 
 /**
@@ -96,7 +119,12 @@ export async function getConversationForTrainee(
   if (!docSnap.exists()) {
     return null;
   }
-  return { id: docSnap.id, ...docSnap.data() } as Conversation;
+  const data = docSnap.data() as FirestoreConversation;
+  return { 
+      id: docSnap.id, 
+      ...data,
+      lastMessageAt: data.lastMessageAt.toDate().toISOString(),
+  } as Conversation;
 }
 
 /**
@@ -114,12 +142,16 @@ export async function getMessages(
   const q = query(messagesRef, orderBy('createdAt', 'asc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-      } as Message)
-  );
+    (doc) => {
+        const data = doc.data() as FirestoreMessage;
+        // Handle cases where createdAt might be null temporarily on new messages
+        const createdAt = data.createdAt ? data.createdAt.toDate().toISOString() : new Date().toISOString();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt,
+        } as Message;
+    });
 }
 
 /**
