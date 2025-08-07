@@ -14,12 +14,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/use-auth';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Settings, LogOut, Trash2, LoaderCircle } from 'lucide-react';
-import { getTraineeByEmail, deleteTraineeAccount, Trainee } from '@/services/trainee-service';
+import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 import { AvatarUploader } from './avatar-uploader';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -39,20 +40,39 @@ function DeleteAccountDialog({ trainee, onDeleted }: { trainee: Trainee; onDelet
             return;
         }
 
+        const user = auth.currentUser;
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Not Authenticated', description: 'Please sign in again to delete your account.' });
+            return;
+        }
+
         setLoading(true);
         try {
-            await deleteTraineeAccount(trainee.id, password);
+            // Re-authenticate on the client
+            const credential = EmailAuthProvider.credential(user.email!, password);
+            await reauthenticateWithCredential(user, credential);
+
+            // If re-authentication is successful, delete the Firestore document
+            const traineeRef = doc(db, 'trainees', trainee.id);
+            await deleteDoc(traineeRef);
+
+            // Then, delete the auth user
+            await deleteUser(user);
+            
             toast({
                 title: 'Account Deleted',
                 description: 'Your account has been permanently deleted.',
             });
             onDeleted();
+
         } catch (error: any) {
             let description = 'An unexpected error occurred.';
-            if (error.code === 'auth/wrong-password' || error.message.includes('wrong-password')) {
+            if (error.code === 'auth/wrong-password') {
                 description = 'The password you entered is incorrect. Please try again.';
-            } else if (error.code === 'auth/requires-recent-login' || error.message.includes('requires-recent-login')) {
+            } else if (error.code === 'auth/requires-recent-login') {
                 description = 'This operation is sensitive and requires recent authentication. Please sign out and sign back in to delete your account.'
+            } else if (error.code === 'auth/network-request-failed') {
+                description = 'A network error occurred. Please check your connection and try again.'
             }
              else if (error.code === 'auth/reauthenticate-timeout') {
                 description = 'Re-authentication timed out. Please try again.';
