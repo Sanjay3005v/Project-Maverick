@@ -23,14 +23,11 @@ export default function LoginPage() {
         const result = await getRedirectResult(auth);
         if (result) {
           // This block runs when the user is redirected back from Google
+          setLoading(true); // Keep loading while we process
           const user = result.user;
-          toast({
-            title: 'Login Successful',
-            description: `Welcome back, ${user.displayName || 'User'}! Redirecting...`,
-          });
-          
-          let trainee = await getTraineeByEmail(user.email!);
           const isUserAdmin = user.email?.includes('admin');
+
+          let trainee = await getTraineeByEmail(user.email!);
           
           if (!trainee && !isUserAdmin) {
               await addTrainee({
@@ -43,26 +40,30 @@ export default function LoginPage() {
               });
           }
           
-          // Navigate away and we don't need to setLoading(false)
+          toast({
+            title: 'Login Successful',
+            description: `Welcome back, ${user.displayName || 'User'}!`,
+          });
+          
+          // Navigate away, no need to setLoading(false)
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
 
         } else {
-          // This block runs if there's no redirect result (e.g., direct navigation)
-          // It's also possible the auth state is still being checked, so we check auth.currentUser
-          if (auth.currentUser) {
-            // User is already logged in, redirect them away from the login page
+          // No redirect result, so we are not in a login flow.
+          // Check if user is already logged in from a previous session.
+           if (auth.currentUser) {
              const isUserAdmin = auth.currentUser.email?.includes('admin');
              router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
-          } else {
-            // Not logged in, and no redirect result, so show the login form
+           } else {
+            // Not logged in, show the form
             setLoading(false);
-          }
+           }
         }
       } catch (error: any) {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description: 'Could not sign in with Google. Please try again.',
+          description: error.message || 'Could not sign in with Google. Please try again.',
         });
         setLoading(false);
       }
@@ -76,7 +77,7 @@ export default function LoginPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="text-muted-foreground mt-4">Completing login...</p>
+        <p className="text-muted-foreground mt-4">Authenticating...</p>
       </div>
     )
   }
