@@ -17,7 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { LoaderCircle, Wand2, Send } from 'lucide-react';
 import type { Trainee } from '@/services/trainee-service';
 import { generateCatchUpPlan } from '@/ai/flows/generate-catch-up-plan';
-import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import type { OnboardingPlanItem } from '@/lib/plan-schema';
 import { saveOnboardingPlan } from '@/services/trainee-service';
 
 interface GetOnTrackDialogProps {

@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { OnboardingPlanItem, PersonalizedOnboardingPlanSchema } from '@/lib/plan-schema';
+import { PersonalizedOnboardingPlanSchema } from '@/lib/plan-schema';
 import type { PersonalizedOnboardingPlan } from '@/lib/plan-schema';
 
 
