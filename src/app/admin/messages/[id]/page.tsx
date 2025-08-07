@@ -30,6 +30,13 @@ function ChatBubble({ message }: { message: Message }) {
     : 'bg-muted';
   const avatarText = isAdmin ? 'A' : 'T';
 
+  const getMessageDate = (timestamp: any) => {
+    if (timestamp && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    return new Date(timestamp);
+  }
+
   return (
     <div className={`flex items-start gap-3 ${bubbleAlignment}`}>
       {!isAdmin && (
@@ -42,7 +49,7 @@ function ChatBubble({ message }: { message: Message }) {
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className={`text-xs text-muted-foreground mt-1 ${isAdmin ? 'text-right' : 'text-left'}`}>
-          {format(message.createdAt.toDate(), 'p')}
+          {format(getMessageDate(message.createdAt), 'p')}
         </p>
       </div>
       {isAdmin && (
@@ -153,4 +160,3 @@ export default function AdminMessagePage() {
     </div>
   );
 }
-

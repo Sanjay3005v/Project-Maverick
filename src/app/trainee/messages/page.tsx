@@ -28,6 +28,13 @@ function ChatBubble({ message, traineeName }: { message: Message, traineeName: s
     : 'bg-primary text-primary-foreground';
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
+  const getMessageDate = (timestamp: any) => {
+    if (timestamp && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    return new Date(timestamp);
+  }
+
   return (
     <div className={`flex items-start gap-3 ${bubbleAlignment}`}>
       {isAdmin && (
@@ -40,7 +47,7 @@ function ChatBubble({ message, traineeName }: { message: Message, traineeName: s
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
          <p className={`text-xs text-muted-foreground mt-1 ${isAdmin ? 'text-left' : 'text-right'}`}>
-          {format(message.createdAt.toDate(), 'p')}
+          {format(getMessageDate(message.createdAt), 'p')}
         </p>
       </div>
       {!isAdmin && (
