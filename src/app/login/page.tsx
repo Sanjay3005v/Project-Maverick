@@ -23,7 +23,7 @@ export default function LoginPage() {
         const result = await getRedirectResult(auth);
         if (result) {
           // This block runs when the user is redirected back from Google
-          setLoading(true); // Keep loading while we process
+          // Keep loading indicator on while we process
           const user = result.user;
           const isUserAdmin = user.email?.includes('admin');
 
@@ -45,8 +45,9 @@ export default function LoginPage() {
             description: `Welcome back, ${user.displayName || 'User'}!`,
           });
           
-          // Navigate away, no need to setLoading(false)
+          // Navigate away to the correct dashboard
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+          // No need to setLoading(false) here, as we are navigating away
 
         } else {
           // No redirect result, so we are not in a login flow.
@@ -65,7 +66,7 @@ export default function LoginPage() {
           title: 'Login Failed',
           description: error.message || 'Could not sign in with Google. Please try again.',
         });
-        setLoading(false);
+        setLoading(false); // Stop loading on error to allow user to try again
       }
     };
 
