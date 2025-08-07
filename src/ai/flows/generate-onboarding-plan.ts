@@ -11,6 +11,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { OnboardingPlanItem, PersonalizedOnboardingPlanSchema } from '@/lib/plan-schema';
+import type { PersonalizedOnboardingPlan } from '@/lib/plan-schema';
+
 
 const GeneratePersonalizedOnboardingPlanInputSchema = z.object({
   learningGoal: z.string().describe('The learning goal of the trainee, including topic and desired timeframe (e.g., "I want to learn the basics of Python in 2 weeks").'),
@@ -21,23 +24,7 @@ export type GeneratePersonalizedOnboardingPlanInput = z.infer<
   typeof GeneratePersonalizedOnboardingPlanInputSchema
 >;
 
-export const OnboardingPlanItemSchema = z.object({
-  week: z.string().describe('The week number or range (e.g., "Week 1", "Week 2").'),
-  topic: z.string().describe('The main topic or module for that period.'),
-  tasks: z.array(z.string()).describe('A list of specific, actionable tasks or assignments for the week. These should be phrased as clear actions.'),
-  status: z.string().describe('The current status for this item, which should be "Not Started" by default.'),
-});
-export type OnboardingPlanItem = z.infer<typeof OnboardingPlanItemSchema>;
-
-
-export const GeneratePersonalizedOnboardingPlanOutputSchema = z.object({
-  personalizedPlan: z.array(OnboardingPlanItemSchema).describe('The personalized learning plan structured as a list of weekly items.'),
-});
-export type GeneratePersonalizedOnboardingPlanOutput = z.infer<
-  typeof GeneratePersonalizedOnboardingPlanOutputSchema
->;
-
-
+export type GeneratePersonalizedOnboardingPlanOutput = PersonalizedOnboardingPlan;
 
 export async function generatePersonalizedOnboardingPlan(
   input: GeneratePersonalizedOnboardingPlanInput
@@ -48,7 +35,7 @@ export async function generatePersonalizedOnboardingPlan(
 const prompt = ai.definePrompt({
   name: 'generatePersonalizedOnboardingPlanPrompt',
   input: {schema: GeneratePersonalizedOnboardingPlanInputSchema},
-  output: {schema: GeneratePersonalizedOnboardingPlanOutputSchema},
+  output: {schema: PersonalizedOnboardingPlanSchema},
   prompt: `You are an expert AI mentor. A trainee has provided a learning goal, their profile, and a general training schedule. Your task is to create a structured, actionable, and personalized learning plan.
 
 **Fresher Profile:**
@@ -70,7 +57,7 @@ const generatePersonalizedOnboardingPlanFlow = ai.defineFlow(
   {
     name: 'generatePersonalizedOnboardingPlanFlow',
     inputSchema: GeneratePersonalizedOnboardingPlanInputSchema,
-    outputSchema: GeneratePersonalizedOnboardingPlanOutputSchema,
+    outputSchema: PersonalizedOnboardingPlanSchema,
   },
   async input => {
     const {output} = await prompt(input);

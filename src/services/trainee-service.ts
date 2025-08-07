@@ -2,7 +2,7 @@
 'use server';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
-import type { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import type { OnboardingPlanItem } from '@/lib/plan-schema';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 export interface QuizCompletion {

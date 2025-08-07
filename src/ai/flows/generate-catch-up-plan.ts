@@ -11,8 +11,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { OnboardingPlanItemSchema } from './generate-onboarding-plan';
-import type { OnboardingPlanItem } from './generate-onboarding-plan';
+import { OnboardingPlanItemSchema } from '@/lib/plan-schema';
+import type { OnboardingPlanItem } from '@/lib/plan-schema';
 
 
 const GenerateCatchUpPlanInputSchema = z.object({

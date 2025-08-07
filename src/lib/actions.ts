@@ -1,10 +1,12 @@
 
 'use server';
 
-import { generatePersonalizedOnboardingPlan, type GeneratePersonalizedOnboardingPlanOutput, type OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import { generatePersonalizedOnboardingPlan } from '@/ai/flows/generate-onboarding-plan';
+import type { GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { getTraineeById, saveOnboardingPlan as savePlan } from '@/services/trainee-service';
 import { z } from 'zod';
+import type { OnboardingPlanItem } from './plan-schema';
 
 const adminFormSchema = z.object({
   fresherProfile: z.string().min(10, 'Please provide a profile of at least 10 characters.'),
