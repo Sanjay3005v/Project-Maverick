@@ -9,7 +9,7 @@ import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { Loader2, Trophy, Medal } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const dynamic = 'force-dynamic';
@@ -120,7 +120,6 @@ export default function LeaderboardPage() {
                     <TableCell>
                         <div className="flex items-center gap-4">
                             <Avatar>
-                                <AvatarImage src={trainee.avatarUrl} data-ai-hint="person avatar" />
                                 <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{trainee.name}</span>

@@ -8,7 +8,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookOpenCheck, Code2, FileText, Award, Route, LoaderCircle, Trophy, Star, Mail } from "lucide-react";
@@ -19,8 +18,6 @@ import { getAllChallenges, Challenge } from '@/services/challenge-service';
 import { Heatmap } from '@/components/heatmap';
 import { getBadgesForTrainee, Badge } from '@/lib/badges';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +86,7 @@ export default function TraineeDashboard() {
         <Card className="lg:col-span-1 flex flex-col">
           <CardHeader className="flex flex-row items-center gap-4 space-y-0">
             <Avatar className="h-16 w-16">
-                <AvatarImage src={trainee.avatarUrl} data-ai-hint="person portrait" />
+                <AvatarImage src={trainee.avatarUrl} />
                 <AvatarFallback>{getInitials(trainee.name)}</AvatarFallback>
             </Avatar>
             <div>
