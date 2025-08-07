@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send, Search } from 'lucide-react';
+import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send, Search, Link as LinkIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import {
   Dialog,
@@ -27,6 +27,7 @@ import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/t
 import { Checkbox } from './ui/checkbox';
 import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
 import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
 
 
 function AssignChallengeDialog({ challenge, trainees, children }: { challenge: Challenge; trainees: Trainee[]; children: React.ReactNode }) {
@@ -264,6 +265,7 @@ export function ChallengeManagement() {
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiTopic, setAiTopic] = useState('');
+  const [aiUrl, setAiUrl] = useState('');
   const [aiDifficulty, setAiDifficulty] = useState('Medium');
   const { toast } = useToast();
 
@@ -283,17 +285,18 @@ export function ChallengeManagement() {
   }, []);
 
   const handleGenerateWithAI = async () => {
-    if (!aiTopic.trim()) {
-      toast({ variant: 'destructive', title: 'Topic is required.' });
+    if (!aiTopic.trim() && !aiUrl.trim()) {
+      toast({ variant: 'destructive', title: 'Topic or URL is required.' });
       return;
     }
     setAiLoading(true);
     try {
-      const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty });
+      const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty, url: aiUrl });
       await addChallenge(result);
       fetchChallenges();
       toast({ title: 'Challenge Generated!', description: `AI has created a new challenge on "${result.title}".` });
       setAiTopic('');
+      setAiUrl('');
     } catch (error) {
       toast({ variant: 'destructive', title: 'Generation Failed', description: 'The AI could not generate the challenge.' });
     } finally {
@@ -386,13 +389,27 @@ export function ChallengeManagement() {
       <Card className="sticky top-24">
         <CardHeader>
           <CardTitle>Generate with AI</CardTitle>
-          <CardDescription>Create a new coding challenge using AI by providing a topic and difficulty.</CardDescription>
+          <CardDescription>Create a new coding challenge by providing a topic or importing from a URL.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ai-topic">Challenge Topic</Label>
-            <Input id="ai-topic" placeholder="e.g., 'Array manipulation in JavaScript', 'SQL subqueries'..." value={aiTopic} onChange={e => setAiTopic(e.target.value)} />
+           <div className="space-y-2">
+            <Label htmlFor="ai-url">Import from URL (e.g., LeetCode)</Label>
+            <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="ai-url" placeholder="https://leetcode.com/problems/..." value={aiUrl} onChange={e => setAiUrl(e.target.value)} className="pl-10" />
+            </div>
           </div>
+
+          <div className="relative">
+            <Separator />
+            <span className="absolute left-1/2 -translate-x-1/2 -top-2 bg-background px-2 text-xs text-muted-foreground">OR</span>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="ai-topic">Generate from Topic</Label>
+            <Input id="ai-topic" placeholder="e.g., 'Array manipulation in JavaScript'" value={aiTopic} onChange={e => setAiTopic(e.target.value)} />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="ai-difficulty">Difficulty</Label>
             <Select value={aiDifficulty} onValueChange={setAiDifficulty}>

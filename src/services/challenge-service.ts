@@ -16,8 +16,9 @@ export type Challenge = z.infer<typeof ChallengeSchema>;
 
 // AI Flow Schemas
 export const GenerateChallengeInputSchema = z.object({
-  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks").'),
+  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks").').optional(),
   difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The desired difficulty level for the challenge.'),
+  url: z.string().url().describe('A URL to a LeetCode problem or similar page to import a challenge from.').optional(),
 });
 export type GenerateChallengeInput = z.infer<typeof GenerateChallengeInputSchema>;
 
