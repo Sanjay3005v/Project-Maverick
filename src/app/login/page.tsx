@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Rocket, Loader2 } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 import { useToast } from '@/hooks/use-toast';
-import { getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { addTrainee, getTraineeByEmail } from '@/services/trainee-service';
@@ -19,20 +19,21 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setYear(new Date().getFullYear());
-
     const handleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
+          // This block runs when the user is redirected back from Google
           const user = result.user;
           toast({
             title: 'Login Successful',
-            description: `Welcome back, ${user.displayName || 'User'}!`,
+            description: `Welcome back, ${user.displayName || 'User'}! Redirecting...`,
           });
           
           let trainee = await getTraineeByEmail(user.email!);
-          if (!trainee && !user.email?.includes('admin')) {
+          const isUserAdmin = user.email?.includes('admin');
+          
+          if (!trainee && !isUserAdmin) {
               await addTrainee({
                   name: user.displayName || 'New Trainee',
                   email: user.email!,
@@ -42,11 +43,12 @@ export default function LoginPage() {
                   dob: new Date().toISOString().split('T')[0],
               });
           }
-
-          const isUserAdmin = user.email?.includes('admin');
+          
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
+          // No need to set loading to false here, as we are navigating away.
         } else {
-            setLoading(false);
+          // This block runs when the user first visits the login page
+          setLoading(false);
         }
       } catch (error: any) {
         toast({
@@ -66,7 +68,7 @@ export default function LoginPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="text-muted-foreground mt-4">Completing login...</p>
+        <p className="text-muted-foreground mt-4">Checking authentication status...</p>
       </div>
     )
   }
@@ -90,7 +92,7 @@ export default function LoginPage() {
       </main>
 
       <footer className="mt-12 text-center text-muted-foreground text-sm">
-        <p>&copy; {year} Maverick Mindset. All Rights Reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Maverick Mindset. All Rights Reserved.</p>
       </footer>
     </div>
   );
