@@ -11,13 +11,15 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { OnboardingPlanItem, GeneratePersonalizedOnboardingPlanOutputSchema } from './generate-onboarding-plan';
+import { OnboardingPlanItemSchema } from './generate-onboarding-plan';
+import type { OnboardingPlanItem } from './generate-onboarding-plan';
+
 
 const GenerateCatchUpPlanInputSchema = z.object({
   name: z.string().describe("The trainee's name."),
   progress: z.number().describe("The trainee's current overall progress percentage."),
   department: z.string().describe("The trainee's department."),
-  currentPlan: z.array(OnboardingPlanItem).describe('The full existing onboarding plan for the trainee.'),
+  currentPlan: z.array(OnboardingPlanItemSchema).describe('The full existing onboarding plan for the trainee.'),
 });
 export type GenerateCatchUpPlanInput = z.infer<typeof GenerateCatchUpPlanInputSchema>;
 
@@ -33,7 +35,7 @@ export async function generateCatchUpPlan(
 const prompt = ai.definePrompt({
   name: 'generateCatchUpPlanPrompt',
   input: {schema: GenerateCatchUpPlanInputSchema},
-  output: {schema: OnboardingPlanItem },
+  output: {schema: OnboardingPlanItemSchema },
   prompt: `You are an expert AI mentor and corporate trainer. A trainee named {{name}} in the {{department}} department is falling behind with only {{progress}}% progress. 
 
 Their current learning plan is:
@@ -49,7 +51,7 @@ const generateCatchUpPlanFlow = ai.defineFlow(
   {
     name: 'generateCatchUpPlanFlow',
     inputSchema: GenerateCatchUpPlanInputSchema,
-    outputSchema: OnboardingPlanItem,
+    outputSchema: OnboardingPlanItemSchema,
   },
   async input => {
     const {output} = await prompt(input);
