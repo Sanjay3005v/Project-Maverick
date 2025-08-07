@@ -32,8 +32,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#f6d365] to-[#fda085] p-4">
-        <Card className="max-w-md w-full shadow-2xl bg-white/30 backdrop-blur-lg border-white/50 rounded-2xl">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      <div className="flex flex-col items-center justify-center p-8 bg-muted/30">
+        <Card className="max-w-md w-full shadow-2xl rounded-2xl border-none">
             <div className="p-8 md:p-12 flex flex-col justify-center">
                 <header className="text-center md:text-left mb-8">
                     <div className="inline-flex items-center justify-center w-full gap-4 mb-4">
@@ -52,8 +53,20 @@ export default function LoginPage() {
                 </main>
             </div>
         </Card>
+      </div>
 
-      <footer className="absolute bottom-4 text-center text-white/80 text-sm">
+       <div className="relative hidden md:block">
+            <Image
+                src="https://placehold.co/1080x1920.png"
+                alt="Onboarding"
+                layout="fill"
+                objectFit="cover"
+                data-ai-hint="professional office"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      </div>
+
+      <footer className="absolute bottom-4 left-4 text-center text-muted-foreground/80 text-sm">
         <p>&copy; {new Date().getFullYear()} Maverick Mindset. All Rights Reserved.</p>
       </footer>
     </div>
