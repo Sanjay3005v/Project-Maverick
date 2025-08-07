@@ -36,8 +36,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (loading) {
       return; // Wait until user status is resolved
     }
+    
+    // Do not interfere with the login page's own logic, especially the redirect flow.
+    if (pathname === '/login') {
+      return;
+    }
 
-    const isLoginPage = pathname === '/login';
     const isHomePage = pathname === '/';
     const isAdminRoute = pathname.startsWith('/admin');
     const isTraineeRoute = pathname.startsWith('/trainee');
@@ -56,8 +60,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      // If user is on the login or home page, redirect them to their dashboard.
-      if (isLoginPage || isHomePage) {
+      // If user is on the home page, redirect them to their dashboard.
+      if (isHomePage) {
         router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
         return;
       }
