@@ -13,7 +13,7 @@ import { addTrainee, getTraineeByEmail } from '@/services/trainee-service';
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(true); // Start in loading state
+  const [loading, setLoading] = useState(true); 
   const { toast } = useToast();
   const router = useRouter();
 
@@ -22,8 +22,6 @@ export default function LoginPage() {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          // This block runs when the user is redirected back from Google
-          // Keep loading indicator on while we process
           const user = result.user;
           const isUserAdmin = user.email?.includes('admin');
 
@@ -42,21 +40,16 @@ export default function LoginPage() {
           
           toast({
             title: 'Login Successful',
-            description: `Welcome back, ${user.displayName || 'User'}!`,
+            description: `Welcome back, ${user.displayName || 'User'}! Redirecting...`,
           });
           
-          // Navigate away to the correct dashboard
           router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
-          // No need to setLoading(false) here, as we are navigating away
-
+          
         } else {
-          // No redirect result, so we are not in a login flow.
-          // Check if user is already logged in from a previous session.
            if (auth.currentUser) {
              const isUserAdmin = auth.currentUser.email?.includes('admin');
              router.push(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
            } else {
-            // Not logged in, show the form
             setLoading(false);
            }
         }
@@ -66,7 +59,7 @@ export default function LoginPage() {
           title: 'Login Failed',
           description: error.message || 'Could not sign in with Google. Please try again.',
         });
-        setLoading(false); // Stop loading on error to allow user to try again
+        setLoading(false);
       }
     };
 
@@ -78,7 +71,7 @@ export default function LoginPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="text-muted-foreground mt-4">Authenticating...</p>
+        <p className="text-muted-foreground mt-4">Completing Login...</p>
       </div>
     )
   }

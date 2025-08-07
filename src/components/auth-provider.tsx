@@ -34,10 +34,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     if (loading) {
-      return; // Wait until user status is resolved
+      return; 
     }
     
-    // Do not interfere with the login page's own logic, especially the redirect flow.
     if (pathname === '/login') {
       return;
     }
@@ -49,7 +48,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (user) {
       const isUserAdmin = user.email?.includes('admin');
       
-      // If user is on a page that doesn't match their role, redirect them.
       if (isAdminRoute && !isUserAdmin) {
         router.replace('/trainee/dashboard');
         return;
@@ -60,13 +58,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      // If user is on the home page, redirect them to their dashboard.
       if (isHomePage) {
         router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
         return;
       }
     } else {
-      // If no user is logged in, redirect any protected route access to the login page.
       if (isAdminRoute || isTraineeRoute) {
         router.replace('/login');
         return;
