@@ -35,14 +35,20 @@ function PasswordResetDialog() {
             await sendPasswordResetEmail(auth, email);
             toast({
                 title: 'Password Reset Email Sent',
-                description: 'Please check your inbox for instructions to reset your password.',
+                description: 'If an account exists for this email, a reset link has been sent. Please check your inbox (and spam folder).',
             });
             setIsOpen(false);
         } catch (error: any) {
+             let description = 'Failed to send password reset email. Please try again later.';
+             if (error.code === 'auth/invalid-email') {
+                description = 'The email address you entered is not valid.';
+             } else if (error.code === 'auth/network-request-failed') {
+                description = 'A network error occurred. Please check your connection.';
+             }
              toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Failed to send password reset email. Please check the email address.',
+                description: description,
             });
         } finally {
             setLoading(false);
