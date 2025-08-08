@@ -7,7 +7,7 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, LogIn, Mail } from "lucide-react";
+import { Loader2, UserPlus, LogIn, Mail, Rocket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
@@ -112,11 +112,11 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleAuthAction = async (e: React.FormEvent) => {
+  const handleAuthAction = async (e: React.FormEvent, isSignUpAction: boolean) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUp) {
+    if (isSignUpAction) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -179,10 +179,13 @@ export function LoginForm() {
      id="container" 
     >
         {/* Sign Up Form */}
-        <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10 sign-up-container">
-            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
+        <div className={cn(
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
+            "sign-up-container"
+        )}>
+            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
-                <span className="text-muted-foreground mb-4 text-sm">or use your email for registration</span>
+                <span className="text-muted-foreground mb-4 text-sm">Use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
@@ -215,10 +218,13 @@ export function LoginForm() {
         </div>
 
         {/* Sign In Form */}
-        <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20 sign-in-container">
-            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
+        <div className={cn(
+            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20",
+            "sign-in-container"
+        )}>
+            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
-                 <span className="text-muted-foreground mb-4 text-sm">or use your account to sign in</span>
+                 <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
                  <Input 
                     type="email" 
                     placeholder="Email" 
@@ -244,18 +250,30 @@ export function LoginForm() {
         </div>
         
         {/* Overlay */}
-        <div className="absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50 overlay-container">
-            <div className="bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out overlay">
-                <div className="absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out overlay-panel overlay-left">
+        <div className={cn(
+            "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
+            "overlay-container"
+        )}>
+            <div className={cn(
+                "bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
+                 "overlay"
+            )}>
+                <div className={cn(
+                    "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
+                    "overlay-panel overlay-left"
+                )}>
                     <h1 className="text-3xl font-bold font-headline">Your Journey Continues!</h1>
                     <p className="text-sm my-4">Log in to keep developing your skills and pushing boundaries.</p>
-                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" onClick={() => setIsSignUp(false)}>Sign In</Button>
+                    <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signIn" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
 
-                <div className="absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out overlay-panel overlay-right">
+                <div className={cn(
+                    "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
+                    "overlay-panel overlay-right"
+                )}>
                     <h1 className="text-3xl font-bold font-headline">Forge Your Path!</h1>
                     <p className="text-sm my-4">Unleash your potential. Sign up to begin your personalized onboarding experience.</p>
-                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" onClick={() => setIsSignUp(true)}>Sign Up</Button>
+                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signUp" onClick={() => setIsSignUp(true)}>Sign Up</Button>
                 </div>
             </div>
         </div>
