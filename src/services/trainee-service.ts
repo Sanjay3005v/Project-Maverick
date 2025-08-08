@@ -238,3 +238,5 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
         completedChallengeIds: arrayUnion(challengeId)
     });
 }
+
+    
