@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Pencil } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Link from "next/link";
@@ -15,10 +15,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Calendar } from "./ui/calendar";
-import { addTrainee, updateTrainee, Trainee } from "@/services/trainee-service";
+import { addTrainee, updateTrainee, deleteTrainee, Trainee } from "@/services/trainee-service";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { EditOnboardingPlanDialog } from "./edit-onboarding-plan-dialog";
 import { Heatmap } from "./heatmap";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+
 
 interface ManageTraineeFormProps {
   trainee: Trainee | null;
@@ -82,6 +84,27 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
         setLoading(false);
     }
   };
+
+  const handleDelete = async () => {
+    if (!trainee) return;
+    setLoading(true);
+    try {
+      await deleteTrainee(trainee.id);
+      toast({
+        title: "Trainee Deleted",
+        description: `The trainee "${trainee.name}" has been removed.`,
+      });
+      router.push('/admin/trainee-management');
+      router.refresh();
+    } catch(error) {
+       toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: "An error occurred while deleting the trainee.",
+      });
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -164,9 +187,35 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                    <Link href="/admin/trainee-management">
-                        <Button variant="outline">Cancel</Button>
-                    </Link>
+                    <div className="flex gap-2">
+                        <Link href="/admin/trainee-management">
+                            <Button variant="outline" type="button">Cancel</Button>
+                        </Link>
+                         {isEditing && (
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                     <Button variant="destructive" type="button">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Trainee
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action is permanent and cannot be undone. This will delete the trainee's record and may impact their ability to log in.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-destructive hover:bg-destructive/90">
+                                            {loading ? <Loader2 className="animate-spin mr-2"/> : null}
+                                            Confirm Deletion
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    </div>
                     <Button type="submit" disabled={loading}>
                         {loading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

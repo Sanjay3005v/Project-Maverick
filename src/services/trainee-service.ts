@@ -171,6 +171,18 @@ export async function updateTrainee(id: string, traineeData: Partial<Omit<Traine
     await updateDoc(traineeRef, updateData);
 }
 
+export async function deleteTrainee(traineeId: string): Promise<void> {
+    // Note: Deleting a Firebase Auth user from the client is not recommended for production apps.
+    // This should ideally be handled by a Cloud Function (backend) that verifies admin privileges.
+    // For this demo, we will only delete the Firestore document.
+    // The user's auth record will remain, but they won't have a profile in the app.
+    const traineeRef = doc(db, 'trainees', traineeId);
+    await deleteDoc(traineeRef);
+    // To fully delete the user, you would need a backend function:
+    // getAuth(adminApp).deleteUser(uid);
+}
+
+
 export async function updateTraineeProgress(traineeId: string, newProgress: number): Promise<void> {
     const traineeRef = doc(db, 'trainees', traineeId);
     await updateDoc(traineeRef, {
