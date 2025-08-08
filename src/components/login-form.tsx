@@ -7,7 +7,7 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, LogIn, Mail, Rocket } from "lucide-react";
+import { Loader2, UserPlus, LogIn, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
