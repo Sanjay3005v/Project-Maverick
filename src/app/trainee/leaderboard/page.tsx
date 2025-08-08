@@ -115,7 +115,11 @@ export default function LeaderboardPage() {
                     </TableRow>
                 )}
                 {topPerformers.map((trainee, index) => (
-                  <TableRow key={trainee.id}>
+                  <TableRow 
+                    key={trainee.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
                     <TableCell className="font-bold text-lg">{getRankBadge(index + 1)}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-4">

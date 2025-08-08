@@ -196,8 +196,12 @@ export default function TraineeManagementPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTrainees.map((fresher) => (
-                    <TableRow key={fresher.id}>
+                  {filteredTrainees.map((fresher, index) => (
+                    <TableRow 
+                      key={fresher.id} 
+                      className="animate-fade-in" 
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
                       <TableCell className="font-mono text-xs">{formatUserId(fresher.id)}</TableCell>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.email}</TableCell>
