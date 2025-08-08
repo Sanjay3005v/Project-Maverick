@@ -45,9 +45,6 @@ const dummyTrainees: Omit<Trainee, 'id' | 'status' | 'quizCompletions'>[] = [
     { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Engineering', progress: 89, dob: '2000-04-09' },
     { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 93, dob: '1993-07-07' },
     { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', progress: 84, dob: '2002-08-10' },
-    { name: 'Iron Man', email: 'iron@gmail.com', department: 'Engineering', progress: 100, dob: '1970-05-29' },
-    { name: 'Leo DiCaprio', email: 'leo.d@example.com', department: 'Product', progress: 81, dob: '1974-11-11' },
-    { name: 'Jack Sparrow', email: 'jack.s@example.com', department: 'Product', progress: 73, dob: '1963-06-09' },
     { name: 'Admin User', email: 'admin@example.com', department: 'Product', progress: 100, dob: '1970-01-01' },
 ];
 
@@ -65,18 +62,16 @@ async function seedTrainees() {
         console.log("Seeding initial trainees...");
         const batch = writeBatch(db);
         dummyTrainees.forEach(trainee => {
-            if (!trainee.email.includes('admin')) {
-                const docRef = doc(traineesCollection);
-                batch.set(docRef, {
-                    ...trainee,
-                    status: getStatusForProgress(trainee.progress),
-                    dob: new Date(trainee.dob as string),
-                    quizCompletions: [],
-                    assignedQuizIds: [],
-                    assignedChallengeIds: [],
-                    completedChallengeIds: [],
-                });
-            }
+            const docRef = doc(traineesCollection);
+            batch.set(docRef, {
+                ...trainee,
+                status: getStatusForProgress(trainee.progress),
+                dob: new Date(trainee.dob as string),
+                quizCompletions: [],
+                assignedQuizIds: [],
+                assignedChallengeIds: [],
+                completedChallengeIds: [],
+            });
         });
         await batch.commit();
         console.log("Initial trainees seeded.");
