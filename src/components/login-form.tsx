@@ -112,11 +112,11 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleAuthAction = async (e: React.FormEvent, isSignUpAction: boolean) => {
+  const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUpAction) {
+    if (isSignUp) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -180,9 +180,9 @@ export function LoginForm() {
     >
         {/* Sign Up Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10 sign-up-container">
-            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
-                <span className="text-muted-foreground mb-4 text-sm">Use your email for registration</span>
+                <span className="text-muted-foreground mb-4 text-sm">or use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
@@ -216,9 +216,9 @@ export function LoginForm() {
 
         {/* Sign In Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20 sign-in-container">
-            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
-                 <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
+                 <span className="text-muted-foreground mb-4 text-sm">or use your account to sign in</span>
                  <Input 
                     type="email" 
                     placeholder="Email" 
