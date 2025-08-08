@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -112,11 +111,11 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleAuthAction = async (e: React.FormEvent, isSignUpAction: boolean) => {
+  const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUpAction) {
+    if (isSignUp) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -179,13 +178,10 @@ export function LoginForm() {
      id="container" 
     >
         {/* Sign Up Form */}
-        <div className={cn(
-            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10",
-            "sign-up-container"
-        )}>
-            <form onSubmit={(e) => handleAuthAction(e, true)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+        <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10 sign-up-container">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
-                <span className="text-muted-foreground mb-4 text-sm">Use your email for registration</span>
+                <span className="text-muted-foreground mb-4 text-sm">or use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
@@ -218,11 +214,8 @@ export function LoginForm() {
         </div>
 
         {/* Sign In Form */}
-        <div className={cn(
-            "absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20",
-            "sign-in-container"
-        )}>
-            <form onSubmit={(e) => handleAuthAction(e, false)} className="bg-card h-full flex flex-col justify-center items-center px-12">
+        <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20 sign-in-container">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
                  <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
                  <Input 
@@ -250,27 +243,15 @@ export function LoginForm() {
         </div>
         
         {/* Overlay */}
-        <div className={cn(
-            "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
-            "overlay-container"
-        )}>
-            <div className={cn(
-                "bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out",
-                 "overlay"
-            )}>
-                <div className={cn(
-                    "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
-                    "overlay-panel overlay-left"
-                )}>
+        <div className="absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50 overlay-container">
+            <div className="bg-primary relative -left-full h-full w-[200%] transition-transform duration-700 ease-in-out overlay">
+                <div className="absolute top-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out overlay-panel overlay-left">
                     <h1 className="text-3xl font-bold font-headline">Your Journey Continues!</h1>
                     <p className="text-sm my-4">Log in to keep developing your skills and pushing boundaries.</p>
                     <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signIn" onClick={() => setIsSignUp(false)}>Sign In</Button>
                 </div>
 
-                <div className={cn(
-                    "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out",
-                    "overlay-panel overlay-right"
-                )}>
+                <div className="absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center text-center px-10 text-primary-foreground transition-transform duration-700 ease-in-out overlay-panel overlay-right">
                     <h1 className="text-3xl font-bold font-headline">Forge Your Path!</h1>
                     <p className="text-sm my-4">Unleash your potential. Sign up to begin your personalized onboarding experience.</p>
                      <Button variant="outline" className="rounded-full px-12 bg-transparent border-primary-foreground hover:bg-primary-foreground/10" id="signUp" onClick={() => setIsSignUp(true)}>Sign Up</Button>
@@ -278,6 +259,13 @@ export function LoginForm() {
             </div>
         </div>
         <style jsx>{`
+            .sign-up-container {
+                opacity: 0;
+                z-index: 1;
+            }
+            .sign-in-container {
+                z-index: 2;
+            }
             .right-panel-active .sign-in-container {
                 transform: translateX(100%);
             }
@@ -297,23 +285,56 @@ export function LoginForm() {
                     z-index: 5;
                 }
             }
-            .right-panel-active .overlay-container {
+            .overlay-container {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                width: 50%;
+                height: 100%;
+                overflow: hidden;
+                transition: transform 0.6s ease-in-out;
+                z-index: 100;
+            }
+            .right-panel-active .overlay-container{
                 transform: translateX(-100%);
+            }
+            .overlay {
+                position: relative;
+                left: -100%;
+                height: 100%;
+                width: 200%;
+                transform: translateX(0);
+                transition: transform 0.6s ease-in-out;
             }
             .right-panel-active .overlay {
                 transform: translateX(50%);
             }
-            .right-panel-active .overlay-left {
+            .overlay-panel {
+                position: absolute;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                padding: 0 40px;
+                text-align: center;
+                top: 0;
+                height: 100%;
+                width: 50%;
                 transform: translateX(0);
+                transition: transform 0.6s ease-in-out;
             }
             .overlay-left {
                 transform: translateX(-20%);
             }
-            .right-panel-active .overlay-right {
-                transform: translateX(20%);
+            .right-panel-active .overlay-left {
+                transform: translateX(0);
             }
             .overlay-right {
+                right: 0;
                 transform: translateX(0);
+            }
+            .right-panel-active .overlay-right {
+                transform: translateX(20%);
             }
         `}</style>
     </div>

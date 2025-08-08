@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Montserrat', 'sans-serif'],
-        body: ['Montserrat', 'sans-serif'],
+        sans: ['var(--font-sans)', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
         headline: ['"Space Grotesk"', 'sans-serif'],
         code: ['monospace'],
       },
@@ -84,9 +84,6 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
-       transitionProperty: {
-        'transform': 'transform',
-      }
     },
   },
   plugins: [require('tailwindcss-animate')],
