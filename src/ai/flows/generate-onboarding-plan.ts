@@ -16,7 +16,7 @@ import type { PersonalizedOnboardingPlan } from '@/lib/plan-schema';
 
 
 const GeneratePersonalizedOnboardingPlanInputSchema = z.object({
-  learningGoal: z.string().describe('The learning goal of the trainee, including topic and desired timeframe (e.g., "I want to learn the basics of Python in 2 weeks").'),
+  learningGoal: z.string().describe('The learning goal of the trainee, including topic and desired timeframe (e.g., "I want to learn the basics of Python in 2 weeks" or "Give me a daily plan to learn SQL").'),
   fresherProfile: z.string().describe("A description of the trainee's skills and learning preferences."),
   trainingSchedule: z.string().describe("The company's overall training schedule or available modules."),
 });
@@ -47,7 +47,11 @@ const prompt = ai.definePrompt({
 **Trainee's Stated Learning Goal:**
 "{{learningGoal}}"
 
-Based on all this information, create a detailed learning plan. Break it down into weekly items. For each week, define a clear topic and a set of specific, actionable tasks as an array of strings. These tasks should be phrased as assignments suitable for a task list. Assume the trainee is a beginner unless their profile specifies otherwise. Set the initial status of all items to "Not Started". The output must be an array of plan items.
+Based on all this information, create a detailed learning plan. Analyze the learning goal to determine the desired timeframe.
+- If the user explicitly asks for a "daily plan", break the plan down into daily items (e.g., "Day 1", "Day 2", etc.).
+- If the user asks for a "weekly plan" or does not specify a timeframe, break it down into weekly items (e.g., "Week 1", "Week 2", etc.).
+
+For each item (day or week), define a clear topic and a set of specific, actionable tasks as an array of strings. These tasks should be phrased as assignments suitable for a task list. Assume the trainee is a beginner unless their profile specifies otherwise. Set the initial status of all items to "Not Started". The output must be an array of plan items.
 
 For example, if the goal is "learn basics of python in two weeks", you should generate a two-week plan with relevant topics and tasks for each week. A task for week 1 might be "Complete the 'Data Types' module and submit the associated quiz." or "Write a Python script that prints 'Hello, World!' and calculates the sum of two numbers."
 `,
