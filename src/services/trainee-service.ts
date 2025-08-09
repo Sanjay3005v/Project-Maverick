@@ -29,9 +29,43 @@ export interface Trainee {
     completedChallengeIds?: string[];
 }
 
+const sampleOnboardingPlan: OnboardingPlanItem[] = [
+    {
+        week: 'Week 1',
+        topic: 'Introduction to Company Culture & Tools',
+        tasks: [
+            'Complete the "Company Values" module.',
+            'Set up your development environment.',
+            'Submit your first code review request.'
+        ],
+        status: 'In Progress',
+    },
+    {
+        week: 'Week 2',
+        topic: 'Core Technology Stack: Frontend',
+        tasks: [
+            'Complete the "React Basics" tutorial.',
+            'Build a simple "To-Do List" application.',
+            'Submit the "Component Design" assignment.'
+        ],
+        status: 'Not Started',
+    },
+    {
+        week: 'Week 3',
+        topic: 'Core Technology Stack: Backend',
+        tasks: [
+            'Learn about REST APIs.',
+            'Build a basic Express.js server.',
+            'Submit the "API Endpoint" assignment.'
+        ],
+        status: 'Not Started',
+    }
+];
+
+
 const dummyTrainees: Omit<Trainee, 'id' | 'status' | 'quizCompletions'>[] = [
-    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', batch: 'Batch 1', progress: 85, dob: '1998-04-12' },
-    { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', batch: 'Batch 2', progress: 72, dob: '1999-08-20' },
+    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', batch: 'Batch 1', progress: 85, dob: '1998-04-12', onboardingPlan: sampleOnboardingPlan },
+    { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', batch: 'Batch 2', progress: 72, dob: '1999-08-20', onboardingPlan: sampleOnboardingPlan },
     { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Design', batch: 'Batch 1', progress: 95, dob: '1997-03-15' },
     { name: 'Neo Anderson', email: 'neo.a@example.com', department: 'Engineering', batch: 'Batch 3', progress: 38, dob: '1996-11-30' },
     { name: 'George Costanza', email: 'george.c@example.com', department: 'Product', batch: 'Batch 2', progress: 55, dob: '1998-07-22' },
@@ -70,6 +104,7 @@ async function seedTrainees() {
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
                 batch: trainee.batch || 'N/A',
+                onboardingPlan: trainee.onboardingPlan || [],
                 quizCompletions: [],
                 assignedQuizIds: [],
                 assignedChallengeIds: [],
