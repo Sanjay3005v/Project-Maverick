@@ -59,7 +59,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
 
   const handleDownloadPDF = () => {
     if (!report) return;
-    const doc = new jsPDF();
+    const doc = new jsPDF('portrait', 'pt', 'a4');
     const tableData = trainees.map(t => [t.name, t.department, `${t.progress}%`, t.status]);
 
     doc.setFontSize(18);
@@ -78,7 +78,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     autoTable(doc, {
         head: [['Name', 'Department', 'Progress', 'Status']],
         body: tableData,
-        startY: doc.autoTable.previous.finalY + 15,
+        startY: 120, // Adjusted to provide more space
         theme: 'grid',
         headStyles: { fillColor: [37, 171, 226] },
     });
@@ -154,7 +154,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
                 <Button onClick={handleGenerateReport} disabled={loading}>
                     {loading ? (
                     <>
-                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating...
                     </>
                     ) : (
