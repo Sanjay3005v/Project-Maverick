@@ -13,6 +13,8 @@ import { UserCog, ClipboardCheck, Award, FileText, CheckSquare, ListChecks, BarC
 import Link from "next/link";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 import { useAuth } from "@/hooks/use-auth";
+import { getAllSubmissions, Submission } from "@/services/submission-service";
+import { getConversations, Conversation } from "@/services/messaging-service";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,20 +31,31 @@ export default function AdminDashboard() {
   const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
   const { user, loading: authLoading } = useAuth();
   const [dataLoading, setDataLoading] = useState(true);
+  const [unreadMailCount, setUnreadMailCount] = useState(0);
+  const [unreviewedSubmissionsCount, setUnreviewedSubmissionsCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && user) {
-      const fetchTrainees = async () => {
+      const fetchData = async () => {
         setDataLoading(true);
-        const trainees = await getAllTrainees();
+        const [trainees, submissions, conversations] = await Promise.all([
+          getAllTrainees(),
+          getAllSubmissions(),
+          getConversations(),
+        ]);
+        
         const traineesWithCompletion = trainees.map(t => ({
           ...t,
           certificationCompleted: generateConsistentCompletion(t.id),
         }));
         setAllFreshers(traineesWithCompletion);
+
+        setUnreviewedSubmissionsCount(submissions.filter(s => !s.review).length);
+        setUnreadMailCount(conversations.filter(c => !c.isReadByAdmin).length);
+        
         setDataLoading(false);
       };
-      fetchTrainees();
+      fetchData();
     } else if (!authLoading && !user) {
       setDataLoading(false);
     }
@@ -79,7 +92,8 @@ export default function AdminDashboard() {
       title: "Assignment Submissions",
       icon: <FileText className="h-4 w-4 text-muted-foreground" />,
       description: "Inbox for submitted files",
-      value: "Review Submissions"
+      value: unreviewedSubmissionsCount > 0 ? `${unreviewedSubmissionsCount} New` : "Review Submissions",
+      highlight: unreviewedSubmissionsCount > 0
     },
     {
       href: "/admin/assignment-progress",
@@ -107,7 +121,8 @@ export default function AdminDashboard() {
       title: "Mail",
       icon: <Mail className="h-4 w-4 text-muted-foreground" />,
       description: "Send and receive mail",
-      value: "View Inbox"
+      value: unreadMailCount > 0 ? `${unreadMailCount} New` : "View Inbox",
+      highlight: unreadMailCount > 0
     },
 ];
 
@@ -132,13 +147,13 @@ export default function AdminDashboard() {
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {dashboardCards.map((card, index) => (
              <Link href={card.href} key={card.href} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
-                <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+                <Card className={`cursor-pointer hover:border-primary transition-colors h-full ${card.highlight ? 'border-primary' : ''}`}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
                     {card.icon}
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{card.value}</div>
+                    <div className={`text-2xl font-bold ${card.highlight ? 'text-primary' : ''}`}>{card.value}</div>
                     <p className="text-xs text-muted-foreground">{card.description}</p>
                 </CardContent>
                 </Card>
