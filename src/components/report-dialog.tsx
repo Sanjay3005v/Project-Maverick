@@ -15,8 +15,11 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { LoaderCircle, Wand2, Download } from 'lucide-react';
+import { LoaderCircle, Wand2, FileText } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 interface ReportDialogProps {
   trainees: GenerateTraineeReportInput['trainees'];
@@ -54,18 +57,46 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     }
   };
 
-  const handleDownloadReport = () => {
+  const handleDownloadPDF = () => {
     if (!report) return;
+    const doc = new jsPDF();
+    const tableData = trainees.map(t => [t.name, t.department, `${t.progress}%`, t.status]);
 
-    const blob = new Blob([report], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `trainee-performance-report-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    doc.setFontSize(18);
+    doc.text("Trainee Performance Report", 14, 22);
+
+    // Use a regex to split the report but keep the headings.
+    // This is a simple way to separate summary from the table part in the markdown.
+    const reportParts = report.split(/(\n##\s.*)/).filter(part => part.trim() !== '');
+    const summaryText = reportParts[0] || 'No summary available.';
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    const splitSummary = doc.splitTextToSize(summaryText, 180);
+    doc.text(splitSummary, 14, 32);
+
+    autoTable(doc, {
+        head: [['Name', 'Department', 'Progress', 'Status']],
+        body: tableData,
+        startY: doc.autoTable.previous.finalY + 15,
+        theme: 'grid',
+        headStyles: { fillColor: [37, 171, 226] },
+    });
+
+    doc.save(`trainee-performance-report-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const handleDownloadExcel = () => {
+     if (!trainees) return;
+     const worksheet = XLSX.utils.json_to_sheet(trainees.map(t => ({
+        Name: t.name,
+        Department: t.department,
+        'Progress (%)': t.progress,
+        Status: t.status
+     })));
+     const workbook = XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(workbook, worksheet, "Trainees");
+     XLSX.writeFile(workbook, `trainee-performance-report-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
 
@@ -90,7 +121,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
           )}
           {report && !loading && (
              <Alert variant="default" className="bg-primary/5 border-primary/20">
-              <Wand2 className="h-4 w-4 !text-primary" />
+              <FileText className="h-4 w-4 !text-primary" />
               <AlertTitle className="font-headline text-primary">Trainee Performance Summary</AlertTitle>
               <AlertDescription className="prose prose-sm prose-p:my-2 prose-headings:my-2 prose-ul:my-1 whitespace-pre-wrap text-foreground">
                 {report}
@@ -106,10 +137,14 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t">
             <div>
               {report && !loading && (
-                  <Button variant="secondary" onClick={handleDownloadReport}>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download Report
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" onClick={handleDownloadPDF}>
+                      Download PDF
+                    </Button>
+                     <Button variant="secondary" onClick={handleDownloadExcel}>
+                      Download Excel
+                    </Button>
+                  </div>
               )}
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
@@ -120,12 +155,12 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
                     {loading ? (
                     <>
                         <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                        Regenerating...
+                        Generating...
                     </>
                     ) : (
                     <>
                         <Wand2 className="mr-2 h-4 w-4" />
-                        {report ? 'Regenerate Report' : 'Generate Report'}
+                        {report ? 'Regenerate' : 'Generate Report'}
                     </>
                     )}
                 </Button>
