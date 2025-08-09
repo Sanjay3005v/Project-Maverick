@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserPlus, LogIn, Mail, Rocket } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { addTrainee } from "@/services/trainee-service";
+import { addTrainee, getTraineeByEmail } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -117,22 +118,33 @@ export function LoginForm() {
 
     if (isSignUp) {
       try {
+        // Check if a trainee record already exists for this email
+        const existingTrainee = await getTraineeByEmail(email);
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        await addTrainee({
-            name: name,
-            email: user.email!,
-            department: 'Design',
-            progress: 0,
-            status: 'On Track',
-            dob: new Date().toISOString().split('T')[0],
-        });
-
-        toast({
-          title: "Account Created!",
-          description: `Welcome, ${name}! Your trainee profile has been created.`,
-        });
+        if (!existingTrainee) {
+            // Only create a new trainee record if one doesn't exist
+            await addTrainee({
+                name: name,
+                email: user.email!,
+                department: 'Engineering', // Default department for self-signup
+                batch: 'Unassigned', // Default batch
+                progress: 0,
+                status: 'On Track',
+                dob: new Date().toISOString().split('T')[0],
+            });
+             toast({
+              title: "Account Created!",
+              description: `Welcome, ${name}! Your trainee profile has been created.`,
+            });
+        } else {
+             toast({
+              title: "Account Activated!",
+              description: `Welcome, ${name}! Your login has been linked to your existing profile.`,
+            });
+        }
         
         router.push("/trainee/dashboard");
 
@@ -340,3 +352,5 @@ export function LoginForm() {
     </div>
   );
 }
+
+    
