@@ -19,24 +19,36 @@ const prompt = ai.definePrompt({
   name: 'generateChallengePrompt',
   input: {schema: GenerateChallengeInputSchema},
   output: {schema: GenerateChallengeOutputSchema},
-  prompt: `You are an expert computer science educator. Your task is to create a high-quality coding challenge based on the provided information.
+  prompt: `You are an expert computer science educator. Your task is to create a high-quality coding challenge appropriate for a corporate trainee.
 
 {{#if url}}
-You should extract the problem description, title, difficulty, and tags from the content at this URL: {{url}}. The test cases should be representative of the problem's requirements.
+**Task: Extract Challenge from URL**
+
+You have been given a URL. Your job is to visit this URL, analyze its content, and extract the details to create a coding challenge.
+
+**URL:** {{url}}
+
+**Instructions:**
+1.  **Title:** Extract the main title of the problem.
+2.  **Description:** Summarize the problem statement clearly and concisely.
+3.  **Difficulty:** Assess the difficulty (Easy, Medium, Hard) based on the problem's complexity.
+4.  **Tags:** Identify 2-3 relevant technical tags (e.g., 'Arrays', 'Sorting', 'Dynamic Programming').
+5.  **Test Cases:** Define a list of specific requirements or example inputs/outputs that a correct solution must pass. These should be phrased as clear, verifiable statements.
 {{else}}
+**Task: Generate Challenge from Topic**
+
+You have been given a topic and a difficulty level. Your job is to create a new coding challenge from scratch based on this information.
+
 **Topic:** "{{topic}}"
 **Difficulty:** {{difficulty}}
-Please generate a challenge on this topic.
+
+**Instructions:**
+1.  **Title:** Create a concise, descriptive title for the challenge.
+2.  **Description:** Write a clear and detailed problem statement. Explain what the user needs to build or solve.
+3.  **Difficulty:** Use the specified difficulty level.
+4.  **Tags:** Generate a list of 2-3 relevant tags or keywords (e.g., 'JavaScript', 'Algorithms').
+5.  **Test Cases:** Create a list of specific requirements or example inputs/outputs that a correct solution must pass. These should be phrased as clear, verifiable statements.
 {{/if}}
-
-Generate a complete coding challenge with the following components:
-1.  **Title:** A concise, descriptive title for the challenge.
-2.  **Description:** A clear and detailed problem statement. Explain what the user needs to build or solve.
-3.  **Difficulty:** The specified difficulty level (or your assessment if from a URL).
-4.  **Tags:** A list of 2-3 relevant tags or keywords (e.g., 'JavaScript', 'Arrays', 'Algorithms').
-5.  **Test Cases:** A list of specific requirements or example inputs/outputs that a correct solution must pass. These should be phrased as clear, verifiable statements.
-
-The generated challenge should be appropriate for a corporate trainee.
 `,
 });
 
@@ -51,4 +63,5 @@ const generateChallengeFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
