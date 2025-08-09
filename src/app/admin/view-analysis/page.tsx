@@ -13,12 +13,6 @@ import type { ChartConfig } from '@/components/ui/chart';
 
 export const dynamic = 'force-dynamic';
 
-const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // 60-100
-const generateConsistentCompletion = (id: string) => {
-  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  return (numericId % 3) === 0;
-};
-
 const assessmentChartConfig = {
   passed: { label: 'Passed', color: 'hsl(var(--chart-1))' },
   failed: { label: 'Failed', color: 'hsl(var(--chart-2))' },
@@ -33,10 +27,16 @@ const departmentChartConfig = {
 
 
 export default function ViewAnalysisPage() {
-  const [trainees, setTrainees] = useState<Trainee[]>([]);
+  const [trainees, setTrainees] = useState<(Trainee & { assessmentScore?: number; trainingCompleted?: boolean; })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // 60-100
+    const generateConsistentCompletion = (id: string) => {
+      const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
+      return (numericId % 3) === 0;
+    };
+    
     const fetchAndProcessTrainees = async () => {
       setLoading(true);
       const fetchedTrainees = await getAllTrainees();
@@ -45,7 +45,6 @@ export default function ViewAnalysisPage() {
         assessmentScore: t.assessmentScore || generateRandomScore(),
         trainingCompleted: generateConsistentCompletion(t.id),
       }));
-      // @ts-ignore
       setTrainees(traineesWithData);
       setLoading(false);
     };

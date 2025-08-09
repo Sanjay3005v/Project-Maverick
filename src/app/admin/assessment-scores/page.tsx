@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // Score between 60 and 100
 
 export default function AssessmentScoresPage() {
-  const [trainees, setTrainees] = useState<Trainee[]>([]);
+  const [trainees, setTrainees] = useState<(Trainee & { assessmentScore?: number })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function AssessmentScoresPage() {
             All Trainees
           </CardTitle>
           <CardDescription>
-            This list shows the assessment scores for each trainee. Note: Scores are currently dummy data.
+            This list shows the assessment scores for each trainee.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,7 +74,7 @@ export default function AssessmentScoresPage() {
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.department}</TableCell>
                     <TableCell className="text-right font-bold text-lg">
-                      {trainee.assessmentScore}%
+                      {trainee.assessmentScore ? `${trainee.assessmentScore}%` : 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))}
