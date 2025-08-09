@@ -53,14 +53,6 @@ export default function AdminDashboard() {
   const completedCount = allFreshers.filter(f => f.certificationCompleted).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   
-  const averageProgress = allFreshers.length > 0
-    ? Math.round(allFreshers.reduce((acc, t) => acc + t.progress, 0) / allFreshers.length)
-    : 0;
-
-  const topPerformer = allFreshers.length > 0
-    ? allFreshers.reduce((max, trainee) => trainee.progress > max.progress ? trainee : max, allFreshers[0])
-    : null;
-  
   if (authLoading || dataLoading) {
       return (
           <div className="flex justify-center items-center h-screen">
@@ -69,6 +61,66 @@ export default function AdminDashboard() {
           </div>
       )
   }
+  
+    const dashboardCards = [
+    {
+      href: "/admin/trainee-management",
+      title: "Trainee Management",
+      icon: <UserCog className="h-4 w-4 text-muted-foreground" />,
+      value: `${totalTrainees} Trainees`,
+      description: "Add, edit, and track trainees",
+    },
+    {
+      href: "/admin/assessment-scores",
+      title: "Assessment Scores",
+      icon: <ClipboardCheck className="h-4 w-4 text-muted-foreground" />,
+      value: "View Scores",
+      description: "Check trainee assessment results",
+    },
+    {
+      href: "/admin/certification-completion",
+      title: "Certification Completion",
+      icon: <Award className="h-4 w-4 text-muted-foreground" />,
+      value: `${onboardingCompletionRate}%`,
+      description: `${completedCount} of ${totalTrainees} trainees certified`,
+    },
+    {
+      href: "/admin/assignment-submissions",
+      title: "Assignment Submissions",
+      icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+      value: "Review Submissions",
+      description: "Inbox for submitted files",
+    },
+    {
+      href: "/admin/assignment-progress",
+      title: "Assignment Progress",
+      icon: <CheckSquare className="h-4 w-4 text-muted-foreground" />,
+      value: "Track Status",
+      description: "View submission status for all trainees",
+    },
+    {
+      href: "/admin/training-progress",
+      title: "Training Progress",
+      icon: <ListChecks className="h-4 w-4 text-muted-foreground" />,
+      value: "Track Details",
+      description: "View course and module progress",
+    },
+    {
+      href: "/admin/view-analysis",
+      title: "View Analysis",
+      icon: <BarChart2 className="h-4 w-4 text-muted-foreground" />,
+      value: "Visualize Data",
+      description: "See performance charts and graphs",
+    },
+    {
+      href: "/admin/mail",
+      title: "Mail",
+      icon: <Mail className="h-4 w-4 text-muted-foreground" />,
+      value: "View Inbox",
+      description: "Send and receive mail",
+    },
+  ];
+
 
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8">
@@ -78,102 +130,20 @@ export default function AdminDashboard() {
       </header>
       
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-         <Link href="/admin/trainee-management">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Trainee Management</CardTitle>
-                <UserCog className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{totalTrainees} Trainees</div>
-                <p className="text-xs text-muted-foreground">Add, edit, and track trainees</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/assessment-scores">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Assessment Scores</CardTitle>
-                <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">View Scores</div>
-                <p className="text-xs text-muted-foreground">Check trainee assessment results</p>
-              </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/certification-completion">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Certification Completion</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{onboardingCompletionRate}%</div>
-                <p className="text-xs text-muted-foreground">{completedCount} of {totalTrainees} trainees certified</p>
-            </CardContent>
-            </Card>
-        </Link>
-         <Link href="/admin/assignment-submissions">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Assignment Submissions</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">Review Submissions</div>
-                <p className="text-xs text-muted-foreground">Inbox for submitted files</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/assignment-progress">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Assignment Progress</CardTitle>
-                <CheckSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">Track Status</div>
-                <p className="text-xs text-muted-foreground">View submission status for all trainees</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/training-progress">
-          <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Training Progress</CardTitle>
-              <ListChecks className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Track Details</div>
-              <p className="text-xs text-muted-foreground">View course and module progress</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/view-analysis">
-          <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">View Analysis</CardTitle>
-              <BarChart2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Visualize Data</div>
-              <p className="text-xs text-muted-foreground">See performance charts and graphs</p>
-            </CardContent>
-          </Card>
-        </Link>
-         <Link href="/admin/mail">
-            <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+        {dashboardCards.map((card, index) => (
+             <Link href={card.href} key={card.href} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <Card className="cursor-pointer hover:border-primary transition-colors h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Mail</CardTitle>
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                    {card.icon}
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">View Inbox</div>
-                    <p className="text-xs text-muted-foreground">Send and receive mail</p>
+                    <div className="text-2xl font-bold">{card.value}</div>
+                    <p className="text-xs text-muted-foreground">{card.description}</p>
                 </CardContent>
-            </Card>
-        </Link>
+                </Card>
+            </Link>
+        ))}
       </section>
     </div>
   );

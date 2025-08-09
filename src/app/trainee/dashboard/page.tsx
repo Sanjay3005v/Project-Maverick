@@ -78,6 +78,51 @@ export default function TraineeDashboard() {
   }
   const completedChallenges = trainee.completedChallengeIds?.length || 0;
   const totalChallenges = challenges.length;
+  
+  const dashboardCards = [
+    {
+      href: "/trainee/onboarding-plan",
+      title: "My Onboarding Plan",
+      icon: <Route className="h-6 w-6 text-muted-foreground" />,
+      description: "Generate or update your personalized plan.",
+    },
+    {
+      href: "/trainee/quiz",
+      title: "Daily Quiz",
+      icon: <BookOpenCheck className="h-6 w-6 text-muted-foreground" />,
+      description: "Test your knowledge now",
+    },
+    {
+      href: "/trainee/challenges",
+      title: "Coding Challenges",
+      icon: <Code2 className="h-6 w-6 text-muted-foreground" />,
+      description: `${completedChallenges} / ${totalChallenges} Completed`,
+    },
+    {
+      href: "/trainee/assignments",
+      title: "Assignments",
+      icon: <FileText className="h-6 w-6 text-muted-foreground" />,
+      description: "View your plan and submit your work.",
+    },
+     {
+      href: "/trainee/certifications",
+      title: "Certifications",
+      icon: <Award className="h-6 w-6 text-muted-foreground" />,
+      description: "View your achievements",
+    },
+    {
+      href: "/trainee/leaderboard",
+      title: "Leaderboard",
+      icon: <Trophy className="h-6 w-6 text-muted-foreground" />,
+      description: "See top performers",
+    },
+    {
+      href: "/trainee/mail",
+      title: "Mail",
+      icon: <Mail className="h-6 w-6 text-muted-foreground" />,
+      description: "Check your admin mail",
+    },
+  ];
 
 
   return (
@@ -113,97 +158,21 @@ export default function TraineeDashboard() {
       </section>
 
        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Link href="/trainee/onboarding-plan">
-            <Card className="hover:border-primary transition-colors h-full">
-                <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-headline">My Onboarding Plan</CardTitle>
-                    <Route className="h-6 w-6 text-muted-foreground" />
-                </div>
-                </CardHeader>
-                <CardContent>
-                <p className="text-sm text-muted-foreground">Generate or update your personalized plan.</p>
-                </CardContent>
-            </Card>
-        </Link>
-        <Link href="/trainee/quiz">
-          <Card className="hover:border-primary transition-colors h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-headline">Daily Quiz</CardTitle>
-                <BookOpenCheck className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Test your knowledge now</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/trainee/challenges">
-          <Card className="hover:border-primary transition-colors h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-headline">Coding Challenges</CardTitle>
-                <Code2 className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{completedChallenges} / {totalChallenges} Completed</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/trainee/assignments">
-          <Card className="hover:border-primary transition-colors h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-headline">Assignments</CardTitle>
-                <FileText className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">View your plan and submit your work.</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/trainee/certifications">
-          <Card className="hover:border-primary transition-colors h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-headline">Certifications</CardTitle>
-                <Award className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">View your achievements</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/trainee/leaderboard">
-            <Card className="hover:border-primary transition-colors h-full">
-                <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-headline">Leaderboard</CardTitle>
-                    <Trophy className="h-6 w-6 text-muted-foreground" />
-                </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">See top performers</p>
-                </CardContent>
-            </Card>
-        </Link>
-        <Link href="/trainee/mail">
-            <Card className="hover:border-primary transition-colors h-full">
-                <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-headline">Mail</CardTitle>
-                    <Mail className="h-6 w-6 text-muted-foreground" />
-                </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Check your admin mail</p>
-                </CardContent>
-            </Card>
-        </Link>
+        {dashboardCards.map((card, index) => (
+             <Link href={card.href} key={card.href} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <Card className="hover:border-primary transition-colors h-full">
+                    <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-headline">{card.title}</CardTitle>
+                        {card.icon}
+                    </div>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                    </CardContent>
+                </Card>
+            </Link>
+        ))}
       </section>
 
       {earnedBadges.length > 0 && (
