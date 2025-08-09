@@ -25,7 +25,8 @@ import { Challenge, getAllChallenges, addChallenge, updateChallenge, deleteChall
 import { Badge } from './ui/badge';
 import { Trainee, getAllTrainees, assignChallengeToTrainees } from '@/services/trainee-service';
 import { Checkbox } from './ui/checkbox';
-import { generateChallenge } from '@/ai/flows/generate-challenge-flow';
+import { generateChallengeFromTopic } from '@/ai/flows/generate-challenge-from-topic-flow';
+import { generateChallengeFromUrl } from '@/ai/flows/generate-challenge-from-url-flow';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 
@@ -320,7 +321,13 @@ export function ChallengeManagement() {
     }
     setAiLoading(true);
     try {
-      const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty, url: aiUrl });
+      let result;
+      if (aiUrl.trim()) {
+        result = await generateChallengeFromUrl({ url: aiUrl });
+      } else {
+        result = await generateChallengeFromTopic({ topic: aiTopic, difficulty: aiDifficulty as 'Easy' | 'Medium' | 'Hard' });
+      }
+
       await addChallenge(result);
       fetchChallengesAndTrainees();
       toast({ title: 'Challenge Generated!', description: `AI has created a new challenge on "${result.title}".` });

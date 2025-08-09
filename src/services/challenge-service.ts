@@ -15,15 +15,19 @@ export type Challenge = z.infer<typeof ChallengeSchema>;
 
 
 // AI Flow Schemas
-export const GenerateChallengeInputSchema = z.object({
-  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks"). Can be empty if a URL is provided.').optional(),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The desired difficulty level for the challenge.'),
-  url: z.string().url().describe('A URL to a problem page to import a challenge from. Can be empty if a topic is provided.').optional(),
-});
-export type GenerateChallengeInput = z.infer<typeof GenerateChallengeInputSchema>;
-
 export const GenerateChallengeOutputSchema = ChallengeSchema.omit({ id: true });
 export type GenerateChallengeOutput = z.infer<typeof GenerateChallengeOutputSchema>;
+
+export const GenerateChallengeFromTopicInputSchema = z.object({
+  topic: z.string().describe('The topic for which to generate the challenge (e.g., "Python dictionaries", "React hooks").'),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The desired difficulty level for the challenge.'),
+});
+export type GenerateChallengeFromTopicInput = z.infer<typeof GenerateChallengeFromTopicInputSchema>;
+
+export const GenerateChallengeFromUrlInputSchema = z.object({
+  url: z.string().url().describe('A URL to a problem page to import a challenge from (e.g., from LeetCode).'),
+});
+export type GenerateChallengeFromUrlInput = z.infer<typeof GenerateChallengeFromUrlInputSchema>;
 
 
 const seedChallenges: Omit<Challenge, 'id'>[] = [
