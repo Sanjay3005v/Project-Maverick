@@ -28,7 +28,7 @@ export type GenerateTraineeReportInput = z.infer<typeof GenerateTraineeReportInp
 const GenerateTraineeReportOutputSchema = z.object({
   report: z
     .string()
-    .describe('A comprehensive performance report based on the provided trainee data. It should include an overall summary, identify top performers, and highlight trainees who might be at risk or need attention. The report should be well-structured and easy to read.'),
+    .describe('A comprehensive performance report in Markdown format. It should include an overall summary, a table of the trainees, identification of top performers, and highlight trainees who might be at risk. The report should be well-structured and easy to read.'),
 });
 export type GenerateTraineeReportOutput = z.infer<typeof GenerateTraineeReportOutputSchema>;
 
@@ -43,18 +43,20 @@ const prompt = ai.definePrompt({
   name: 'generateTraineeReportPrompt',
   input: {schema: GenerateTraineeReportInputSchema},
   output: {schema: GenerateTraineeReportOutputSchema},
-  prompt: `You are an HR analyst AI. Based on the following trainee data, generate a concise performance report.
+  prompt: `You are an HR analyst AI. Based on the following trainee data, generate a concise performance report in Markdown format.
 
-The report should include:
-1.  A brief overall summary of the cohort's performance.
-2.  Identification of top-performing trainees (those with 'On Track' status or high progress).
-3.  Identification of trainees who are 'At Risk' or 'Need Attention' and might require support.
-4.  A concluding remark.
+The report must include the following sections:
+1.  **Overall Summary:** A brief paragraph summarizing the cohort's performance, mentioning key trends.
+2.  **Performance Table:** A Markdown table with the following columns: Name, Department, Progress (%), and Status.
+3.  **Key Insights:** A bulleted list identifying top-performing trainees and highlighting those who are 'At Risk' or 'Need Attention'.
+4.  **Recommendations:** A brief concluding remark with a suggested next step, like commending top performers or scheduling check-ins with at-risk trainees.
 
 Trainee Data:
 {{#each trainees}}
 - Name: {{name}}, Department: {{department}}, Progress: {{progress}}%, Status: {{status}}
 {{/each}}
+
+Ensure the entire output is a single, well-formatted Markdown string.
 `,
 });
 

@@ -57,11 +57,11 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleDownloadReport = () => {
     if (!report) return;
 
-    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([report], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `trainee-performance-report-${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `trainee-performance-report-${new Date().toISOString().split('T')[0]}.md`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -78,7 +78,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl">AI Generated Trainee Report</DialogTitle>
           <DialogDescription>
-            An AI-powered summary of the current trainee progress and status.
+            An AI-powered summary of the selected {trainees.length} trainee(s).
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 max-h-[60vh] overflow-y-auto">
@@ -92,7 +92,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
              <Alert variant="default" className="bg-primary/5 border-primary/20">
               <Wand2 className="h-4 w-4 !text-primary" />
               <AlertTitle className="font-headline text-primary">Trainee Performance Summary</AlertTitle>
-              <AlertDescription className="prose prose-sm whitespace-pre-wrap text-foreground">
+              <AlertDescription className="prose prose-sm prose-p:my-2 prose-headings:my-2 prose-ul:my-1 whitespace-pre-wrap text-foreground">
                 {report}
               </AlertDescription>
             </Alert>

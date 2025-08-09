@@ -33,6 +33,7 @@ import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 import { GetOnTrackDialog } from "@/components/get-on-track-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,7 @@ export default function TraineeManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
 
   const fetchTrainees = async () => {
     setLoading(true);
@@ -73,6 +75,14 @@ export default function TraineeManagementPage() {
         statusFilter === 'all' || trainee.status === statusFilter
       );
   }, [allTrainees, searchTerm, departmentFilter, statusFilter]);
+
+  const traineesForReport = useMemo(() => {
+    if (selectedTrainees.length === 0) {
+      return allTrainees; // Default to all if none are selected
+    }
+    return allTrainees.filter(t => selectedTrainees.includes(t.id));
+  }, [selectedTrainees, allTrainees]);
+
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,6 +95,14 @@ export default function TraineeManagementPage() {
         default:
             return <Badge variant="secondary">{status}</Badge>;
     }
+  }
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+      if (checked) {
+          setSelectedTrainees(filteredTrainees.map(t => t.id));
+      } else {
+          setSelectedTrainees([]);
+      }
   }
 
   if (loading) {
@@ -115,10 +133,10 @@ export default function TraineeManagementPage() {
                     </CardDescription>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <ReportDialog trainees={allTrainees}>
+                    <ReportDialog trainees={traineesForReport}>
                        <Button>
                           <FileText className="mr-2 h-4 w-4" />
-                          Generate Report
+                          Generate Report ({selectedTrainees.length > 0 ? selectedTrainees.length + ' selected' : 'all'})
                         </Button>
                     </ReportDialog>
                      <Link href="/admin/onboarding-plan">
@@ -176,7 +194,7 @@ export default function TraineeManagementPage() {
                 </SelectContent>
               </Select>
               {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm) && (
-                <Button variant="ghost" onClick={() => { setSearchTerm(''); setDepartmentFilter('all'); setStatusFilter('all'); }}>
+                <Button variant="ghost" onClick={() => { setSearchTerm(''); setDepartmentFilter('all'); setStatusFilter('all'); setSelectedTrainees([]) }}>
                     <FilterX className="mr-2 h-4 w-4" />
                     Clear Filters
                 </Button>
@@ -186,6 +204,12 @@ export default function TraineeManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                     <TableHead className="w-[50px]">
+                        <Checkbox
+                           checked={selectedTrainees.length === filteredTrainees.length && filteredTrainees.length > 0}
+                           onCheckedChange={(checked) => handleSelectAll(checked)}
+                        />
+                     </TableHead>
                     <TableHead>User ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
@@ -202,6 +226,18 @@ export default function TraineeManagementPage() {
                       className="animate-fade-in" 
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
+                      <TableCell>
+                         <Checkbox
+                           checked={selectedTrainees.includes(fresher.id)}
+                           onCheckedChange={(checked) => {
+                               if (checked) {
+                                   setSelectedTrainees(prev => [...prev, fresher.id]);
+                               } else {
+                                   setSelectedTrainees(prev => prev.filter(id => id !== fresher.id));
+                               }
+                           }}
+                         />
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{formatUserId(fresher.id)}</TableCell>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.email}</TableCell>
