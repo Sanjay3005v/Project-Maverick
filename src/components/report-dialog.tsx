@@ -15,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Loader2, Wand2, FileText } from 'lucide-react';
+import { Loader2, Wand2, FileText, LoaderCircle } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -78,7 +78,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     autoTable(doc, {
         head: [['Name', 'Department', 'Progress', 'Status']],
         body: tableData,
-        startY: 180, // Adjusted to provide more space
+        startY: (doc as any).autoTable.previous.finalY + 15,
         theme: 'grid',
         headStyles: { fillColor: [37, 171, 226] },
     });
