@@ -74,11 +74,15 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     doc.setTextColor(100);
     const splitSummary = doc.splitTextToSize(summaryText, 500);
     doc.text(splitSummary, 40, 80);
+    
+    // Calculate a safe startY based on summary length
+    const summaryHeight = doc.getTextDimensions(splitSummary).h;
+    const tableStartY = 80 + summaryHeight + 20;
 
     autoTable(doc, {
         head: [['Name', 'Department', 'Progress', 'Status']],
         body: tableData,
-        startY: (doc as any).autoTable.previous.finalY + 15,
+        startY: tableStartY,
         theme: 'grid',
         headStyles: { fillColor: [37, 171, 226] },
     });
