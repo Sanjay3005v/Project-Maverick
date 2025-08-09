@@ -44,7 +44,6 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
           getAllSubmissions(),
           getAllChallenges()
       ]);
-      const totalChallengesCount = allChallenges.length;
 
       const submissionsByTrainee = submissions.reduce((acc, sub) => {
         if (!acc[sub.traineeId]) {
@@ -92,14 +91,19 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleDownloadPDF = () => {
     if (!report) return;
     const doc = new jsPDF('portrait', 'pt', 'a4');
-    const tableData = trainees.map(t => [
-      t.name,
-      t.department,
-      `${t.progress}%`,
-      t.status,
-      `${t.quizCompletions?.length || 0}/${t.assignedQuizIds?.length || 0}`,
-      `${t.completedChallengeIds?.length || 0}/${t.assignedChallengeIds?.length || 0}`,
-    ]);
+    const tableData = trainees.map(t => {
+       const submissionsByTrainee = 0; // Placeholder
+       const totalAssignments = t.onboardingPlan?.reduce((acc, week) => acc + week.tasks.length, 0) || 0;
+       return [
+          t.name,
+          t.department,
+          `${t.progress}%`,
+          t.status,
+          `${t.quizCompletions?.length || 0}/${t.assignedQuizIds?.length || 0}`,
+          `${t.completedChallengeIds?.length || 0}/${t.assignedChallengeIds?.length || 0}`,
+          `${submissionsByTrainee}/${totalAssignments}`,
+       ]
+    });
 
     doc.setFontSize(18);
     doc.text("Trainee Performance Report", 40, 60);
@@ -116,7 +120,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     const tableStartY = 80 + summaryHeight + 20;
 
     autoTable(doc, {
-        head: [['Name', 'Department', 'Progress', 'Status', 'Quizzes (C/A)', 'Challenges (C/A)']],
+        head: [['Name', 'Department', 'Progress', 'Status', 'Quizzes (C/A)', 'Challenges (C/A)', 'Assignments (S/T)']],
         body: tableData,
         startY: tableStartY,
         theme: 'grid',
@@ -129,6 +133,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleDownloadExcel = () => {
      if (!trainees) return;
      const worksheet = XLSX.utils.json_to_sheet(trainees.map(t => {
+       const submissionsByTrainee = 0; // Placeholder
        const totalAssignments = t.onboardingPlan?.reduce((acc, week) => acc + week.tasks.length, 0) || 0;
        return {
         Name: t.name,
@@ -139,7 +144,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         'Quizzes Assigned': t.assignedQuizIds?.length || 0,
         'Challenges Completed': t.completedChallengeIds?.length || 0,
         'Challenges Assigned': t.assignedChallengeIds?.length || 0,
-        'Assignments Submitted': 0, // Placeholder until submission service is fully integrated for counting
+        'Assignments Submitted': submissionsByTrainee,
         'Assignments Total': totalAssignments,
      }}));
      const workbook = XLSX.utils.book_new();
