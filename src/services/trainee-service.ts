@@ -1,4 +1,5 @@
 
+
 'use server';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -91,6 +92,7 @@ export async function getAllTrainees(): Promise<Trainee[]> {
             id: doc.id,
             ...data,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+            batch: data.batch || 'N/A',
             assignedQuizIds: data.assignedQuizIds || [],
             assignedChallengeIds: data.assignedChallengeIds || [],
             completedChallengeIds: data.completedChallengeIds || [],
@@ -109,6 +111,7 @@ export async function getTraineeById(id: string): Promise<Trainee | null> {
         id: traineeDoc.id,
         ...data,
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        batch: data.batch || 'N/A',
         assignedQuizIds: data.assignedQuizIds || [],
         assignedChallengeIds: data.assignedChallengeIds || [],
         completedChallengeIds: data.completedChallengeIds || [],
@@ -144,6 +147,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
         id: traineeDoc.id,
         ...data,
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        batch: data.batch || 'N/A',
         quizCompletions: data.quizCompletions || [],
         assignedQuizIds: data.assignedQuizIds || [],
         assignedChallengeIds: data.assignedChallengeIds || [],
@@ -265,3 +269,4 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
 }
 
     
+
