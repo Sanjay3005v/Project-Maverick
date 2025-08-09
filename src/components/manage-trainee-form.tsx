@@ -31,7 +31,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
   const [name, setName] = useState(trainee?.name || "");
   const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
-  const [batch, setBatch] = useState(trainee?.batch || "Batch A");
+  const [batch, setBatch] = useState(trainee?.batch || "Batch 1");
   const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -150,7 +150,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                             <Label htmlFor="batch">Batch</Label>
                             <Input
                                 id="batch"
-                                placeholder="e.g., Batch A, 2024-Q3"
+                                placeholder="e.g., Batch 1, 2024-Q3"
                                 required
                                 value={batch}
                                 onChange={(e) => setBatch(e.target.value)}
@@ -304,5 +304,3 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
     </div>
   );
 }
-
-    
