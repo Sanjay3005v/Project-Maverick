@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { Submission, getAllSubmissions } from '@/services/submission-service';
-import { Loader2, Search, FilterX, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, Search, FilterX, CheckCircle, Clock, ArrowUpDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,6 +22,9 @@ type AssignmentRecord = {
     submission: Submission | null;
 };
 
+type SortKey = keyof Pick<AssignmentRecord, 'traineeName' | 'assignmentTitle'>;
+
+
 export const AssignmentProgressTable = () => {
     const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
     const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
@@ -31,6 +34,8 @@ export const AssignmentProgressTable = () => {
     const [departmentFilter, setDepartmentFilter] = useState('all');
     const [batchFilter, setBatchFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState<'all' | 'submitted' | 'not-submitted'>('all');
+    const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' } | null>(null);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -84,8 +89,8 @@ export const AssignmentProgressTable = () => {
         return records;
     }, [allTrainees, allSubmissions]);
     
-    const filteredRecords = useMemo(() => {
-        return assignmentRecords.filter(record => {
+    const sortedAndFilteredRecords = useMemo(() => {
+        let filtered = assignmentRecords.filter(record => {
             const traineeMatch = traineeFilter === 'all' || record.traineeName === traineeFilter;
             const departmentMatch = departmentFilter === 'all' || record.traineeDepartment === departmentFilter;
             const batchMatch = batchFilter === 'all' || record.traineeBatch === batchFilter;
@@ -94,13 +99,36 @@ export const AssignmentProgressTable = () => {
                                 (statusFilter === 'not-submitted' && !record.submission);
             return traineeMatch && departmentMatch && batchMatch && statusMatch;
         });
-    }, [assignmentRecords, traineeFilter, departmentFilter, batchFilter, statusFilter]);
+
+        if (sortConfig !== null) {
+            filtered.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        return filtered;
+    }, [assignmentRecords, traineeFilter, departmentFilter, batchFilter, statusFilter, sortConfig]);
+
+    const requestSort = (key: SortKey) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const clearFilters = () => {
         setTraineeFilter('all');
         setDepartmentFilter('all');
         setBatchFilter('all');
         setStatusFilter('all');
+        setSortConfig(null);
     }
 
     if (loading) {
@@ -168,15 +196,25 @@ export const AssignmentProgressTable = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Trainee</TableHead>
-                                <TableHead>Assignment</TableHead>
+                                <TableHead>
+                                    <Button variant="ghost" onClick={() => requestSort('traineeName')}>
+                                        Trainee
+                                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </TableHead>
+                                <TableHead>
+                                    <Button variant="ghost" onClick={() => requestSort('assignmentTitle')}>
+                                        Assignment
+                                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Submitted On</TableHead>
                                 <TableHead className="text-right">Score</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredRecords.map((record, index) => (
+                            {sortedAndFilteredRecords.map((record, index) => (
                                 <TableRow key={index}>
                                     <TableCell>
                                         <div className="font-medium">{record.traineeName}</div>
@@ -210,7 +248,7 @@ export const AssignmentProgressTable = () => {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                             {filteredRecords.length === 0 && (
+                             {sortedAndFilteredRecords.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center h-24">
                                         No matching records found.
