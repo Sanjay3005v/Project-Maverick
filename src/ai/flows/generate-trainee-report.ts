@@ -18,6 +18,9 @@ const TraineeSchema = z.object({
   department: z.string(),
   progress: z.number(),
   status: z.string(),
+  quizCompletionCount: z.number().describe('The total number of quizzes the trainee has completed.'),
+  challengeCompletionCount: z.number().describe('The total number of coding challenges the trainee has completed.'),
+  assignmentSubmissionCount: z.number().describe('The total number of assignments the trainee has submitted.'),
 });
 
 const GenerateTraineeReportInputSchema = z.object({
@@ -46,14 +49,14 @@ const prompt = ai.definePrompt({
   prompt: `You are an HR analyst AI. Based on the following trainee data, generate a concise performance report in Markdown format.
 
 The report must include the following sections:
-1.  **Overall Summary:** A brief paragraph summarizing the cohort's performance, mentioning key trends.
-2.  **Performance Table:** A Markdown table with the following columns: Name, Department, Progress (%), and Status.
-3.  **Key Insights:** A bulleted list identifying top-performing trainees and highlighting those who are 'At Risk' or 'Need Attention'.
+1.  **Overall Summary:** A brief paragraph summarizing the cohort's performance, mentioning key trends based on progress and activity levels (quizzes, challenges, assignments).
+2.  **Performance Table:** A Markdown table with the following columns: Name, Department, Progress (%), Status, Quizzes, Challenges, Assignments.
+3.  **Key Insights:** A bulleted list identifying top-performing trainees (considering both progress and activity) and highlighting those who are 'At Risk' or 'Need Attention', especially if they have low activity counts.
 4.  **Recommendations:** A brief concluding remark with a suggested next step, like commending top performers or scheduling check-ins with at-risk trainees.
 
 Trainee Data:
 {{#each trainees}}
-- Name: {{name}}, Department: {{department}}, Progress: {{progress}}%, Status: {{status}}
+- Name: {{name}}, Department: {{department}}, Progress: {{progress}}%, Status: {{status}}, Quizzes Completed: {{quizCompletionCount}}, Challenges Completed: {{challengeCompletionCount}}, Assignments Submitted: {{assignmentSubmissionCount}}
 {{/each}}
 
 Ensure the entire output is a single, well-formatted Markdown string.

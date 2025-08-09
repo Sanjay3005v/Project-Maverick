@@ -16,13 +16,14 @@ import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Loader2, Wand2, FileText, LoaderCircle } from 'lucide-react';
-import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
+import type { Trainee } from '@/services/trainee-service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { getAllSubmissions } from '@/services/submission-service';
 
 interface ReportDialogProps {
-  trainees: GenerateTraineeReportInput['trainees'];
+  trainees: Trainee[];
   children: React.ReactNode;
 }
 
@@ -35,8 +36,30 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleGenerateReport = async () => {
     setLoading(true);
     setReport(null);
+
     try {
-      const result = await createTraineeReport(trainees);
+      // Fetch additional data needed for the report
+      const submissions = await getAllSubmissions();
+      const submissionsByTrainee = submissions.reduce((acc, sub) => {
+        if (!acc[sub.traineeId]) {
+          acc[sub.traineeId] = 0;
+        }
+        acc[sub.traineeId]++;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const reportData = trainees.map(t => ({
+        id: t.id,
+        name: t.name,
+        department: t.department,
+        progress: t.progress,
+        status: t.status,
+        quizCompletionCount: t.quizCompletions?.length || 0,
+        challengeCompletionCount: t.completedChallengeIds?.length || 0,
+        assignmentSubmissionCount: submissionsByTrainee[t.id] || 0,
+      }));
+
+      const result = await createTraineeReport(reportData);
       if (result.success && result.data) {
         setReport(result.data.report);
       } else {
@@ -50,7 +73,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'An unexpected error occurred.',
+        description: 'An unexpected error occurred while fetching data for the report.',
       });
     } finally {
       setLoading(false);
@@ -60,13 +83,18 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
   const handleDownloadPDF = () => {
     if (!report) return;
     const doc = new jsPDF('portrait', 'pt', 'a4');
-    const tableData = trainees.map(t => [t.name, t.department, `${t.progress}%`, t.status]);
+    const tableData = trainees.map(t => [
+      t.name,
+      t.department,
+      `${t.progress}%`,
+      t.status,
+      t.quizCompletions?.length || 0,
+      t.completedChallengeIds?.length || 0,
+    ]);
 
     doc.setFontSize(18);
     doc.text("Trainee Performance Report", 40, 60);
 
-    // Use a regex to split the report but keep the headings.
-    // This is a simple way to separate summary from the table part in the markdown.
     const reportParts = report.split(/(\n##\s.*)/).filter(part => part.trim() !== '');
     const summaryText = reportParts[0] || 'No summary available.';
 
@@ -75,12 +103,11 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     const splitSummary = doc.splitTextToSize(summaryText, 500);
     doc.text(splitSummary, 40, 80);
     
-    // Calculate a safe startY based on summary length
     const summaryHeight = doc.getTextDimensions(splitSummary).h;
     const tableStartY = 80 + summaryHeight + 20;
 
     autoTable(doc, {
-        head: [['Name', 'Department', 'Progress', 'Status']],
+        head: [['Name', 'Department', 'Progress', 'Status', 'Quizzes', 'Challenges']],
         body: tableData,
         startY: tableStartY,
         theme: 'grid',
@@ -96,7 +123,9 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         Name: t.name,
         Department: t.department,
         'Progress (%)': t.progress,
-        Status: t.status
+        Status: t.status,
+        'Quizzes Completed': t.quizCompletions?.length || 0,
+        'Challenges Completed': t.completedChallengeIds?.length || 0,
      })));
      const workbook = XLSX.utils.book_new();
      XLSX.utils.book_append_sheet(workbook, worksheet, "Trainees");
