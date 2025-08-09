@@ -22,11 +22,11 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert computer science educator. Your task is to create a high-quality coding challenge based on the provided information.
 
 {{#if url}}
-**URL:** {{url}}
-Please extract the problem description, title, and determine the difficulty and appropriate tags from the content at the provided URL. The test cases should be representative of the problem's requirements.
+You should extract the problem description, title, difficulty, and tags from the content at this URL: {{url}}. The test cases should be representative of the problem's requirements.
 {{else}}
 **Topic:** "{{topic}}"
 **Difficulty:** {{difficulty}}
+Please generate a challenge on this topic.
 {{/if}}
 
 Generate a complete coding challenge with the following components:
@@ -51,3 +51,4 @@ const generateChallengeFlow = ai.defineFlow(
     return output!;
   }
 );
+
