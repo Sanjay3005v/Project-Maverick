@@ -65,25 +65,37 @@ export default function TraineeManagementPage() {
   };
 
   const uniqueBatches = useMemo(() => {
-    const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean)); // Filter out null/undefined/empty strings
+    const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean));
     return Array.from(batches).sort();
   }, [allTrainees]);
 
   const filteredTrainees = useMemo(() => {
-    return allTrainees
-      .filter(trainee => 
-        trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .filter(trainee => 
-        departmentFilter === 'all' || trainee.department === departmentFilter
-      )
-      .filter(trainee =>
-        statusFilter === 'all' || trainee.status === statusFilter
-      )
-      .filter(trainee =>
-        batchFilter === 'all' || trainee.batch === batchFilter
-      );
+    let traineesToFilter = [...allTrainees];
+
+    if (searchTerm) {
+        traineesToFilter = traineesToFilter.filter(trainee => 
+            trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    if (departmentFilter !== 'all') {
+        traineesToFilter = traineesToFilter.filter(trainee => 
+            trainee.department === departmentFilter
+        );
+    }
+    if (statusFilter !== 'all') {
+        traineesToFilter = traineesToFilter.filter(trainee =>
+            trainee.status === statusFilter
+        );
+    }
+    if (batchFilter !== 'all') {
+        traineesToFilter = traineesToFilter.filter(trainee =>
+            trainee.batch === batchFilter
+        );
+    }
+    
+    return traineesToFilter;
   }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter]);
+
 
   const traineesForReport = useMemo(() => {
     if (selectedTrainees.length === 0) {
