@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send, Search, Link as LinkIcon } from 'lucide-react';
+import { LoaderCircle, Edit, Trash2, Wand2, PlusCircle, X, Send, Search, Link as LinkIcon, FilterX } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import {
   Dialog,
@@ -37,12 +37,19 @@ function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, childr
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState('all');
+    const [batchFilter, setBatchFilter] = useState('all');
+
+     const uniqueBatches = useMemo(() => {
+        const batches = new Set(trainees.map(t => t.batch).filter(Boolean));
+        return Array.from(batches).sort();
+    }, [trainees]);
 
     const filteredTrainees = useMemo(() => {
         return trainees
             .filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()))
-            .filter(t => departmentFilter === 'all' || t.department === departmentFilter);
-    }, [trainees, searchTerm, departmentFilter]);
+            .filter(t => departmentFilter === 'all' || t.department === departmentFilter)
+            .filter(t => batchFilter === 'all' || t.batch === batchFilter);
+    }, [trainees, searchTerm, departmentFilter, batchFilter]);
 
     useEffect(() => {
         if(isOpen) {
@@ -52,6 +59,7 @@ function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, childr
             setSelectedTrainees(preselected);
             setSearchTerm('');
             setDepartmentFilter('all');
+            setBatchFilter('all');
         }
     }, [isOpen, challenge.id, trainees]);
     
@@ -91,6 +99,12 @@ function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, childr
             setLoading(false);
         }
     };
+    
+    const clearFilters = () => {
+        setSearchTerm('');
+        setDepartmentFilter('all');
+        setBatchFilter('all');
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -121,6 +135,20 @@ function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, childr
                             <SelectItem value="Design">Design</SelectItem>
                         </SelectContent>
                     </Select>
+                     <Select value={batchFilter} onValueChange={setBatchFilter}>
+                        <SelectTrigger className="w-full sm:w-[200px]">
+                            <SelectValue placeholder="Filter Batch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Batches</SelectItem>
+                            {uniqueBatches.map(batch => (
+                                <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {(departmentFilter !== 'all' || batchFilter !== 'all') && (
+                        <Button variant="ghost" size="icon" onClick={clearFilters}><FilterX className="h-4 w-4"/></Button>
+                    )}
                 </div>
                 <ScrollArea className="h-60 w-full rounded-md border">
                     <div className="p-4 space-y-2">
@@ -143,7 +171,7 @@ function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, childr
                                 />
                                 <Label htmlFor={`trainee-${trainee.id}`} className="flex-1 cursor-pointer">
                                     <p className="font-medium">{trainee.name}</p>
-                                    <p className="text-xs text-muted-foreground">{trainee.department}</p>
+                                    <p className="text-xs text-muted-foreground">{trainee.department} - {trainee.batch}</p>
                                 </Label>
                             </div>
                         ))}

@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, Users, Search } from 'lucide-react';
+import { Loader2, Users, Search, FilterX } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +18,7 @@ export default function TotalTraineesPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [batchFilter, setBatchFilter] = useState('all');
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -36,11 +39,25 @@ export default function TotalTraineesPage() {
     return combinedId.toString().padStart(7, '0');
   };
   
+  const uniqueBatches = useMemo(() => {
+    const batches = new Set(trainees.map(t => t.batch).filter(Boolean));
+    return Array.from(batches).sort();
+  }, [trainees]);
+  
   const filteredTrainees = useMemo(() => {
-    return trainees.filter(trainee => 
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [trainees, searchTerm]);
+    return trainees
+      .filter(trainee => 
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter(trainee => 
+        batchFilter === 'all' || trainee.batch === batchFilter
+      );
+  }, [trainees, searchTerm, batchFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setBatchFilter('all');
+  }
 
   if (loading) {
     return (
@@ -69,15 +86,34 @@ export default function TotalTraineesPage() {
                         This list shows the name, email, and unique user ID for each trainee.
                     </CardDescription>
                 </div>
-                 <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search by name..." 
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by name..." 
+                            className="pl-10 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                     <Select value={batchFilter} onValueChange={setBatchFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filter by Batch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Batches</SelectItem>
+                            {uniqueBatches.map(batch => (
+                                <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                     {(searchTerm || batchFilter !== 'all') && (
+                        <Button variant="ghost" onClick={clearFilters}>
+                            <FilterX className="mr-2 h-4 w-4" />
+                            Clear
+                        </Button>
+                    )}
+                 </div>
             </div>
         </CardHeader>
         <CardContent>
@@ -88,6 +124,7 @@ export default function TotalTraineesPage() {
                   <TableHead>User ID</TableHead>
                   <TableHead>Trainee Name</TableHead>
                   <TableHead>Email ID</TableHead>
+                  <TableHead>Batch</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -96,6 +133,7 @@ export default function TotalTraineesPage() {
                     <TableCell className="font-mono text-xs">{formatUserId(trainee.id)}</TableCell>
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.email}</TableCell>
+                    <TableCell>{trainee.batch}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -17,6 +17,7 @@ type AssignmentRecord = {
     traineeId: string;
     traineeName: string;
     traineeDepartment: string;
+    traineeBatch: string;
     assignmentTitle: string;
     submission: Submission | null;
 };
@@ -28,6 +29,7 @@ export const AssignmentProgressTable = () => {
 
     const [traineeFilter, setTraineeFilter] = useState('all');
     const [departmentFilter, setDepartmentFilter] = useState('all');
+    const [batchFilter, setBatchFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState<'all' | 'submitted' | 'not-submitted'>('all');
 
     useEffect(() => {
@@ -52,6 +54,11 @@ export const AssignmentProgressTable = () => {
         return [...new Set(allTrainees.map(t => t.department))].sort();
     }, [allTrainees]);
 
+    const uniqueBatches = useMemo(() => {
+        const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean));
+        return Array.from(batches).sort();
+    }, [allTrainees]);
+
 
     const assignmentRecords: AssignmentRecord[] = useMemo(() => {
         const records: AssignmentRecord[] = [];
@@ -66,6 +73,7 @@ export const AssignmentProgressTable = () => {
                             traineeId: trainee.id,
                             traineeName: trainee.name,
                             traineeDepartment: trainee.department,
+                            traineeBatch: trainee.batch,
                             assignmentTitle: task,
                             submission: submission,
                         });
@@ -80,16 +88,18 @@ export const AssignmentProgressTable = () => {
         return assignmentRecords.filter(record => {
             const traineeMatch = traineeFilter === 'all' || record.traineeName === traineeFilter;
             const departmentMatch = departmentFilter === 'all' || record.traineeDepartment === departmentFilter;
+            const batchMatch = batchFilter === 'all' || record.traineeBatch === batchFilter;
             const statusMatch = statusFilter === 'all' ||
                                 (statusFilter === 'submitted' && !!record.submission) ||
                                 (statusFilter === 'not-submitted' && !record.submission);
-            return traineeMatch && departmentMatch && statusMatch;
+            return traineeMatch && departmentMatch && batchMatch && statusMatch;
         });
-    }, [assignmentRecords, traineeFilter, departmentFilter, statusFilter]);
+    }, [assignmentRecords, traineeFilter, departmentFilter, batchFilter, statusFilter]);
 
     const clearFilters = () => {
         setTraineeFilter('all');
         setDepartmentFilter('all');
+        setBatchFilter('all');
         setStatusFilter('all');
     }
 
@@ -111,9 +121,9 @@ export const AssignmentProgressTable = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+                <div className="flex flex-col md:flex-row items-center gap-4 mb-6 flex-wrap">
                     <Select value={traineeFilter} onValueChange={setTraineeFilter}>
-                        <SelectTrigger className="w-full md:w-[200px]">
+                        <SelectTrigger className="w-full md:w-auto flex-1">
                             <SelectValue placeholder="Filter by Trainee" />
                         </SelectTrigger>
                         <SelectContent>
@@ -122,7 +132,7 @@ export const AssignmentProgressTable = () => {
                         </SelectContent>
                     </Select>
                      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                        <SelectTrigger className="w-full md:w-[200px]">
+                        <SelectTrigger className="w-full md:w-auto flex-1">
                             <SelectValue placeholder="Filter by Department" />
                         </SelectTrigger>
                         <SelectContent>
@@ -130,8 +140,17 @@ export const AssignmentProgressTable = () => {
                              {uniqueDepartments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
                         </SelectContent>
                     </Select>
+                     <Select value={batchFilter} onValueChange={setBatchFilter}>
+                        <SelectTrigger className="w-full md:w-auto flex-1">
+                            <SelectValue placeholder="Filter by Batch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Batches</SelectItem>
+                            {uniqueBatches.map(batch => <SelectItem key={batch} value={batch}>{batch}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full md:w-[200px]">
+                        <SelectTrigger className="w-full md:w-auto flex-1">
                             <SelectValue placeholder="Filter by Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -161,7 +180,7 @@ export const AssignmentProgressTable = () => {
                                 <TableRow key={index}>
                                     <TableCell>
                                         <div className="font-medium">{record.traineeName}</div>
-                                        <div className="text-sm text-muted-foreground">{record.traineeDepartment}</div>
+                                        <div className="text-sm text-muted-foreground">{record.traineeDepartment} - {record.traineeBatch}</div>
                                     </TableCell>
                                     <TableCell className="max-w-xs truncate">{record.assignmentTitle}</TableCell>
                                     <TableCell>

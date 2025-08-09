@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, Trophy, Medal } from 'lucide-react';
+import { Loader2, Trophy, Medal, FilterX } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ export default function TopPerformersPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [batchFilter, setBatchFilter] = useState('all');
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -34,12 +35,19 @@ export default function TopPerformersPage() {
     return name.split(' ').map(n => n[0]).join('');
   }
 
+  const uniqueBatches = useMemo(() => {
+    const batches = new Set(trainees.map(t => t.batch).filter(Boolean));
+    return Array.from(batches).sort();
+  }, [trainees]);
+
+
   const topPerformers = useMemo(() => {
     return trainees
       .filter(trainee => departmentFilter === 'all' || trainee.department === departmentFilter)
+      .filter(trainee => batchFilter === 'all' || trainee.batch === batchFilter)
       .sort((a, b) => b.progress - a.progress)
       .slice(0, 10);
-  }, [trainees, departmentFilter]);
+  }, [trainees, departmentFilter, batchFilter]);
   
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
@@ -52,6 +60,11 @@ export default function TopPerformersPage() {
         return <Badge className="gap-1.5 bg-amber-700 text-white hover:bg-amber-800 w-24 justify-center"><Medal className="h-4 w-4" /> 3rd Place</Badge>
     }
     return <Badge variant="secondary" className="w-24 justify-center">{rank}th</Badge>
+  }
+  
+  const clearFilters = () => {
+    setDepartmentFilter('all');
+    setBatchFilter('all');
   }
 
 
@@ -82,7 +95,7 @@ export default function TopPerformersPage() {
                   This leaderboard showcases the trainees who are leading the cohort in their onboarding progress.
               </CardDescription>
             </div>
-            <div className="w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                   <SelectTrigger className="w-full sm:w-[200px]">
                       <SelectValue placeholder="Filter by Department" />
@@ -94,6 +107,23 @@ export default function TopPerformersPage() {
                       <SelectItem value="Design">Design</SelectItem>
                   </SelectContent>
               </Select>
+               <Select value={batchFilter} onValueChange={setBatchFilter}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                      <SelectValue placeholder="Filter by Batch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">All Batches</SelectItem>
+                      {uniqueBatches.map(batch => (
+                        <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+              {(departmentFilter !== 'all' || batchFilter !== 'all') && (
+                 <Button variant="ghost" onClick={clearFilters} className="w-full sm:w-auto">
+                    <FilterX className="mr-2 h-4 w-4" />
+                    Clear
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -105,13 +135,14 @@ export default function TopPerformersPage() {
                   <TableHead className="w-[80px]">Rank</TableHead>
                   <TableHead>Trainee</TableHead>
                   <TableHead>Department</TableHead>
+                  <TableHead>Batch</TableHead>
                   <TableHead className="text-right">Progress</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                  {topPerformers.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={4} className="text-center h-24">No trainees found for this department.</TableCell>
+                        <TableCell colSpan={5} className="text-center h-24">No trainees found for this department.</TableCell>
                     </TableRow>
                 )}
                 {topPerformers.map((trainee, index) => (
@@ -126,6 +157,7 @@ export default function TopPerformersPage() {
                         </div>
                     </TableCell>
                     <TableCell>{trainee.department}</TableCell>
+                    <TableCell>{trainee.batch}</TableCell>
                     <TableCell className="text-right font-bold text-xl text-primary">{trainee.progress}%</TableCell>
                   </TableRow>
                 ))}
