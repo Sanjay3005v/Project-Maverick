@@ -185,7 +185,7 @@ export default function AdminDashboard() {
                 <SelectContent>
                     <SelectItem value="default">Default</SelectItem>
                     <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                    <SelectItem value="category">Category</SelectItem>
+                    <SelectItem value="category">Group by Category</SelectItem>
                 </SelectContent>
             </Select>
         </div>
