@@ -109,9 +109,9 @@ export default function TraineeManagementPage() {
     switch (status) {
         case 'On Track':
             return <Badge className="bg-green-500 hover:bg-green-600 text-white">{status}</Badge>;
-        case 'At Risk':
-            return <Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900">{status}</Badge>;
         case 'Need Attention':
+            return <Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900">{status}</Badge>;
+        case 'At Risk':
             return <Badge variant="destructive">{status}</Badge>;
         default:
             return <Badge variant="secondary">{status}</Badge>;
@@ -218,8 +218,8 @@ export default function TraineeManagementPage() {
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="On Track">On Track</SelectItem>
-                  <SelectItem value="At Risk">At Risk</SelectItem>
                   <SelectItem value="Need Attention">Need Attention</SelectItem>
+                  <SelectItem value="At Risk">At Risk</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={batchFilter} onValueChange={setBatchFilter}>
