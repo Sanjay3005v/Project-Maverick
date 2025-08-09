@@ -30,7 +30,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 
 
-function AssignChallengeDialog({ challenge, trainees, children }: { challenge: Challenge; trainees: Trainee[]; children: React.ReactNode }) {
+function AssignChallengeDialog({ challenge, trainees, onAssignmentUpdate, children }: { challenge: Challenge; trainees: Trainee[]; onAssignmentUpdate: () => void; children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -78,11 +78,12 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
     const handleAssign = async () => {
         setLoading(true);
         try {
-            await assignChallengeToTrainees(challenge.id, selectedTrainees);
+            await assignChallengeToTrainees(challenge.id, selectedTrainees, trainees);
             toast({
-                title: "Challenge Assigned!",
-                description: `"${challenge.title}" has been assigned to ${selectedTrainees.length} trainee(s).`
+                title: "Challenge Assignment Updated!",
+                description: `Assignments for "${challenge.title}" have been updated.`
             });
+            onAssignmentUpdate(); // Refetch data in parent
             setIsOpen(false);
         } catch (error) {
              toast({ variant: 'destructive', title: 'Assignment Failed' });
@@ -150,9 +151,9 @@ function AssignChallengeDialog({ challenge, trainees, children }: { challenge: C
                 </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button onClick={handleAssign} disabled={loading || selectedTrainees.length === 0}>
+                    <Button onClick={handleAssign} disabled={loading}>
                         {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Send className="mr-2"/>}
-                        Assign to {selectedTrainees.length} Trainee(s)
+                        Update Assignments
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -269,7 +270,7 @@ export function ChallengeManagement() {
   const [aiDifficulty, setAiDifficulty] = useState('Medium');
   const { toast } = useToast();
 
-  const fetchChallenges = async () => {
+  const fetchChallengesAndTrainees = async () => {
     setLoading(true);
     const [allChallenges, allTrainees] = await Promise.all([
       getAllChallenges(),
@@ -281,7 +282,7 @@ export function ChallengeManagement() {
   };
 
   useEffect(() => {
-    fetchChallenges();
+    fetchChallengesAndTrainees();
   }, []);
 
   const handleGenerateWithAI = async () => {
@@ -293,7 +294,7 @@ export function ChallengeManagement() {
     try {
       const result = await generateChallenge({ topic: aiTopic, difficulty: aiDifficulty, url: aiUrl });
       await addChallenge(result);
-      fetchChallenges();
+      fetchChallengesAndTrainees();
       toast({ title: 'Challenge Generated!', description: `AI has created a new challenge on "${result.title}".` });
       setAiTopic('');
       setAiUrl('');
@@ -307,7 +308,7 @@ export function ChallengeManagement() {
   const handleDeleteChallenge = async (challengeId: string, challengeTitle: string) => {
     try {
       await deleteChallenge(challengeId);
-      fetchChallenges();
+      fetchChallengesAndTrainees();
       toast({ title: "Challenge Deleted", description: `The challenge "${challengeTitle}" has been deleted.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete challenge." });
@@ -343,10 +344,10 @@ export function ChallengeManagement() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallenges}>
+                  <EditChallengeDialog challenge={challenge} onChallengeUpdated={fetchChallengesAndTrainees}>
                     <Button variant="outline" size="icon"><Edit /></Button>
                   </EditChallengeDialog>
-                  <AssignChallengeDialog challenge={challenge} trainees={trainees}>
+                  <AssignChallengeDialog challenge={challenge} trainees={trainees} onAssignmentUpdate={fetchChallengesAndTrainees}>
                      <Button variant="outline"><Send className="mr-2"/> Assign</Button>
                   </AssignChallengeDialog>
                   <AlertDialog>
@@ -376,7 +377,7 @@ export function ChallengeManagement() {
             )}
           </CardContent>
            <CardFooter>
-                <EditChallengeDialog onChallengeUpdated={fetchChallenges}>
+                <EditChallengeDialog onChallengeUpdated={fetchChallengesAndTrainees}>
                     <Button variant="outline" className="w-full">
                         <PlusCircle className="mr-2"/>
                         Create New Challenge Manually

@@ -240,7 +240,7 @@ function AIGenerationForm({ onQuizCreated }: { onQuizCreated: () => void }) {
 }
 
 // Assign Quiz Dialog
-function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: Trainee[]; children: React.ReactNode }) {
+function AssignQuizDialog({ quiz, trainees, onAssignmentUpdate, children }: { quiz: Quiz; trainees: Trainee[]; onAssignmentUpdate: () => void; children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -289,11 +289,12 @@ function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: 
     const handleAssign = async () => {
         setLoading(true);
         try {
-            await assignQuizToTrainees(quiz.id, selectedTrainees);
+            await assignQuizToTrainees(quiz.id, selectedTrainees, trainees);
             toast({
-                title: "Quiz Assigned!",
-                description: `"${quiz.title}" has been assigned to ${selectedTrainees.length} trainee(s).`
+                title: "Quiz Assignment Updated!",
+                description: `Assignments for "${quiz.title}" have been updated.`
             });
+            onAssignmentUpdate(); // Refetch data
             setIsOpen(false);
         } catch (error) {
              toast({ variant: 'destructive', title: 'Assignment Failed' });
@@ -361,9 +362,9 @@ function AssignQuizDialog({ quiz, trainees, children }: { quiz: Quiz; trainees: 
                 </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button onClick={handleAssign} disabled={loading || selectedTrainees.length === 0}>
+                    <Button onClick={handleAssign} disabled={loading}>
                         {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Send className="mr-2"/>}
-                        Assign to {selectedTrainees.length} Trainee(s)
+                        Update Assignments
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -456,7 +457,7 @@ export function QuizManagement() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <EditQuizDialog quiz={quiz} onQuizUpdated={fetchData} />
-                    <AssignQuizDialog quiz={quiz} trainees={trainees}>
+                    <AssignQuizDialog quiz={quiz} trainees={trainees} onAssignmentUpdate={fetchData}>
                         <Button variant="outline"><Send className="mr-2"/> Assign</Button>
                     </AssignQuizDialog>
                     <AlertDialog>

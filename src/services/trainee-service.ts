@@ -1,7 +1,7 @@
 
 'use server';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/lib/plan-schema';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
@@ -90,6 +90,9 @@ export async function getAllTrainees(): Promise<Trainee[]> {
             id: doc.id,
             ...data,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+            assignedQuizIds: data.assignedQuizIds || [],
+            assignedChallengeIds: data.assignedChallengeIds || [],
+            completedChallengeIds: data.completedChallengeIds || [],
         } as Trainee;
     });
     return traineeList;
@@ -105,6 +108,9 @@ export async function getTraineeById(id: string): Promise<Trainee | null> {
         id: traineeDoc.id,
         ...data,
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
+        assignedQuizIds: data.assignedQuizIds || [],
+        assignedChallengeIds: data.assignedChallengeIds || [],
+        completedChallengeIds: data.completedChallengeIds || [],
     } as Trainee;
 }
 
@@ -210,25 +216,42 @@ export async function updateUserAvatar(traineeId: string, avatarUrl: string): Pr
     await updateDoc(traineeRef, { avatarUrl });
 }
 
-export async function assignQuizToTrainees(quizId: string, traineeIds: string[]): Promise<void> {
+export async function assignQuizToTrainees(quizId: string, assignedIds: string[], allTrainees: Trainee[]): Promise<void> {
     const batch = writeBatch(db);
-    traineeIds.forEach(traineeId => {
-        const traineeRef = doc(db, 'trainees', traineeId);
-        batch.update(traineeRef, {
-            assignedQuizIds: arrayUnion(quizId)
-        });
-    });
+    const assignedIdsSet = new Set(assignedIds);
+
+    for (const trainee of allTrainees) {
+        const traineeRef = doc(db, 'trainees', trainee.id);
+        const isCurrentlyAssigned = trainee.assignedQuizIds?.includes(quizId);
+        const shouldBeAssigned = assignedIdsSet.has(trainee.id);
+
+        if (shouldBeAssigned && !isCurrentlyAssigned) {
+            batch.update(traineeRef, { assignedQuizIds: arrayUnion(quizId) });
+        } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+            batch.update(traineeRef, { assignedQuizIds: arrayRemove(quizId) });
+        }
+    }
+    
     await batch.commit();
 }
 
-export async function assignChallengeToTrainees(challengeId: string, traineeIds: string[]): Promise<void> {
+
+export async function assignChallengeToTrainees(challengeId: string, assignedIds: string[], allTrainees: Trainee[]): Promise<void> {
     const batch = writeBatch(db);
-    traineeIds.forEach(traineeId => {
-        const traineeRef = doc(db, 'trainees', traineeId);
-        batch.update(traineeRef, {
-            assignedChallengeIds: arrayUnion(challengeId)
-        });
-    });
+    const assignedIdsSet = new Set(assignedIds);
+
+    for (const trainee of allTrainees) {
+        const traineeRef = doc(db, 'trainees', trainee.id);
+        const isCurrentlyAssigned = trainee.assignedChallengeIds?.includes(challengeId);
+        const shouldBeAssigned = assignedIdsSet.has(trainee.id);
+
+        if (shouldBeAssigned && !isCurrentlyAssigned) {
+            batch.update(traineeRef, { assignedChallengeIds: arrayUnion(challengeId) });
+        } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+            batch.update(traineeRef, { assignedChallengeIds: arrayRemove(challengeId) });
+        }
+    }
+    
     await batch.commit();
 }
 
