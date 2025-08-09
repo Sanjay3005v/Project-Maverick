@@ -19,8 +19,11 @@ const TraineeSchema = z.object({
   progress: z.number(),
   status: z.string(),
   quizCompletionCount: z.number().describe('The total number of quizzes the trainee has completed.'),
+  totalQuizzesAssigned: z.number().describe('The total number of quizzes assigned to the trainee.'),
   challengeCompletionCount: z.number().describe('The total number of coding challenges the trainee has completed.'),
+  totalChallengesAssigned: z.number().describe('The total number of coding challenges assigned to the trainee.'),
   assignmentSubmissionCount: z.number().describe('The total number of assignments the trainee has submitted.'),
+  totalAssignments: z.number().describe("The total number of assignments in the trainee's onboarding plan."),
 });
 
 const GenerateTraineeReportInputSchema = z.object({
@@ -50,13 +53,13 @@ const prompt = ai.definePrompt({
 
 The report must include the following sections:
 1.  **Overall Summary:** A brief paragraph summarizing the cohort's performance, mentioning key trends based on progress and activity levels (quizzes, challenges, assignments).
-2.  **Performance Table:** A Markdown table with the following columns: Name, Department, Progress (%), Status, Quizzes, Challenges, Assignments.
-3.  **Key Insights:** A bulleted list identifying top-performing trainees (considering both progress and activity) and highlighting those who are 'At Risk' or 'Need Attention', especially if they have low activity counts.
+2.  **Performance Table:** A Markdown table with the following columns: Name, Department, Progress (%), Status, Quizzes (Completed/Total), Challenges (Completed/Total), Assignments (Submitted/Total).
+3.  **Key Insights:** A bulleted list identifying top-performing trainees (considering both progress and activity) and highlighting those who are 'At Risk' or 'Need Attention', especially if they have low activity counts relative to their assigned work.
 4.  **Recommendations:** A brief concluding remark with a suggested next step, like commending top performers or scheduling check-ins with at-risk trainees.
 
 Trainee Data:
 {{#each trainees}}
-- Name: {{name}}, Department: {{department}}, Progress: {{progress}}%, Status: {{status}}, Quizzes Completed: {{quizCompletionCount}}, Challenges Completed: {{challengeCompletionCount}}, Assignments Submitted: {{assignmentSubmissionCount}}
+- Name: {{name}}, Department: {{department}}, Progress: {{progress}}%, Status: {{status}}, Quizzes: {{quizCompletionCount}}/{{totalQuizzesAssigned}}, Challenges: {{challengeCompletionCount}}/{{totalChallengesAssigned}}, Assignments: {{assignmentSubmissionCount}}/{{totalAssignments}}
 {{/each}}
 
 Ensure the entire output is a single, well-formatted Markdown string.

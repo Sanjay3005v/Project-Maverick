@@ -15,12 +15,13 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Loader2, Wand2, FileText, LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Wand2, FileText, Loader2 } from 'lucide-react';
 import type { Trainee } from '@/services/trainee-service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { getAllSubmissions } from '@/services/submission-service';
+import { getAllChallenges } from '@/services/challenge-service';
 
 interface ReportDialogProps {
   trainees: Trainee[];
@@ -39,7 +40,12 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
 
     try {
       // Fetch additional data needed for the report
-      const submissions = await getAllSubmissions();
+      const [submissions, allChallenges] = await Promise.all([
+          getAllSubmissions(),
+          getAllChallenges()
+      ]);
+      const totalChallengesCount = allChallenges.length;
+
       const submissionsByTrainee = submissions.reduce((acc, sub) => {
         if (!acc[sub.traineeId]) {
           acc[sub.traineeId] = 0;
@@ -55,8 +61,11 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         progress: t.progress,
         status: t.status,
         quizCompletionCount: t.quizCompletions?.length || 0,
+        totalQuizzesAssigned: t.assignedQuizIds?.length || 0,
         challengeCompletionCount: t.completedChallengeIds?.length || 0,
+        totalChallengesAssigned: t.assignedChallengeIds?.length || 0,
         assignmentSubmissionCount: submissionsByTrainee[t.id] || 0,
+        totalAssignments: t.onboardingPlan?.reduce((acc, week) => acc + week.tasks.length, 0) || 0,
       }));
 
       const result = await createTraineeReport(reportData);
@@ -88,8 +97,8 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
       t.department,
       `${t.progress}%`,
       t.status,
-      t.quizCompletions?.length || 0,
-      t.completedChallengeIds?.length || 0,
+      `${t.quizCompletions?.length || 0}/${t.assignedQuizIds?.length || 0}`,
+      `${t.completedChallengeIds?.length || 0}/${t.assignedChallengeIds?.length || 0}`,
     ]);
 
     doc.setFontSize(18);
@@ -107,7 +116,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     const tableStartY = 80 + summaryHeight + 20;
 
     autoTable(doc, {
-        head: [['Name', 'Department', 'Progress', 'Status', 'Quizzes', 'Challenges']],
+        head: [['Name', 'Department', 'Progress', 'Status', 'Quizzes (C/A)', 'Challenges (C/A)']],
         body: tableData,
         startY: tableStartY,
         theme: 'grid',
@@ -119,14 +128,20 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
 
   const handleDownloadExcel = () => {
      if (!trainees) return;
-     const worksheet = XLSX.utils.json_to_sheet(trainees.map(t => ({
+     const worksheet = XLSX.utils.json_to_sheet(trainees.map(t => {
+       const totalAssignments = t.onboardingPlan?.reduce((acc, week) => acc + week.tasks.length, 0) || 0;
+       return {
         Name: t.name,
         Department: t.department,
         'Progress (%)': t.progress,
         Status: t.status,
         'Quizzes Completed': t.quizCompletions?.length || 0,
+        'Quizzes Assigned': t.assignedQuizIds?.length || 0,
         'Challenges Completed': t.completedChallengeIds?.length || 0,
-     })));
+        'Challenges Assigned': t.assignedChallengeIds?.length || 0,
+        'Assignments Submitted': 0, // Placeholder until submission service is fully integrated for counting
+        'Assignments Total': totalAssignments,
+     }}));
      const workbook = XLSX.utils.book_new();
      XLSX.utils.book_append_sheet(workbook, worksheet, "Trainees");
      XLSX.writeFile(workbook, `trainee-performance-report-${new Date().toISOString().split('T')[0]}.xlsx`);
