@@ -15,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { LoaderCircle, Wand2, FileText, Loader2 } from 'lucide-react';
+import { Loader2, Wand2, FileText } from 'lucide-react';
 import type { Trainee } from '@/services/trainee-service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -92,7 +92,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     if (!report) return;
     const doc = new jsPDF('portrait', 'pt', 'a4');
     const tableData = trainees.map(t => {
-       const submissionsByTrainee = 0; // Placeholder
+       const submissionsByTrainee = 0; // This is a placeholder as we don't have submissions data here
        const totalAssignments = t.onboardingPlan?.reduce((acc, week) => acc + week.tasks.length, 0) || 0;
        return [
           t.name,
@@ -113,7 +113,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
 
     doc.setFontSize(11);
     doc.setTextColor(100);
-    const splitSummary = doc.splitTextToSize(summaryText, 500);
+    const splitSummary = doc.splitTextToSize(summaryText.replace(/###\s/g, '').replace(/##\s/g, '').replace(/\*\*/g, ''), 500);
     doc.text(splitSummary, 40, 80);
     
     const summaryHeight = doc.getTextDimensions(splitSummary).h;
@@ -126,8 +126,9 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         theme: 'grid',
         headStyles: { fillColor: [37, 171, 226] },
     });
-
-    doc.save(`trainee-performance-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    const formattedDate = new Date().toISOString().split('T')[0];
+    doc.save(`trainee-performance-report-${formattedDate}.pdf`);
   };
 
   const handleDownloadExcel = () => {
@@ -149,7 +150,8 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
      }}));
      const workbook = XLSX.utils.book_new();
      XLSX.utils.book_append_sheet(workbook, worksheet, "Trainees");
-     XLSX.writeFile(workbook, `trainee-performance-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+     const formattedDate = new Date().toISOString().split('T')[0];
+     XLSX.writeFile(workbook, `trainee-performance-report-${formattedDate}.xlsx`);
   };
 
 
@@ -168,7 +170,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
         <div className="py-4 max-h-[60vh] overflow-y-auto">
           {loading && (
             <div className="flex items-center justify-center h-48">
-              <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="ml-4 text-muted-foreground">Generating your report...</p>
             </div>
           )}

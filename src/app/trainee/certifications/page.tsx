@@ -16,6 +16,11 @@ export default function CertificationsPage() {
   const { user, loading: authLoading } = useAuth();
   const [trainee, setTrainee] = useState<Trainee | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [formattedDate, setFormattedDate] = useState('');
+
+  useEffect(() => {
+    setFormattedDate(new Date().toLocaleDateString());
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user?.email) {
@@ -95,7 +100,7 @@ export default function CertificationsPage() {
     doc.setFontSize(10);
     doc.text("Issue Date", 60, footerY + 5, { align: "center" });
     doc.setFontSize(12);
-    doc.text(new Date().toLocaleDateString(), 60, footerY - 2, { align: "center" });
+    doc.text(formattedDate, 60, footerY - 2, { align: "center" });
 
     // Authorized Signature
     doc.line(pageWidth - 90, footerY, pageWidth - 30, footerY);
@@ -130,8 +135,8 @@ export default function CertificationsPage() {
           <p className="text-muted-foreground mb-4">
             This certifies that you have successfully completed the required training modules and demonstrated proficiency in the core skills.
           </p>
-          <p className="text-sm">Issued on: {new Date().toLocaleDateString()}</p>
-          <Button className="mt-6 w-full" onClick={handleDownload} disabled={!trainee}>
+          {formattedDate && <p className="text-sm">Issued on: {formattedDate}</p>}
+          <Button className="mt-6 w-full" onClick={handleDownload} disabled={!trainee || !formattedDate}>
             <Download className="mr-2 h-4 w-4" />
             Download Certificate
           </Button>
