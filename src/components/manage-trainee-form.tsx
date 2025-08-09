@@ -31,6 +31,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
   const [name, setName] = useState(trainee?.name || "");
   const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
+  const [batch, setBatch] = useState(trainee?.batch || "Batch A");
   const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -56,6 +57,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                 name, 
                 email,
                 department, 
+                batch,
                 dob: format(dob, 'yyyy-MM-dd'),
             });
         } else {
@@ -63,6 +65,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                 name,
                 email,
                 department,
+                batch,
                 dob: format(dob, 'yyyy-MM-dd'),
                 progress: 0, // Progress starts at 0 for new trainees
                 status: '', // Status will be set by the service
@@ -127,18 +130,30 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                             onChange={(e) => setName(e.target.value)}
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="trainee@example.com"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="batch">Batch</Label>
                             <Input
-                                id="email"
-                                type="email"
-                                placeholder="trainee@example.com"
+                                id="batch"
+                                placeholder="e.g., Batch A, 2024-Q3"
                                 required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="pl-10"
+                                value={batch}
+                                onChange={(e) => setBatch(e.target.value)}
                             />
                         </div>
                     </div>

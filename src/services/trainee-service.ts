@@ -15,6 +15,7 @@ export interface Trainee {
     name: string;
     email: string;
     department: string;
+    batch: string;
     progress: number;
     status: string;
     dob: string | Date; 
@@ -28,24 +29,24 @@ export interface Trainee {
 }
 
 const dummyTrainees: Omit<Trainee, 'id' | 'status' | 'quizCompletions'>[] = [
-    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', progress: 85, dob: '1998-04-12' },
-    { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', progress: 72, dob: '1999-08-20' },
-    { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Design', progress: 95, dob: '1997-03-15' },
-    { name: 'Neo Anderson', email: 'neo.a@example.com', department: 'Engineering', progress: 60, dob: '1996-11-30' },
-    { name: 'George Costanza', email: 'george.c@example.com', department: 'Product', progress: 45, dob: '1998-07-22' },
-    { name: 'Hannah Montana', email: 'hannah.m@example.com', department: 'Engineering', progress: 88, dob: '2000-01-10' },
-    { name: 'Rachel Green', email: 'rachel.g@example.com', department: 'Product', progress: 92, dob: '1995-05-25' },
-    { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', progress: 78, dob: '1999-12-01' },
-    { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', progress: 65, dob: '1997-09-05' },
-    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', progress: 50, dob: '2001-06-18' },
-    { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', progress: 98, dob: '1994-02-14' },
-    { name: 'Monica Geller', email: 'monica.g@example.com', department: 'Engineering', progress: 91, dob: '1996-08-08' },
-    { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', progress: 82, dob: '1995-10-10' },
-    { name: 'Kate Austen', email: 'kate.a@example.com', department: 'Design', progress: 77, dob: '1998-11-03' },
-    { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Engineering', progress: 89, dob: '2000-04-09' },
-    { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', progress: 93, dob: '1993-07-07' },
-    { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', progress: 84, dob: '2002-08-10' },
-    { name: 'Admin User', email: 'admin@example.com', department: 'Product', progress: 100, dob: '1970-01-01' },
+    { name: 'Charlie Brown', email: 'charlie.b@example.com', department: 'Engineering', batch: 'Batch A', progress: 85, dob: '1998-04-12' },
+    { name: 'Fiona Glenanne', email: 'fiona.g@example.com', department: 'Product', batch: 'Batch B', progress: 72, dob: '1999-08-20' },
+    { name: 'Diana Prince', email: 'diana.p@example.com', department: 'Design', batch: 'Batch A', progress: 95, dob: '1997-03-15' },
+    { name: 'Neo Anderson', email: 'neo.a@example.com', department: 'Engineering', batch: 'Batch C', progress: 60, dob: '1996-11-30' },
+    { name: 'George Costanza', email: 'george.c@example.com', department: 'Product', batch: 'Batch B', progress: 45, dob: '1998-07-22' },
+    { name: 'Hannah Montana', email: 'hannah.m@example.com', department: 'Engineering', batch: 'Batch A', progress: 88, dob: '2000-01-10' },
+    { name: 'Rachel Green', email: 'rachel.g@example.com', department: 'Product', batch: 'Batch C', progress: 92, dob: '1995-05-25' },
+    { name: 'Alex Johnson', email: 'alex.j@example.com', department: 'Design', batch: 'Batch A', progress: 78, dob: '1999-12-01' },
+    { name: 'Brenda Smith', email: 'brenda.s@example.com', department: 'Engineering', batch: 'Batch B', progress: 65, dob: '1997-09-05' },
+    { name: 'Trainee User', email: 'trainee@example.com', department: 'Design', batch: 'Batch C', progress: 50, dob: '2001-06-18' },
+    { name: 'Olivia Pope', email: 'olivia.p@example.com', department: 'Design', batch: 'Batch A', progress: 98, dob: '1994-02-14' },
+    { name: 'Monica Geller', email: 'monica.g@example.com', department: 'Engineering', batch: 'Batch B', progress: 91, dob: '1996-08-08' },
+    { name: 'Ethan Hunt', email: 'ethan.h@example.com', department: 'Product', batch: 'Batch A', progress: 82, dob: '1995-10-10' },
+    { name: 'Kate Austen', email: 'kate.a@example.com', department: 'Design', batch: 'Batch C', progress: 77, dob: '1998-11-03' },
+    { name: 'Quinn Fabray', email: 'quinn.f@example.com', department: 'Engineering', batch: 'Batch B', progress: 89, dob: '2000-04-09' },
+    { name: 'Indiana Jones', email: 'indy.j@example.com', department: 'Design', batch: 'Batch A', progress: 93, dob: '1993-07-07' },
+    { name: 'Peter Parker', email: 'peter.p@example.com', department: 'Engineering', batch: 'Batch C', progress: 84, dob: '2002-08-10' },
+    { name: 'Admin User', email: 'admin@example.com', department: 'Product', batch: 'Batch A', progress: 100, dob: '1970-01-01' },
 ];
 
 const getStatusForProgress = (progress: number) => {
@@ -127,6 +128,7 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
                 name: 'Admin User',
                 email: email,
                 department: 'Administration',
+                batch: 'Admin',
                 progress: 100,
                 status: 'On Track',
                 dob: new Date().toISOString().split('T')[0],

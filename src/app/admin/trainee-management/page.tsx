@@ -43,6 +43,7 @@ export default function TraineeManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [batchFilter, setBatchFilter] = useState<string>("all");
   const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
 
   const fetchTrainees = async () => {
@@ -63,6 +64,11 @@ export default function TraineeManagementPage() {
     return combinedId.toString().padStart(7, '0');
   };
 
+  const uniqueBatches = useMemo(() => {
+    const batches = new Set(allTrainees.map(t => t.batch));
+    return Array.from(batches).sort();
+  }, [allTrainees]);
+
   const filteredTrainees = useMemo(() => {
     return allTrainees
       .filter(trainee => 
@@ -73,8 +79,11 @@ export default function TraineeManagementPage() {
       )
       .filter(trainee =>
         statusFilter === 'all' || trainee.status === statusFilter
+      )
+      .filter(trainee =>
+        batchFilter === 'all' || trainee.batch === batchFilter
       );
-  }, [allTrainees, searchTerm, departmentFilter, statusFilter]);
+  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter]);
 
   const traineesForReport = useMemo(() => {
     if (selectedTrainees.length === 0) {
@@ -103,6 +112,14 @@ export default function TraineeManagementPage() {
       } else {
           setSelectedTrainees([]);
       }
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDepartmentFilter('all');
+    setStatusFilter('all');
+    setBatchFilter('all');
+    setSelectedTrainees([]);
   }
 
   if (loading) {
@@ -193,8 +210,19 @@ export default function TraineeManagementPage() {
                   <SelectItem value="Need Attention">Need Attention</SelectItem>
                 </SelectContent>
               </Select>
-              {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm) && (
-                <Button variant="ghost" onClick={() => { setSearchTerm(''); setDepartmentFilter('all'); setStatusFilter('all'); setSelectedTrainees([]) }}>
+              <Select value={batchFilter} onValueChange={setBatchFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Batch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {uniqueBatches.map(batch => (
+                    <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm || batchFilter !== 'all') && (
+                <Button variant="ghost" onClick={clearFilters}>
                     <FilterX className="mr-2 h-4 w-4" />
                     Clear Filters
                 </Button>
@@ -212,7 +240,7 @@ export default function TraineeManagementPage() {
                      </TableHead>
                     <TableHead>User ID</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Batch</TableHead>
                     <TableHead>Department</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Progress</TableHead>
@@ -240,7 +268,7 @@ export default function TraineeManagementPage() {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{formatUserId(fresher.id)}</TableCell>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
-                      <TableCell>{fresher.email}</TableCell>
+                      <TableCell>{fresher.batch}</TableCell>
                       <TableCell>{fresher.department}</TableCell>
                       <TableCell>
                         {getStatusBadge(fresher.status)}
