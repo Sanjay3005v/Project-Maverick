@@ -15,7 +15,7 @@ import {
 import { createTraineeReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { LoaderCircle, Wand2, FileText } from 'lucide-react';
+import { Loader2, Wand2, FileText } from 'lucide-react';
 import type { GenerateTraineeReportInput } from '@/ai/flows/generate-trainee-report';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -63,7 +63,7 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
     const tableData = trainees.map(t => [t.name, t.department, `${t.progress}%`, t.status]);
 
     doc.setFontSize(18);
-    doc.text("Trainee Performance Report", 14, 22);
+    doc.text("Trainee Performance Report", 40, 60);
 
     // Use a regex to split the report but keep the headings.
     // This is a simple way to separate summary from the table part in the markdown.
@@ -72,13 +72,13 @@ export function ReportDialog({ trainees, children }: ReportDialogProps) {
 
     doc.setFontSize(11);
     doc.setTextColor(100);
-    const splitSummary = doc.splitTextToSize(summaryText, 180);
-    doc.text(splitSummary, 14, 32);
+    const splitSummary = doc.splitTextToSize(summaryText, 500);
+    doc.text(splitSummary, 40, 80);
 
     autoTable(doc, {
         head: [['Name', 'Department', 'Progress', 'Status']],
         body: tableData,
-        startY: 120, // Adjusted to provide more space
+        startY: 180, // Adjusted to provide more space
         theme: 'grid',
         headStyles: { fillColor: [37, 171, 226] },
     });
