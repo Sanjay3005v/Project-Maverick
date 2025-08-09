@@ -69,6 +69,7 @@ async function seedTrainees() {
                 ...trainee,
                 status: getStatusForProgress(trainee.progress),
                 dob: new Date(trainee.dob as string),
+                batch: trainee.batch || 'Batch 1', // Ensure batch is included
                 quizCompletions: [],
                 assignedQuizIds: [],
                 assignedChallengeIds: [],
@@ -161,6 +162,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         status: getStatusForProgress(traineeData.progress),
         dob: new Date(traineeData.dob as string),
         assessmentScore: traineeData.assessmentScore || null,
+        batch: traineeData.batch || 'Batch 1',
         quizCompletions: [],
         assignedQuizIds: [],
         assignedChallengeIds: [],
