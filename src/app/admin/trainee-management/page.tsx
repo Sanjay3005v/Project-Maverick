@@ -65,7 +65,7 @@ export default function TraineeManagementPage() {
   };
 
   const uniqueBatches = useMemo(() => {
-    const batches = new Set(allTrainees.map(t => t.batch));
+    const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean)); // Filter out null/undefined/empty strings
     return Array.from(batches).sort();
   }, [allTrainees]);
 
