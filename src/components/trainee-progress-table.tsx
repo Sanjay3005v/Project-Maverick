@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
 import { Submission, getAllSubmissions } from '@/services/submission-service';
-import { Loader2, FilterX, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, FilterX, CheckCircle, Clock, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
@@ -19,11 +19,14 @@ type AssignmentStatus = {
     submitted: boolean;
     submissionDate: string | null;
     score: number | null;
+    downloadUrl?: string;
 };
 
 type TraineeWithAssignmentStatus = Trainee & {
     assignmentStatuses: AssignmentStatus[];
     completionRate: number;
+    totalAssignments: number;
+    submittedAssignments: number;
 };
 
 
@@ -84,6 +87,7 @@ export const TraineeProgressTable = () => {
                             submitted: !!submission,
                             submissionDate: submission ? format(new Date(submission.submittedAt.toString()), 'PP') : null,
                             score: submission?.review?.score ?? null,
+                            downloadUrl: submission?.fileUrl,
                         });
                     });
                 });
@@ -93,6 +97,8 @@ export const TraineeProgressTable = () => {
                 ...trainee,
                 assignmentStatuses,
                 completionRate: totalTasks > 0 ? (submittedTasks / totalTasks) * 100 : 0,
+                totalAssignments: totalTasks,
+                submittedAssignments: submittedTasks,
             };
         });
 
@@ -159,7 +165,7 @@ export const TraineeProgressTable = () => {
                                         <p className="text-sm text-muted-foreground">{trainee.department} - {trainee.batch}</p>
                                         <div className="flex items-center gap-4 mt-2">
                                             <Progress value={trainee.completionRate} className="w-1/3 h-2"/>
-                                            <span className="text-sm text-muted-foreground">{Math.round(trainee.completionRate)}% Assignments Submitted</span>
+                                            <span className="text-sm text-muted-foreground">{trainee.submittedAssignments} of {trainee.totalAssignments} Submitted ({Math.round(trainee.completionRate)}%)</span>
                                         </div>
                                     </div>
                                 </AccordionTrigger>
@@ -171,7 +177,8 @@ export const TraineeProgressTable = () => {
                                                 <TableHead>Assignment</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Submitted On</TableHead>
-                                                <TableHead className="text-right">Score</TableHead>
+                                                <TableHead>Score</TableHead>
+                                                <TableHead className="text-right">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -180,7 +187,7 @@ export const TraineeProgressTable = () => {
                                                     <TableCell className="font-medium">{status.title}</TableCell>
                                                     <TableCell>
                                                          {status.submitted ? (
-                                                            <Badge variant="default" className="gap-1.5 bg-green-500 text-white">
+                                                            <Badge variant="default" className="gap-1.5 bg-green-500 text-white hover:bg-green-600">
                                                                 <CheckCircle className="h-3.5 w-3.5" />
                                                                 Submitted
                                                             </Badge>
@@ -194,7 +201,7 @@ export const TraineeProgressTable = () => {
                                                     <TableCell>
                                                         {status.submissionDate || 'N/A'}
                                                     </TableCell>
-                                                     <TableCell className="text-right">
+                                                     <TableCell>
                                                         {status.score !== null ? (
                                                             <span className="font-bold">{status.score}/100</span>
                                                         ) : status.submitted ? (
@@ -202,6 +209,15 @@ export const TraineeProgressTable = () => {
                                                         ) : (
                                                             'N/A'
                                                         )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {status.downloadUrl ? (
+                                                            <Button size="sm" variant="outline" asChild>
+                                                                <a href={status.downloadUrl} target="_blank" rel="noopener noreferrer">
+                                                                    <Download className="mr-2 h-4 w-4" /> Download
+                                                                </a>
+                                                            </Button>
+                                                        ) : null}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
