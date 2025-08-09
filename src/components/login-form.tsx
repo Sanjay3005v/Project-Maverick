@@ -285,7 +285,7 @@ export function LoginForm() {
                 transform: translateX(100%);
                 opacity: 1;
                 z-index: 5;
-                animation: show 0.6s;
+                animation: show 0.7s;
             }
             @keyframes show {
                 0%, 49.99% {
@@ -304,7 +304,7 @@ export function LoginForm() {
                 width: 50%;
                 height: 100%;
                 overflow: hidden;
-                transition: transform 0.6s ease-in-out;
+                transition: transform 0.7s ease-in-out;
                 z-index: 100;
             }
             .right-panel-active .overlay-container{
@@ -316,7 +316,7 @@ export function LoginForm() {
                 height: 100%;
                 width: 200%;
                 transform: translateX(0);
-                transition: transform 0.6s ease-in-out;
+                transition: transform 0.7s ease-in-out;
             }
             .right-panel-active .overlay {
                 transform: translateX(50%);
@@ -333,7 +333,7 @@ export function LoginForm() {
                 height: 100%;
                 width: 50%;
                 transform: translateX(0);
-                transition: transform 0.6s ease-in-out;
+                transition: transform 0.7s ease-in-out;
             }
             .overlay-left {
                 transform: translateX(-20%);
