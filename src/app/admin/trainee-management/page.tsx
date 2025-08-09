@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles, ArrowDown, ArrowUp } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -36,6 +36,10 @@ import { GetOnTrackDialog } from "@/components/get-on-track-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export const dynamic = 'force-dynamic';
+
+type SortableColumn = 'name' | 'batch' | 'department' | 'status' | 'progress';
+type SortDirection = 'asc' | 'desc';
+
 
 export default function TraineeManagementPage() {
   const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
@@ -45,6 +49,8 @@ export default function TraineeManagementPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [batchFilter, setBatchFilter] = useState<string>("all");
   const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
+  const [sortColumn, setSortColumn] = useState<SortableColumn>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const fetchTrainees = async () => {
     setLoading(true);
@@ -69,7 +75,7 @@ export default function TraineeManagementPage() {
     return Array.from(batches).sort();
   }, [allTrainees]);
 
-  const filteredTrainees = useMemo(() => {
+  const filteredAndSortedTrainees = useMemo(() => {
     let traineesToFilter = [...allTrainees];
 
     if (searchTerm) {
@@ -93,8 +99,21 @@ export default function TraineeManagementPage() {
         );
     }
     
+    traineesToFilter.sort((a, b) => {
+        const aValue = a[sortColumn];
+        const bValue = b[sortColumn];
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+        return 0;
+    });
+
     return traineesToFilter;
-  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter]);
+  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter, sortColumn, sortDirection]);
 
 
   const traineesForReport = useMemo(() => {
@@ -117,10 +136,25 @@ export default function TraineeManagementPage() {
             return <Badge variant="secondary">{status}</Badge>;
     }
   }
+  
+  const handleSort = (column: SortableColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (column: SortableColumn) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === 'asc' ? <ArrowUp className="h-4 w-4 ml-2" /> : <ArrowDown className="h-4 w-4 ml-2" />;
+  }
+
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
       if (checked) {
-          setSelectedTrainees(filteredTrainees.map(t => t.id));
+          setSelectedTrainees(filteredAndSortedTrainees.map(t => t.id));
       } else {
           setSelectedTrainees([]);
       }
@@ -155,7 +189,7 @@ export default function TraineeManagementPage() {
                 <div>
                     <CardTitle>
                     <Users className="mr-2 h-6 w-6" />
-                    All Trainees ({filteredTrainees.length})
+                    All Trainees ({filteredAndSortedTrainees.length})
                     </CardTitle>
                     <CardDescription>
                         A complete list of all trainees in the system. Search, filter, and manage them from one place.
@@ -246,21 +280,41 @@ export default function TraineeManagementPage() {
                   <TableRow>
                      <TableHead className="w-[50px]">
                         <Checkbox
-                           checked={selectedTrainees.length === filteredTrainees.length && filteredTrainees.length > 0}
+                           checked={selectedTrainees.length === filteredAndSortedTrainees.length && filteredAndSortedTrainees.length > 0}
                            onCheckedChange={(checked) => handleSelectAll(checked)}
                         />
                      </TableHead>
                     <TableHead>User ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Batch</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Progress</TableHead>
+                    <TableHead>
+                         <Button variant="ghost" onClick={() => handleSort('name')}>
+                            Name {getSortIcon('name')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('batch')}>
+                            Batch {getSortIcon('batch')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => handleSort('department')}>
+                           Department {getSortIcon('department')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                         <Button variant="ghost" onClick={() => handleSort('status')}>
+                            Status {getSortIcon('status')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                         <Button variant="ghost" onClick={() => handleSort('progress')}>
+                            Progress {getSortIcon('progress')}
+                        </Button>
+                    </TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTrainees.map((fresher, index) => (
+                  {filteredAndSortedTrainees.map((fresher, index) => (
                     <TableRow 
                       key={fresher.id} 
                       className="animate-fade-in" 
