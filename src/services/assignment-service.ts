@@ -31,13 +31,15 @@ export async function getAllAssignments(): Promise<Assignment[]> {
 
   trainees.forEach(trainee => {
     if (trainee.onboardingPlan && trainee.onboardingPlan.length > 0) {
-      trainee.onboardingPlan.forEach(planItem => {
-        planItem.tasks.forEach(task => {
-          const assignmentKey = `${trainee.id}-${task}`;
-          const submission = submissionMap.get(assignmentKey);
+      trainee.onboardingPlan.forEach((planItem, planIndex) => {
+        planItem.tasks.forEach((task, taskIndex) => {
+          const submissionKey = `${trainee.id}-${task}`;
+          // The key for React must be unique for each element.
+          const uniqueAssignmentId = `${trainee.id}-${planIndex}-${taskIndex}-${task}`;
+          const submission = submissionMap.get(submissionKey);
 
           allAssignments.push({
-            id: assignmentKey,
+            id: uniqueAssignmentId,
             traineeId: trainee.id,
             traineeName: trainee.name,
             assignmentTitle: task,
