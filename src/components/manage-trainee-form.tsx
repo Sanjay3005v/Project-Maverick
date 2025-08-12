@@ -32,6 +32,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
   const [email, setEmail] = useState(trainee?.email || "");
   const [department, setDepartment] = useState(trainee?.department || "Engineering");
   const [dob, setDob] = useState<Date | undefined>(trainee?.dob ? (typeof trainee.dob === 'string' ? parseISO(trainee.dob) : trainee.dob) : undefined);
+  const [batch, setBatch] = useState(trainee?.batch || "");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -56,6 +57,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                 name, 
                 email,
                 department, 
+                batch,
                 dob: format(dob, 'yyyy-MM-dd'),
             });
         } else {
@@ -63,6 +65,7 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                 name,
                 email,
                 department,
+                batch,
                 dob: format(dob, 'yyyy-MM-dd'),
                 progress: 0, // Progress starts at 0 for new trainees
                 status: '', // Status will be set by the service
@@ -117,15 +120,26 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
             </CardHeader>
             <form onSubmit={handleSubmit}>
                 <CardContent className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                            id="name"
-                            placeholder="e.g., Jane Doe"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                                id="name"
+                                placeholder="e.g., Jane Doe"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="batch">Batch</Label>
+                            <Input
+                                id="batch"
+                                placeholder="e.g., A1, B2, etc."
+                                value={batch}
+                                onChange={(e) => setBatch(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email Address</Label>

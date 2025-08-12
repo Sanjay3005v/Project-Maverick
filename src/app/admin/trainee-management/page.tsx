@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles, Box } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
@@ -42,6 +42,7 @@ export default function TraineeManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [batchFilter, setBatchFilter] = useState<string>("all");
 
   const fetchTrainees = async () => {
     setLoading(true);
@@ -61,6 +62,11 @@ export default function TraineeManagementPage() {
     return combinedId.toString().padStart(7, '0');
   };
 
+  const uniqueBatches = useMemo(() => {
+    const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean));
+    return ['all', ...Array.from(batches)];
+  }, [allTrainees]);
+
   const filteredTrainees = useMemo(() => {
     return allTrainees
       .filter(trainee => 
@@ -71,8 +77,11 @@ export default function TraineeManagementPage() {
       )
       .filter(trainee =>
         statusFilter === 'all' || trainee.status === statusFilter
+      )
+      .filter(trainee => 
+        batchFilter === 'all' || trainee.batch === batchFilter
       );
-  }, [allTrainees, searchTerm, departmentFilter, statusFilter]);
+  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,6 +94,13 @@ export default function TraineeManagementPage() {
         default:
             return <Badge variant="secondary">{status}</Badge>;
     }
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDepartmentFilter('all');
+    setStatusFilter('all');
+    setBatchFilter('all');
   }
 
   if (loading) {
@@ -175,8 +191,20 @@ export default function TraineeManagementPage() {
                   <SelectItem value="Need Attention">Need Attention</SelectItem>
                 </SelectContent>
               </Select>
-              {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm) && (
-                <Button variant="ghost" onClick={() => { setSearchTerm(''); setDepartmentFilter('all'); setStatusFilter('all'); }}>
+              <Select value={batchFilter} onValueChange={setBatchFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Batch" />
+                </SelectTrigger>
+                <SelectContent>
+                  {uniqueBatches.map(batch => (
+                    <SelectItem key={batch} value={batch}>
+                      {batch === 'all' ? 'All Batches' : batch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {(departmentFilter !== 'all' || statusFilter !== 'all' || searchTerm || batchFilter !== 'all') && (
+                <Button variant="ghost" onClick={clearFilters}>
                     <FilterX className="mr-2 h-4 w-4" />
                     Clear Filters
                 </Button>
@@ -186,10 +214,10 @@ export default function TraineeManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Department</TableHead>
+                    <TableHead>Batch</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -198,10 +226,15 @@ export default function TraineeManagementPage() {
                 <TableBody>
                   {filteredTrainees.map((fresher) => (
                     <TableRow key={fresher.id}>
-                      <TableCell className="font-mono text-xs">{formatUserId(fresher.id)}</TableCell>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.email}</TableCell>
                       <TableCell>{fresher.department}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="gap-1.5">
+                            <Box className="h-3.5 w-3.5" />
+                            {fresher.batch}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         {getStatusBadge(fresher.status)}
                       </TableCell>
