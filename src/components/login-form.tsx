@@ -105,12 +105,19 @@ function PasswordResetDialog() {
 
 export function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  // State for Sign Up form
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+
+  // State for Sign In form
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+
 
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,13 +125,12 @@ export function LoginForm() {
 
     if (isSignUp) {
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
         
         await addTrainee({
-            name: name,
-            email: email,
-            department: 'Design',
+            name: signUpName,
+            email: signUpEmail,
+            department: 'Design', // Default department
             progress: 0,
             status: 'On Track',
             dob: new Date().toISOString().split('T')[0],
@@ -132,23 +138,32 @@ export function LoginForm() {
 
         toast({
           title: "Account Created!",
-          description: `Welcome, ${name}! Your trainee profile has been created.`,
+          description: `Welcome, ${signUpName}! Your trainee profile has been created.`,
         });
         
         router.push("/trainee/dashboard");
 
       } catch (error: any) {
+        let description = "An unexpected error occurred. Please try again.";
+        if (error.code === 'auth/email-already-in-use') {
+            description = 'This email is already registered. Please sign in instead.';
+        } else if (error.code === 'auth/invalid-email') {
+            description = 'The email address is not valid.';
+        } else if (error.code === 'auth/weak-password') {
+            description = 'The password is too weak. It should be at least 6 characters long.';
+        }
+
         toast({
           variant: "destructive",
           title: "Sign Up Failed",
-          description: error.message,
+          description: description,
         });
       } finally {
         setLoading(false);
       }
-    } else {
+    } else { // Sign In
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
         const user = userCredential.user;
         const isUserAdmin = user.email?.includes('admin');
 
@@ -186,24 +201,24 @@ export function LoginForm() {
                 <Input 
                     type="text" 
                     placeholder="Name" 
-                    value={name} 
-                    onChange={e => setName(e.target.value)}
+                    value={signUpName} 
+                    onChange={e => setSignUpName(e.target.value)}
                     required
                     className="my-2" 
                 />
                 <Input 
                     type="email" 
                     placeholder="Email" 
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    value={signUpEmail}
+                    onChange={e => setSignUpEmail(e.target.value)}
                     required
                     className="my-2"
                 />
                 <Input 
                     type="password" 
                     placeholder="Password" 
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    value={signUpPassword}
+                    onChange={e => setSignUpPassword(e.target.value)}
                     required
                     className="my-2"
                 />
@@ -222,16 +237,16 @@ export function LoginForm() {
                  <Input 
                     type="email" 
                     placeholder="Email" 
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    value={signInEmail}
+                    onChange={e => setSignInEmail(e.target.value)}
                     required
                     className="my-2"
                 />
                 <Input 
                     type="password" 
                     placeholder="Password" 
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    value={signInPassword}
+                    onChange={e => setSignInPassword(e.target.value)}
                     required
                     className="my-2"
                 />
