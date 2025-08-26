@@ -123,7 +123,7 @@ export function LoginForm() {
         
         await addTrainee({
             name: name,
-            email: user.email!,
+            email: email,
             department: 'Design',
             progress: 0,
             status: 'On Track',
