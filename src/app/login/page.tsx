@@ -6,7 +6,6 @@ import { Loader2, Rocket } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { getAllTrainees } from '@/services/trainee-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,25 +20,6 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
   
-  useEffect(() => {
-    // Firebase Connection Test
-    const testConnection = async () => {
-        try {
-            console.log("Attempting to connect to Firebase...");
-            const trainees = await getAllTrainees();
-            console.log(`✅ Firebase connection successful! Fetched ${trainees.length} trainee records.`);
-        } catch (error: any) {
-            console.error("🔥 Firebase connection failed:", error.message);
-            if (error.message.includes("API key not valid")) {
-                 console.error("Hint: This is likely due to an incorrect or missing NEXT_PUBLIC_FIREBASE_API_KEY in your .env file.");
-            }
-             if (error.code === 'permission-denied' || error.message.includes('permission-denied') || error.message.includes('Missing or insufficient permissions') || error.message.includes('An unexpected response was received from the server')) {
-                console.error("Hint: This is likely a Firestore Security Rules issue. For development, please ensure your rules allow reads. Go to your Firebase Console -> Firestore Database -> Rules tab and set them to test mode, for example: `rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }`");
-            }
-        }
-    }
-    testConnection();
-  }, []);
 
   if (loading || (!loading && user)) {
     return (
