@@ -144,6 +144,8 @@ export function LoginForm() {
             description = 'The email address is not valid.';
         } else if (error.code === 'auth/weak-password') {
             description = 'The password is too weak. It should be at least 6 characters long.';
+        } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error') {
+            description = "There was a network issue or an internal error. Please check your API key and Firebase setup."
         }
 
         toast({
@@ -356,5 +358,3 @@ export function LoginForm() {
         `}</style>
     </div>
   );
-
-    

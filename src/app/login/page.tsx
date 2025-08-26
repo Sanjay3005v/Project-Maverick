@@ -6,6 +6,7 @@ import { Loader2, Rocket } from 'lucide-react';
 import { LoginForm } from '@/components/login-form';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { getAllTrainees } from '@/services/trainee-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,23 @@ export default function LoginPage() {
       router.replace(isUserAdmin ? '/admin/dashboard' : '/trainee/dashboard');
     }
   }, [user, loading, router]);
+  
+  useEffect(() => {
+    // Firebase Connection Test
+    const testConnection = async () => {
+        try {
+            console.log("Attempting to connect to Firebase...");
+            const trainees = await getAllTrainees();
+            console.log(`✅ Firebase connection successful! Fetched ${trainees.length} trainee records.`);
+        } catch (error: any) {
+            console.error("🔥 Firebase connection failed:", error.message);
+            if (error.message.includes("API key not valid")) {
+                 console.error("Hint: This is likely due to an incorrect or missing NEXT_PUBLIC_FIREBASE_API_KEY in your .env file.");
+            }
+        }
+    }
+    testConnection();
+  }, []);
 
   if (loading || (!loading && user)) {
     return (
