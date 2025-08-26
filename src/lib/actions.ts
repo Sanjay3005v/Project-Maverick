@@ -1,5 +1,6 @@
 
 'use server';
+import 'dotenv/config';
 
 import { generatePersonalizedOnboardingPlan } from '@/ai/flows/generate-onboarding-plan';
 import type { GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/generate-onboarding-plan';
