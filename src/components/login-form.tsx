@@ -127,6 +127,8 @@ export function LoginForm() {
             email: signUpEmail,
             department: 'Design', // Default department
             progress: 0,
+            batch: 'A1', // Default batch
+            dob: new Date().toISOString().split('T')[0] // Default DOB
         });
 
         toast({
@@ -144,8 +146,8 @@ export function LoginForm() {
             description = 'The email address is not valid.';
         } else if (error.code === 'auth/weak-password') {
             description = 'The password is too weak. It should be at least 6 characters long.';
-        } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error') {
-            description = "There was a network issue or an internal error. Please check your API key and Firebase setup."
+        } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error' || error.code === 'auth/invalid-api-key') {
+            description = "There was a network issue or an API key error. Please check your API key and Firebase setup in .env"
         }
 
         toast({
@@ -158,30 +160,46 @@ export function LoginForm() {
       }
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!signInEmail || !signInPassword) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Please enter both email and password.",
+      });
+      return;
+    }
     setLoading(true);
-     try {
-        const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
-        const user = userCredential.user;
-        const isUserAdmin = user.email?.includes('admin');
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
+      const user = userCredential.user;
+      const isUserAdmin = user.email?.includes('admin');
 
-        toast({
-          title: "Login Successful",
-          description: `Welcome back!`,
-        });
-        
-        router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
 
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-        });
-      } finally {
-        setLoading(false);
+      router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
+
+    } catch (error: any) {
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = "Invalid email or password. Please check your credentials.";
+      } else if (error.code === 'auth/invalid-email') {
+        description = "The email address you entered is not valid.";
+      } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error' || error.code === 'auth/invalid-api-key') {
+          description = "There was a network issue or an API key error. Please check your API key and Firebase setup in .env"
       }
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: description,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -358,3 +376,6 @@ export function LoginForm() {
         `}</style>
     </div>
   );
+
+
+    
