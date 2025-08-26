@@ -145,6 +145,16 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
 }
 
 export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<string> {
+    // First, check if a trainee with this email already exists
+    const q = query(traineesCollection, where("email", "==", traineeData.email), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        // A trainee with this email already exists, return the existing ID
+        return querySnapshot.docs[0].id;
+    }
+
+    // If no trainee exists, create a new one
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
         status: getStatusForProgress(traineeData.progress),
