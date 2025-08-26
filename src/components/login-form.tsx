@@ -7,7 +7,7 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, LogIn, Mail, Rocket } from "lucide-react";
+import { Loader2, UserPlus, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { addTrainee } from "@/services/trainee-service";
 import { cn } from "@/lib/utils";
@@ -109,22 +109,17 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // State for Sign Up form
   const [signUpName, setSignUpName] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
 
-  // State for Sign In form
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
 
-
-  const handleAuthAction = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    if (isSignUp) {
-      try {
+    try {
         const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
         
         await addTrainee({
@@ -159,8 +154,12 @@ export function LoginForm() {
       } finally {
         setLoading(false);
       }
-    } else { // Sign In
-      try {
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+     try {
         const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
         const user = userCredential.user;
         const isUserAdmin = user.email?.includes('admin');
@@ -181,7 +180,6 @@ export function LoginForm() {
       } finally {
         setLoading(false);
       }
-    }
   };
 
   return (
@@ -193,7 +191,7 @@ export function LoginForm() {
     >
         {/* Sign Up Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10 sign-up-container">
-            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleSignUp} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
                 <span className="text-muted-foreground mb-4 text-sm">or use your email for registration</span>
                 <Input 
@@ -203,6 +201,7 @@ export function LoginForm() {
                     onChange={e => setSignUpName(e.target.value)}
                     required
                     className="my-2" 
+                    name="name"
                 />
                 <Input 
                     type="email" 
@@ -211,6 +210,7 @@ export function LoginForm() {
                     onChange={e => setSignUpEmail(e.target.value)}
                     required
                     className="my-2"
+                    name="email"
                 />
                 <Input 
                     type="password" 
@@ -219,6 +219,7 @@ export function LoginForm() {
                     onChange={e => setSignUpPassword(e.target.value)}
                     required
                     className="my-2"
+                    name="password"
                 />
                 <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : <UserPlus />}
@@ -229,7 +230,7 @@ export function LoginForm() {
 
         {/* Sign In Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20 sign-in-container">
-            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleSignIn} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
                  <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
                  <Input 
@@ -239,6 +240,7 @@ export function LoginForm() {
                     onChange={e => setSignInEmail(e.target.value)}
                     required
                     className="my-2"
+                    name="email"
                 />
                 <Input 
                     type="password" 
@@ -247,6 +249,7 @@ export function LoginForm() {
                     onChange={e => setSignInPassword(e.target.value)}
                     required
                     className="my-2"
+                    name="password"
                 />
                 <PasswordResetDialog />
                  <Button type="submit" className="rounded-full mt-4 px-12" disabled={loading}>
@@ -355,5 +358,3 @@ export function LoginForm() {
   );
 
     
-
-
