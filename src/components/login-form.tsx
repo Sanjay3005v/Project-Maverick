@@ -109,98 +109,86 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const [signUpName, setSignUpName] = useState("");
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleAuthAction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
+
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
-        
-        await addTrainee({
-            name: signUpName,
-            email: signUpEmail,
-            department: 'Design', // Default department
-            progress: 0,
-            batch: 'A1', // Default batch
-            dob: new Date().toISOString().split('T')[0] // Default DOB
-        });
+        if(isSignUp) {
+            // Sign Up Logic
+            if (!name) {
+                toast({ variant: 'destructive', title: 'Sign Up Failed', description: "Name is required for sign up." });
+                setLoading(false);
+                return;
+            }
+            await createUserWithEmailAndPassword(auth, email, password);
+            await addTrainee({
+                name: name,
+                email: email,
+                department: 'Design', // Default department
+                progress: 0,
+                batch: 'A1', // Default batch
+                dob: new Date().toISOString().split('T')[0] // Default DOB
+            });
+            toast({
+                title: "Account Created!",
+                description: `Welcome, ${name}! Your trainee profile has been created.`,
+            });
+             router.push("/trainee/dashboard");
 
-        toast({
-          title: "Account Created!",
-          description: `Welcome, ${signUpName}! Your trainee profile has been created.`,
-        });
-        
-        router.push("/trainee/dashboard");
-
-      } catch (error: any) {
-        let description = "An unexpected error occurred. Please try again.";
-        if (error.code === 'auth/email-already-in-use') {
-            description = 'This email is already registered. Please sign in instead.';
-        } else if (error.code === 'auth/invalid-email') {
-            description = 'The email address is not valid.';
-        } else if (error.code === 'auth/weak-password') {
-            description = 'The password is too weak. It should be at least 6 characters long.';
-        } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error' || error.code === 'auth/invalid-api-key') {
-            description = "There was a network issue or an API key error. Please check your API key and Firebase setup in .env"
+        } else {
+            // Sign In Logic
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const isUserAdmin = user.email?.includes('admin');
+            toast({
+                title: "Login Successful",
+                description: "Welcome back!",
+            });
+            router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
         }
-
-        toast({
-          variant: "destructive",
-          title: "Sign Up Failed",
-          description: description,
-        });
-      } finally {
-        setLoading(false);
-      }
-  };
-
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!signInEmail || !signInPassword) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Please enter both email and password.",
-      });
-      return;
-    }
-    setLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
-      const user = userCredential.user;
-      const isUserAdmin = user.email?.includes('admin');
-
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
-      });
-
-      router.push(isUserAdmin ? "/admin/dashboard" : "/trainee/dashboard");
-
     } catch (error: any) {
-      let description = "An unexpected error occurred. Please try again.";
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        description = "Invalid email or password. Please check your credentials.";
-      } else if (error.code === 'auth/invalid-email') {
-        description = "The email address you entered is not valid.";
-      } else if (error.code === 'auth/network-request-failed' || error.code === 'auth/internal-error' || error.code === 'auth/invalid-api-key') {
-          description = "There was a network issue or an API key error. Please check your API key and Firebase setup in .env"
-      }
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: description,
-      });
+        let description = "An unexpected error occurred. Please try again.";
+        if (error.code) {
+             switch (error.code) {
+                case 'auth/email-already-in-use':
+                    description = 'This email is already registered. Please sign in instead.';
+                    break;
+                case 'auth/invalid-email':
+                    description = 'The email address is not valid.';
+                    break;
+                case 'auth/weak-password':
+                    description = 'The password is too weak. It should be at least 6 characters long.';
+                    break;
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    description = "Invalid email or password. Please check your credentials.";
+                    break;
+                case 'auth/network-request-failed':
+                case 'auth/internal-error':
+                case 'auth/invalid-api-key':
+                    description = "A network issue or API key error occurred. Please check your API key and Firebase setup in .env";
+                    break;
+                default:
+                     description = error.message;
+            }
+        }
+        toast({
+            variant: "destructive",
+            title: isSignUp ? "Sign Up Failed" : "Sign In Failed",
+            description: description,
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+  }
+
 
   return (
     <div className={cn(
@@ -211,23 +199,19 @@ export function LoginForm() {
     >
         {/* Sign Up Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 opacity-0 z-10 sign-up-container">
-            <form onSubmit={handleSignUp} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Create Account</h1>
                 <span className="text-muted-foreground mb-4 text-sm">or use your email for registration</span>
                 <Input 
                     type="text" 
                     placeholder="Name" 
-                    value={signUpName} 
-                    onChange={e => setSignUpName(e.target.value)}
-                    required
+                    required={isSignUp}
                     className="my-2" 
                     name="name"
                 />
                 <Input 
                     type="email" 
                     placeholder="Email" 
-                    value={signUpEmail}
-                    onChange={e => setSignUpEmail(e.target.value)}
                     required
                     className="my-2"
                     name="email"
@@ -235,8 +219,6 @@ export function LoginForm() {
                 <Input 
                     type="password" 
                     placeholder="Password" 
-                    value={signUpPassword}
-                    onChange={e => setSignUpPassword(e.target.value)}
                     required
                     className="my-2"
                     name="password"
@@ -250,14 +232,12 @@ export function LoginForm() {
 
         {/* Sign In Form */}
         <div className="absolute top-0 h-full transition-all duration-700 ease-in-out left-0 w-1/2 z-20 sign-in-container">
-            <form onSubmit={handleSignIn} className="bg-card h-full flex flex-col justify-center items-center px-12">
+            <form onSubmit={handleAuthAction} className="bg-card h-full flex flex-col justify-center items-center px-12">
                 <h1 className="text-3xl font-bold font-headline mb-4">Sign In</h1>
                  <span className="text-muted-foreground mb-4 text-sm">Use your account to sign in</span>
                  <Input 
                     type="email" 
                     placeholder="Email" 
-                    value={signInEmail}
-                    onChange={e => setSignInEmail(e.target.value)}
                     required
                     className="my-2"
                     name="email"
@@ -265,8 +245,6 @@ export function LoginForm() {
                 <Input 
                     type="password" 
                     placeholder="Password" 
-                    value={signInPassword}
-                    onChange={e => setSignInPassword(e.target.value)}
                     required
                     className="my-2"
                     name="password"
