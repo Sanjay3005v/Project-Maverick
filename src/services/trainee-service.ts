@@ -158,7 +158,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
         status: getStatusForProgress(traineeData.progress),
-        dob: new Date(traineeData.dob as string),
+        dob: traineeData.dob,
         assessmentScore: traineeData.assessmentScore || null,
         quizCompletions: [],
         assignedQuizIds: [],
@@ -249,5 +249,7 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
         completedChallengeIds: arrayUnion(challengeId)
     });
 }
+
+    
 
     
