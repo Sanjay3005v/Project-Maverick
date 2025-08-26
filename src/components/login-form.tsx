@@ -132,7 +132,6 @@ export function LoginForm() {
             email: signUpEmail,
             department: 'Design', // Default department
             progress: 0,
-            status: 'On Track',
             dob: new Date().toISOString().split('T')[0],
         });
 
@@ -357,3 +356,4 @@ export function LoginForm() {
   );
 
     
+
