@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -293,7 +294,7 @@ export function LoginForm() {
                 height: 100%;
                 overflow: hidden;
                 transition: transform 0.6s ease-in-out;
-                z-index: 100;
+                z-index: 50;
             }
             .right-panel-active .overlay-container{
                 transform: translateX(-100%);
