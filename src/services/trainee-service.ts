@@ -158,7 +158,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
         status: getStatusForProgress(traineeData.progress),
-        dob: traineeData.dob,
+        dob: traineeData.dob ? new Date(traineeData.dob as string) : new Date(),
         assessmentScore: traineeData.assessmentScore || null,
         quizCompletions: [],
         assignedQuizIds: [],
