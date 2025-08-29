@@ -37,56 +37,8 @@ const getStatusForProgress = (progress: number) => {
 
 const traineesCollection = collection(db, 'trainees');
 
-// This function now acts as a one-time migration to create auth users for existing data.
-async function migrateAndVerifyTrainees() {
-    const app = getAdminApp();
-    if (!app) {
-        // Admin SDK not initialized, likely due to missing service account key.
-        // We can't proceed with user creation, so we just return.
-        return;
-    }
-    
-    console.log("Checking for trainee auth migration...");
-    const auth = getAuth(app);
-    const traineesSnapshot = await getDocs(traineesCollection);
-    const defaultPassword = 'demo123';
-
-    if (traineesSnapshot.empty) {
-        console.log("No trainees found in Firestore. Seeding is complete.");
-        return;
-    }
-
-    for (const traineeDoc of traineesSnapshot.docs) {
-        const trainee = traineeDoc.data() as Trainee;
-        if (!trainee.email) continue;
-        
-        try {
-            // Check if an auth user already exists for this email.
-            await auth.getUserByEmail(trainee.email);
-            // console.log(`Auth user for ${trainee.email} already exists. Skipping.`);
-        } catch (error: any) {
-            // If the user does not exist, create them.
-            if (error.code === 'auth/user-not-found') {
-                try {
-                    await auth.createUser({
-                        email: trainee.email,
-                        password: defaultPassword,
-                        displayName: trainee.name,
-                    });
-                    console.log(`Created auth user for ${trainee.email}.`);
-                } catch (creationError) {
-                    console.error(`Failed to create auth user for ${trainee.email}:`, creationError);
-                }
-            }
-        }
-    }
-     console.log("Trainee auth migration check complete.");
-}
-
 
 export async function getAllTrainees(): Promise<Trainee[]> {
-    await migrateAndVerifyTrainees(); // Ensure all trainees have an auth account.
-    
     const traineeSnapshot = await getDocs(traineesCollection);
     
     const traineeList = traineeSnapshot.docs.map(doc => {
