@@ -39,8 +39,14 @@ const traineesCollection = collection(db, 'trainees');
 
 // This function now acts as a one-time migration to create auth users for existing data.
 async function migrateAndVerifyTrainees() {
-    console.log("Checking for trainee auth migration...");
     const app = getAdminApp();
+    if (!app) {
+        // Admin SDK not initialized, likely due to missing service account key.
+        // We can't proceed with user creation, so we just return.
+        return;
+    }
+    
+    console.log("Checking for trainee auth migration...");
     const auth = getAuth(app);
     const traineesSnapshot = await getDocs(traineesCollection);
     const defaultPassword = 'demo123';

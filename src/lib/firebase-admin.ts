@@ -10,25 +10,40 @@ const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
   : undefined;
 
-let app: admin.app.App;
+let app: admin.app.App | undefined;
+let initialized = false;
 
 export function initializeAdminApp() {
+  if (initialized) {
+    return;
+  }
+  initialized = true; // Attempt initialization only once
+
   if (admin.apps.length > 0) {
     app = admin.apps[0]!;
     return;
   }
+
   if (!serviceAccount) {
-    throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
+    console.warn(
+      'Firebase Admin SDK not initialized. The FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing. Backend operations like user creation will not work.'
+    );
+    return;
   }
 
-  app = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: `https://console.firebase.google.com/project/${serviceAccount.project_id}/overview`,
-  });
+  try {
+    app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: `https://console.firebase.google.com/project/${serviceAccount.project_id}/overview`,
+    });
+  } catch (error) {
+    console.error("Firebase Admin SDK initialization failed:", error);
+    app = undefined;
+  }
 }
 
-export function getAdminApp(): admin.app.App {
-    if (!app) {
+export function getAdminApp(): admin.app.App | undefined {
+    if (!initialized) {
         initializeAdminApp();
     }
     return app;
