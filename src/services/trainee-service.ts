@@ -1,9 +1,10 @@
 
 'use server';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { getAdminApp, initializeAdminApp } from '@/lib/firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
 import type { OnboardingPlanItem } from '@/lib/plan-schema';
-import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 export interface QuizCompletion {
     date: string;
@@ -60,22 +61,56 @@ const traineesCollection = collection(db, 'trainees');
 async function seedTrainees() {
     const traineesSnapshot = await getDocs(query(traineesCollection, limit(1)));
     if (traineesSnapshot.empty) {
-        console.log("Seeding initial trainees...");
+        console.log("Seeding initial trainees and creating auth users...");
+        
+        const app = getAdminApp();
+        const auth = getAuth(app);
+        
         const batch = writeBatch(db);
-        dummyTrainees.forEach(trainee => {
-            const docRef = doc(traineesCollection);
-            batch.set(docRef, {
-                ...trainee,
-                status: getStatusForProgress(trainee.progress),
-                dob: new Date(trainee.dob as string),
-                quizCompletions: [],
-                assignedQuizIds: [],
-                assignedChallengeIds: [],
-                completedChallengeIds: [],
-            });
-        });
+        const defaultPassword = 'demo123';
+
+        for (const trainee of dummyTrainees) {
+            try {
+                // Create user in Firebase Authentication
+                const userRecord = await auth.createUser({
+                    email: trainee.email,
+                    password: defaultPassword,
+                    displayName: trainee.name,
+                });
+                
+                // Add user to Firestore
+                const docRef = doc(traineesCollection);
+                batch.set(docRef, {
+                    ...trainee,
+                    status: getStatusForProgress(trainee.progress),
+                    dob: new Date(trainee.dob as string),
+                    quizCompletions: [],
+                    assignedQuizIds: [],
+                    assignedChallengeIds: [],
+                    completedChallengeIds: [],
+                    authUid: userRecord.uid // Optionally store auth UID
+                });
+
+            } catch (error: any) {
+                if (error.code === 'auth/email-already-exists') {
+                    console.log(`Auth user for ${trainee.email} already exists. Skipping auth creation.`);
+                    // Find existing trainee doc to avoid duplicates if possible
+                     const q = query(traineesCollection, where("email", "==", trainee.email), limit(1));
+                     const existingTrainee = await getDocs(q);
+                     if(existingTrainee.empty){
+                         const docRef = doc(traineesCollection);
+                         batch.set(docRef, {
+                            ...trainee,
+                            status: getStatusForProgress(trainee.progress),
+                         });
+                     }
+                } else {
+                    console.error(`Error creating auth user for ${trainee.email}:`, error);
+                }
+            }
+        }
         await batch.commit();
-        console.log("Initial trainees seeded.");
+        console.log("Initial seeding process complete.");
     }
 }
 
@@ -92,7 +127,7 @@ export async function getAllTrainees(): Promise<Trainee[]> {
             ...data,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
-    }).filter(trainee => !trainee.email.includes('admin')); // Filter out admin users
+    }).filter(trainee => !trainee.email.includes('admin'));
     return traineeList;
 }
 
@@ -114,8 +149,6 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        // If no trainee exists, check if this is an admin user.
-        // This is a simplified check for the demo.
         if(email.includes('admin')) {
             return {
                 id: 'admin-user',
@@ -145,16 +178,13 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
 }
 
 export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<string> {
-    // First, check if a trainee with this email already exists
     const q = query(traineesCollection, where("email", "==", traineeData.email), limit(1));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-        // A trainee with this email already exists, return the existing ID
         return querySnapshot.docs[0].id;
     }
 
-    // If no trainee exists, create a new one
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
         status: getStatusForProgress(traineeData.progress),
@@ -183,14 +213,8 @@ export async function updateTrainee(id: string, traineeData: Partial<Omit<Traine
 }
 
 export async function deleteTrainee(traineeId: string): Promise<void> {
-    // Note: Deleting a Firebase Auth user from the client is not recommended for production apps.
-    // This should ideally be handled by a Cloud Function (backend) that verifies admin privileges.
-    // For this demo, we will only delete the Firestore document.
-    // The user's auth record will remain, but they won't have a profile in the app.
     const traineeRef = doc(db, 'trainees', traineeId);
     await deleteDoc(traineeRef);
-    // To fully delete the user, you would need a backend function:
-    // getAuth(adminApp).deleteUser(uid);
 }
 
 
@@ -253,4 +277,5 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     
 
     
+
 
