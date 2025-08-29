@@ -4,7 +4,9 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration.
+// This is the standard way to configure Firebase in a Next.js app.
+// It relies on environment variables prefixed with NEXT_PUBLIC_ to be exposed to the browser.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,6 +19,7 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
+// This check prevents re-initializing the app on every hot-reload.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
