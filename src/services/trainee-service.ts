@@ -92,7 +92,7 @@ export async function getAllTrainees(): Promise<Trainee[]> {
             ...data,
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
-    });
+    }).filter(trainee => !trainee.email.includes('admin')); // Filter out admin users
     return traineeList;
 }
 
@@ -253,3 +253,4 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     
 
     
+
