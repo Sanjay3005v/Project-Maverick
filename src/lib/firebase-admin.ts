@@ -1,6 +1,11 @@
 
 import * as admin from 'firebase-admin';
 
+// This is required to be able to access environment variables from Vercel
+import 'dotenv/config';
+
+// To find your service account key, go to your Firebase project settings,
+// then to the Service Accounts tab. Click "Generate new private key".
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
   : undefined;
