@@ -122,7 +122,7 @@ export default function TraineeDashboard() {
                 </div>
                 </CardHeader>
                 <CardContent>
-                <p className="text-sm text-muted-foreground">Generate or update your personalized plan.</p>
+                <p className="text-sm text-muted-foreground">View your full learning journey and tasks.</p>
                 </CardContent>
             </Card>
         </Link>
@@ -161,7 +161,7 @@ export default function TraineeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">View your plan and submit your work.</p>
+              <p className="text-sm text-muted-foreground">View and submit all your assigned tasks.</p>
             </CardContent>
           </Card>
         </Link>
