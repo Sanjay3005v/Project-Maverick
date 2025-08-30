@@ -124,7 +124,7 @@ export default function TraineeOnboardingPlanPage() {
         <Card className="text-center p-8">
           <CardContent className="pt-6">
             <p className="mb-4 text-muted-foreground">Your onboarding plan has not been assigned by an administrator yet.</p>
-             <p className="text-sm">Please check back later or contact your administrator if you believe this is an error.</p>
+             <p className="text-sm">Please check back later or contact your administrator.</p>
           </CardContent>
         </Card>
       )}
