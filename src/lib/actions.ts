@@ -7,7 +7,7 @@ import type { GeneratePersonalizedOnboardingPlanOutput } from '@/ai/flows/genera
 import { generateTraineeReport, type GenerateTraineeReportInput, type GenerateTraineeReportOutput } from '@/ai/flows/generate-trainee-report';
 import { getTraineeById, saveOnboardingPlan as savePlan } from '@/services/trainee-service';
 import { z } from 'zod';
-import type { OnboardingPlanItem } from './plan-schema';
+import { OnboardingPlanItem, OnboardingPlanItemSchema } from './plan-schema';
 
 const adminFormSchema = z.object({
   fresherProfile: z.string().min(10, 'Please provide a profile of at least 10 characters.'),
@@ -42,10 +42,21 @@ export async function createOnboardingPlanForAdmin(
   try {
     const result = await generatePersonalizedOnboardingPlan(validatedFields.data);
     
+    // Add default types to tasks
+    const planWithTaskTypes = result.personalizedPlan.map(week => ({
+        ...week,
+        tasks: week.tasks.map(taskDesc => ({
+            description: taskDesc,
+            type: 'basic',
+            status: 'Pending'
+        }))
+    }));
+    
     return { 
       success: true, 
       message: 'Plan generated successfully. You can now assign it to trainees.',
-      data: result 
+      // @ts-ignore
+      data: { personalizedPlan: planWithTaskTypes }
     };
   } catch (error) {
     console.error('Error creating onboarding plan:', error);

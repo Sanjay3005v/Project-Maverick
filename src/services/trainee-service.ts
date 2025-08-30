@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase';
 import { getAdminApp } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, Timestamp, query, where, limit, writeBatch, deleteDoc, arrayUnion } from 'firebase/firestore';
-import type { OnboardingPlanItem } from '@/lib/plan-schema';
+import type { OnboardingPlanItem, Task } from '@/lib/plan-schema';
 
 export interface QuizCompletion {
     date: string;
@@ -193,4 +193,23 @@ export async function markChallengeAsCompleted(traineeId: string, challengeId: s
     await updateDoc(traineeRef, {
         completedChallengeIds: arrayUnion(challengeId)
     });
+}
+
+export async function updateTaskStatus(traineeId: string, weekIndex: number, taskIndex: number, status: 'Completed' | 'Pending', submittedLink?: string): Promise<void> {
+    const trainee = await getTraineeById(traineeId);
+    if (!trainee || !trainee.onboardingPlan) {
+        throw new Error("Trainee or onboarding plan not found.");
+    }
+
+    const updatedPlan = [...trainee.onboardingPlan];
+    if (updatedPlan[weekIndex] && updatedPlan[weekIndex].tasks[taskIndex]) {
+        updatedPlan[weekIndex].tasks[taskIndex].status = status;
+        if (submittedLink) {
+            updatedPlan[weekIndex].tasks[taskIndex].submittedLink = submittedLink;
+        }
+    } else {
+        throw new Error("Task not found in plan.");
+    }
+    
+    await saveOnboardingPlan(traineeId, updatedPlan);
 }

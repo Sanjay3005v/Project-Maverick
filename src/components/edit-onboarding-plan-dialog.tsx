@@ -19,7 +19,11 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Trainee, saveOnboardingPlan } from '@/services/trainee-service';
-import { OnboardingPlanItem } from '@/ai/flows/generate-onboarding-plan';
+import { OnboardingPlanItem, Task } from '@/lib/plan-schema';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { getAllQuizzes, Quiz } from '@/services/quiz-service';
+import { getAllChallenges, Challenge } from '@/services/challenge-service';
+import { useEffect } from 'react';
 
 
 interface EditOnboardingPlanDialogProps {
@@ -35,6 +39,21 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
   const [editedPlan, setEditedPlan] = useState<OnboardingPlanItem[]>(
     JSON.parse(JSON.stringify(trainee.onboardingPlan || []))
   );
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchData = async () => {
+        const [q, c] = await Promise.all([getAllQuizzes(), getAllChallenges()]);
+        setQuizzes(q);
+        setChallenges(c);
+      }
+      fetchData();
+      setEditedPlan(JSON.parse(JSON.stringify(trainee.onboardingPlan || [])));
+    }
+  }, [isOpen, trainee.onboardingPlan]);
+
 
   const handleWeekTopicChange = (weekIndex: number, value: string) => {
     const updatedPlan = [...editedPlan];
@@ -42,15 +61,24 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
     setEditedPlan(updatedPlan);
   };
   
-  const handleTaskChange = (weekIndex: number, taskIndex: number, value: string) => {
+  const handleTaskChange = (weekIndex: number, taskIndex: number, field: keyof Task, value: any) => {
     const updatedPlan = [...editedPlan];
-    updatedPlan[weekIndex].tasks[taskIndex] = value;
+    const task = updatedPlan[weekIndex].tasks[taskIndex];
+    
+    // @ts-ignore
+    task[field] = value;
+
+    // Reset id if type changes away from quiz/challenge
+    if(field === 'type' && (value === 'basic' || value === 'link')) {
+        task.id = undefined;
+    }
+
     setEditedPlan(updatedPlan);
   };
 
   const handleAddTask = (weekIndex: number) => {
     const updatedPlan = [...editedPlan];
-    updatedPlan[weekIndex].tasks.push('New task');
+    updatedPlan[weekIndex].tasks.push({ description: 'New task', type: 'basic', status: 'Pending' });
     setEditedPlan(updatedPlan);
   };
 
@@ -61,13 +89,13 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
   };
 
   const handleAddWeek = () => {
-    const newWeekNumber = editedPlan.length > 0 ? parseInt(editedPlan[editedPlan.length - 1].week.split(' ')[1]) + 1 : 1;
+    const newWeekNumber = editedPlan.length > 0 ? parseInt(editedPlan[editedPlan.length - 1].week.replace(/\D/g,'')) + 1 : 1;
     setEditedPlan([
       ...editedPlan,
       {
         week: `Week ${newWeekNumber}`,
         topic: 'New Topic',
-        tasks: ['New task'],
+        tasks: [{ description: 'New task', type: 'basic', status: 'Pending' }],
         status: 'Not Started'
       }
     ]);
@@ -106,7 +134,7 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl">Edit Onboarding Plan</DialogTitle>
           <DialogDescription>
@@ -115,12 +143,20 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
         </DialogHeader>
         <div className="space-y-6 max-h-[60vh] overflow-y-auto p-4">
           {editedPlan.map((week, weekIndex) => (
-            <div key={weekIndex} className="space-y-4 p-4 border rounded-md relative">
+            <div key={weekIndex} className="space-y-4 p-4 border rounded-md relative bg-muted/20">
               <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => handleRemoveWeek(weekIndex)}>
                   <X className="h-4 w-4" />
               </Button>
-              <h4 className="font-semibold">{week.week}</h4>
               <div className="space-y-2">
+                <Label htmlFor={`week-topic-${weekIndex}`}>Week Title</Label>
+                <Input
+                  id={`week-topic-${weekIndex}`}
+                  value={week.week}
+                  onChange={(e) => handleWeekTopicChange(weekIndex, e.target.value)}
+                  className="font-bold"
+                />
+              </div>
+               <div className="space-y-2">
                 <Label htmlFor={`week-topic-${weekIndex}`}>Topic</Label>
                 <Input
                   id={`week-topic-${weekIndex}`}
@@ -131,16 +167,48 @@ export function EditOnboardingPlanDialog({ trainee, children, onPlanUpdated }: E
               <div className="space-y-3">
                 <Label>Tasks</Label>
                 {week.tasks.map((task, taskIndex) => (
-                  <div key={taskIndex} className="flex items-center gap-2">
-                    <Textarea
-                      value={task}
-                      onChange={(e) => handleTaskChange(weekIndex, taskIndex, e.target.value)}
-                      rows={1}
-                      className="flex-grow"
+                  <div key={taskIndex} className="flex flex-col gap-2 border p-3 rounded-md bg-background">
+                     <div className="flex items-center justify-between">
+                        <p className="font-semibold">Task {taskIndex + 1}</p>
+                         <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveTask(weekIndex, taskIndex)}>
+                            <X className="h-4 w-4 text-red-500" />
+                        </Button>
+                     </div>
+                     <Textarea
+                      value={task.description}
+                      onChange={(e) => handleTaskChange(weekIndex, taskIndex, 'description', e.target.value)}
+                      rows={2}
+                      placeholder="Task description..."
                     />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveTask(weekIndex, taskIndex)}>
-                      <X className="h-4 w-4 text-red-500" />
-                    </Button>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Select value={task.type} onValueChange={(v) => handleTaskChange(weekIndex, taskIndex, 'type', v)}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="basic">Basic (Check-off)</SelectItem>
+                                <SelectItem value="link">Link Submission</SelectItem>
+                                <SelectItem value="quiz">Quiz</SelectItem>
+                                <SelectItem value="challenge">Challenge</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {task.type === 'quiz' && (
+                            <Select onValueChange={(v) => handleTaskChange(weekIndex, taskIndex, 'id', v)}>
+                                <SelectTrigger><SelectValue placeholder="Select a quiz"/></SelectTrigger>
+                                <SelectContent>
+                                    {quizzes.map(q => <SelectItem key={q.id} value={q.id}>{q.title}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
+                         {task.type === 'challenge' && (
+                            <Select onValueChange={(v) => handleTaskChange(weekIndex, taskIndex, 'id', v)}>
+                                <SelectTrigger><SelectValue placeholder="Select a challenge"/></SelectTrigger>
+                                <SelectContent>
+                                    {challenges.map(c => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
+
+                    </div>
                   </div>
                 ))}
                 <Button type="button" variant="outline" size="sm" onClick={() => handleAddTask(weekIndex)}>

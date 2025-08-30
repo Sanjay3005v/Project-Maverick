@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PersonalizedOnboardingPlanSchema } from '@/lib/plan-schema';
+import { PersonalizedOnboardingPlanSchema, OnboardingPlanItemSchema } from '@/lib/plan-schema';
 import type { PersonalizedOnboardingPlan } from '@/lib/plan-schema';
 
 
@@ -26,6 +26,12 @@ export type GeneratePersonalizedOnboardingPlanInput = z.infer<
 
 export type GeneratePersonalizedOnboardingPlanOutput = PersonalizedOnboardingPlan;
 
+const OutputSchema = z.object({
+  personalizedPlan: z.array(OnboardingPlanItemSchema.omit({ tasks: true }).extend({
+    tasks: z.array(z.string()).describe("A list of specific, actionable tasks or assignments for the week. These should be phrased as clear actions."),
+  })).describe('The personalized learning plan structured as a list of weekly items.'),
+});
+
 export async function generatePersonalizedOnboardingPlan(
   input: GeneratePersonalizedOnboardingPlanInput
 ): Promise<GeneratePersonalizedOnboardingPlanOutput> {
@@ -35,7 +41,7 @@ export async function generatePersonalizedOnboardingPlan(
 const prompt = ai.definePrompt({
   name: 'generatePersonalizedOnboardingPlanPrompt',
   input: {schema: GeneratePersonalizedOnboardingPlanInputSchema},
-  output: {schema: PersonalizedOnboardingPlanSchema},
+  output: {schema: OutputSchema},
   prompt: `You are an expert AI mentor. A trainee has provided a learning goal, their profile, and a general training schedule. Your task is to create a structured, actionable, and personalized learning plan.
 
 **Fresher Profile:**

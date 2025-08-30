@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Save, UserPlus, Calendar as CalendarIcon, Mail, Pencil, Trash2, CheckCircle, LinkIcon as LinkIconLucid, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Link from "next/link";
@@ -20,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { EditOnboardingPlanDialog } from "./edit-onboarding-plan-dialog";
 import { Heatmap } from "./heatmap";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import { Badge } from "./ui/badge";
 
 
 interface ManageTraineeFormProps {
@@ -265,22 +266,45 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Week</TableHead>
-                                    <TableHead>Topic</TableHead>
-                                    <TableHead>Tasks</TableHead>
+                                    <TableHead>Week/Topic</TableHead>
+                                    <TableHead>Task</TableHead>
+                                    <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {trainee.onboardingPlan.map((item, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell className="font-medium">{item.week}</TableCell>
-                                        <TableCell>{item.topic}</TableCell>
-                                        <TableCell>
-                                            <ul className="list-disc pl-4 space-y-1 text-sm">
-                                                {item.tasks.map((task, i) => <li key={i}>{task}</li>)}
-                                            </ul>
-                                        </TableCell>
-                                    </TableRow>
+                                {trainee.onboardingPlan.map((item, weekIndex) => (
+                                    <React.Fragment key={weekIndex}>
+                                        <TableRow className="bg-muted/50">
+                                            <TableCell colSpan={3} className="font-bold">{item.week}: {item.topic}</TableCell>
+                                        </TableRow>
+                                        {item.tasks.map((task, taskIndex) => (
+                                            <TableRow key={`${weekIndex}-${taskIndex}`}>
+                                                <TableCell></TableCell>
+                                                <TableCell>
+                                                    <p>{task.description}</p>
+                                                    {task.type === 'link' && task.submittedLink && (
+                                                        <a href={task.submittedLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
+                                                            <LinkIconLucid className="h-3 w-3" />
+                                                            View Submission
+                                                        </a>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                     {task.status === 'Completed' ? (
+                                                        <Badge variant="default" className="gap-1.5 bg-green-500 text-white hover:bg-green-600">
+                                                        <CheckCircle className="h-3.5 w-3.5" />
+                                                        Completed
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="gap-1.5">
+                                                        <Clock className="h-3.5 w-3.5" />
+                                                        Pending
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </React.Fragment>
                                 ))}
                             </TableBody>
                         </Table>
@@ -303,5 +327,3 @@ export function ManageTraineeForm({ trainee, onTraineeUpdate }: ManageTraineeFor
     </div>
   );
 }
-
-    

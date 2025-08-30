@@ -3,179 +3,144 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Upload, FileText, Loader2, CheckCircle, X, ChevronsUpDown } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, Link as LinkIcon, Loader2, CheckCircle, ChevronsUpDown, BookOpen, Code } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
-import { addSubmission, getAllSubmissions } from '@/services/submission-service';
-import type { Submission } from '@/services/submission-service';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { Progress } from '@/components/ui/progress';
+import { getTraineeByEmail, Trainee, updateTaskStatus } from '@/services/trainee-service';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
+import type { Task } from '@/lib/plan-schema';
 
 export const dynamic = 'force-dynamic';
 
-function FileUploader({ assignmentTitle, trainee, onUploadSuccess }: { assignmentTitle: string, trainee: Trainee, onUploadSuccess: (title: string) => void }) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+function TaskItem({ weekIndex, taskIndex, task, traineeId, onTaskUpdated }: { weekIndex: number, taskIndex: number, task: Task, traineeId: string, onTaskUpdated: () => void }) {
+  const [submittedLink, setSubmittedLink] = useState(task.submittedLink || '');
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
-          variant: 'destructive',
-          title: 'File Too Large',
-          description: 'Please select a file smaller than 10MB.',
-        });
+  const handleMarkAsComplete = async () => {
+    setLoading(true);
+    try {
+      await updateTaskStatus(traineeId, weekIndex, taskIndex, 'Completed');
+      onTaskUpdated();
+      toast({ title: 'Task Completed!', description: `"${task.description}" marked as complete.` });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update task status.' });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSubmitLink = async () => {
+    if (!submittedLink || !submittedLink.startsWith('http')) {
+        toast({ variant: 'destructive', title: 'Invalid Link', description: 'Please enter a valid URL.' });
         return;
+    }
+    setLoading(true);
+    try {
+      await updateTaskStatus(traineeId, weekIndex, taskIndex, 'Completed', submittedLink);
+      onTaskUpdated();
+      toast({ title: 'Link Submitted!', description: `Your submission for "${task.description}" has been saved.` });
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Error', description: 'Failed to submit link.' });
+    } finally {
+        setLoading(false);
+    }
+  }
+  
+  const renderTaskAction = () => {
+      if (task.status === 'Completed') {
+          return (
+              <div className="p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5" />
+                  <p>Completed! {task.submittedLink && <a href={task.submittedLink} target="_blank" className="font-bold underline">View your submission</a>}</p>
+              </div>
+          )
       }
-      setSelectedFile(file);
-      setUploadSuccess(false);
-      setUploadProgress(0);
-    }
-  };
 
-  const handleRemoveFile = () => {
-    setSelectedFile(null);
-    setUploadSuccess(false);
-    setUploadProgress(0);
-    const fileInput = document.getElementById(`dropzone-file-${assignmentTitle}`) as HTMLInputElement;
-    if (fileInput) {
-        fileInput.value = '';
-    }
-  };
-
-  const handleSubmit = () => {
-    if (!selectedFile) {
-      toast({ variant: 'destructive', title: 'No File Selected' });
-      return;
-    }
-    setIsUploading(true);
-    setUploadSuccess(false);
-    setUploadProgress(0);
-
-    const storageRef = ref(storage, `submissions/${trainee.id}/${Date.now()}-${selectedFile.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
-
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-      },
-      (error) => {
-        setIsUploading(false);
-        toast({ variant: 'destructive', title: 'Upload Failed' });
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          try {
-              await addSubmission({
-                  assignmentTitle,
-                  traineeId: trainee.id,
-                  traineeName: trainee.name,
-                  fileName: selectedFile.name,
-                  fileType: selectedFile.type,
-                  fileSize: selectedFile.size,
-                  fileUrl: downloadURL,
-                  submittedAt: new Date(),
-              });
-      
-              setIsUploading(false);
-              setUploadSuccess(true);
-              onUploadSuccess(assignmentTitle);
-              toast({ title: 'Upload Successful!', description: `"${selectedFile.name}" has been submitted.` });
-          } catch (error) {
-              setIsUploading(false);
-              toast({ variant: 'destructive', title: 'Submission Failed' });
-          }
-        });
-      }
-    );
-  };
-
-  return (
-    <div className='space-y-4'>
-        {!selectedFile ? (
-            <label htmlFor={`dropzone-file-${assignmentTitle}`} className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80">
-                <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
-                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                <p className="text-xs text-muted-foreground">ZIP, RAR, or PDF (MAX. 10MB)</p>
-                <input id={`dropzone-file-${assignmentTitle}`} type="file" className="hidden" onChange={handleFileChange} />
-            </label>
-        ) : (
-            <div className="p-4 border rounded-lg bg-muted/50 flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <FileText className="h-6 w-6 text-primary" />
-                        <div>
-                            <p className="font-medium">{selectedFile.name}</p>
-                            <p className="text-sm text-muted-foreground">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
+      switch(task.type) {
+          case 'basic':
+            return (
+                <Button onClick={handleMarkAsComplete} disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin mr-2" /> : <Check className="mr-2" />} Mark as Complete
+                </Button>
+            );
+          case 'link':
+            return (
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-grow">
+                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            value={submittedLink}
+                            onChange={e => setSubmittedLink(e.target.value)}
+                            placeholder="https://github.com/your-repo"
+                            className="pl-10"
+                        />
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleRemoveFile} disabled={isUploading}>
-                        <X className="h-4 w-4" />
+                    <Button onClick={handleSubmitLink} disabled={loading}>
+                        {loading ? <Loader2 className="animate-spin mr-2" /> : <Check className="mr-2" />} Submit Link
                     </Button>
                 </div>
-                {isUploading && (
-                  <div className="space-y-2">
-                    <Progress value={uploadProgress} className="w-full" />
-                    <p className="text-sm text-muted-foreground text-center">Uploading... {Math.round(uploadProgress)}%</p>
-                  </div>
-                )}
-            </div>
-        )}
+            );
+          case 'quiz':
+            return (
+                 <Link href={`/trainee/quiz?id=${task.id}`}>
+                    <Button>
+                        <BookOpen className="mr-2" /> Go to Quiz
+                    </Button>
+                </Link>
+            )
+          case 'challenge':
+            return (
+                 <Link href={`/trainee/challenges/${task.id}`}>
+                    <Button>
+                        <Code className="mr-2" /> Go to Challenge
+                    </Button>
+                </Link>
+            )
+          default:
+            return null;
+      }
+  }
 
-        {uploadSuccess && (
-            <div className="p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 flex items-center gap-3">
-              <CheckCircle className="h-5 w-5" />
-              <p>Successfully submitted. You can re-submit by selecting a new file.</p>
-            </div>
-        )}
-        
-        <Button onClick={handleSubmit} disabled={isUploading || !selectedFile} className="w-full sm:w-auto">
-            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Submit Assignment
-        </Button>
-    </div>
+  return (
+    <AccordionItem value={task.description}>
+      <AccordionTrigger>
+        <div className='flex items-center gap-4'>
+            {task.status === 'Completed' ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+            ) : (
+                <ChevronsUpDown className="h-5 w-5 text-muted-foreground" />
+            )}
+            <span>{task.description}</span>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="p-4 bg-muted/50 rounded-b-md">
+        {renderTaskAction()}
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
 export default function AssignmentsPage() {
   const [trainee, setTrainee] = useState<Trainee | null>(null);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const { user, loading: authLoading } = useAuth();
   
-  const fetchTraineeData = async (email: string) => {
-      const traineeData = await getTraineeByEmail(email);
+  const fetchTraineeData = async () => {
+    if (user?.email) {
+      const traineeData = await getTraineeByEmail(user.email);
       setTrainee(traineeData);
-      const submissionData = await getAllSubmissions();
-      setSubmissions(submissionData);
+    }
   }
 
   useEffect(() => {
     if (!authLoading && user?.email) {
-      fetchTraineeData(user.email);
+      fetchTraineeData();
     }
   }, [user, authLoading]);
   
-  const handleUploadSuccess = (assignmentTitle: string) => {
-    // A simple way to show the new submission without a full refetch
-     setSubmissions(prev => [...prev, { assignmentTitle } as Submission]);
-  }
-
-  const getSubmittedAssignments = () => {
-      if (!trainee) return new Set();
-      return new Set(submissions.filter(s => s.traineeId === trainee.id).map(s => s.assignmentTitle));
-  }
-  const submittedAssignments = getSubmittedAssignments();
-
-
   if (authLoading || !trainee) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -189,13 +154,13 @@ export default function AssignmentsPage() {
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
         <h1 className="text-4xl font-headline font-bold">Your Assignments</h1>
-        <p className="text-muted-foreground">Submit your work based on your personalized onboarding plan.</p>
+        <p className="text-muted-foreground">Complete tasks from your personalized onboarding plan.</p>
       </header>
       
       {trainee.onboardingPlan && trainee.onboardingPlan.length > 0 ? (
         <div className="space-y-6">
-          {trainee.onboardingPlan.map((planItem, index) => (
-            <Card key={index}>
+          {trainee.onboardingPlan.map((planItem, weekIndex) => (
+            <Card key={weekIndex}>
               <CardHeader>
                 <CardTitle>{planItem.week}: {planItem.topic}</CardTitle>
                 <CardDescription>Complete the tasks below to make progress.</CardDescription>
@@ -203,21 +168,14 @@ export default function AssignmentsPage() {
               <CardContent>
                 <Accordion type="single" collapsible className="w-full">
                   {planItem.tasks.map((task, taskIndex) => (
-                    <AccordionItem value={`item-${index}-${taskIndex}`} key={taskIndex}>
-                      <AccordionTrigger>
-                        <div className='flex items-center gap-4'>
-                           {submittedAssignments.has(task) ? (
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <ChevronsUpDown className="h-5 w-5 text-muted-foreground" />
-                          )}
-                           <span>{task}</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="p-4">
-                        <FileUploader assignmentTitle={task} trainee={trainee} onUploadSuccess={handleUploadSuccess} />
-                      </AccordionContent>
-                    </AccordionItem>
+                    <TaskItem 
+                        key={`${weekIndex}-${taskIndex}`} 
+                        weekIndex={weekIndex}
+                        taskIndex={taskIndex}
+                        task={task}
+                        traineeId={trainee.id}
+                        onTaskUpdated={fetchTraineeData}
+                    />
                   ))}
                 </Accordion>
               </CardContent>
@@ -226,7 +184,7 @@ export default function AssignmentsPage() {
         </div>
       ) : (
         <Card className="text-center p-8">
-          <CardContent>
+          <CardContent className="pt-6">
             <p className="mb-4">You don't have a personalized onboarding plan yet.</p>
             <Link href="/trainee/onboarding-plan">
               <Button>Generate Your Plan</Button>
