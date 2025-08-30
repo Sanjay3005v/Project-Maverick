@@ -31,7 +31,7 @@ The application has two main user roles with the following features and navigati
   - **Edit/Add Trainee** (/admin/trainees): A form to add a new trainee or edit the details of an existing one, including their name, email, department, and date of birth. If a trainee has an onboarding plan, it can be viewed and edited here.
   - **Assessment Scores** (/admin/assessment-scores): Displays a table with the final assessment scores for every trainee.
   - **Certification Completion** (/admin/certification-completion): Tracks and displays the certification status (Completed, In Progress, Not Started) for all trainees.
-  - **Assignment Submissions** (/admin/assignment-submissions): An inbox showing all files submitted by trainees. Admins can click on a submission to view details, download the file, and provide a grade and feedback.
+  - **Assignment Status** (/admin/assignment-status): A detailed breakdown of each trainee's onboarding plan, showing the status (Completed/Pending) for every task.
   - **Training Progress** (/admin/training-progress): A visual breakdown and list of trainee progress status (Completed, In Progress, Not Started). It includes a bar chart overview, and admins can click the chart to filter the list below.
   - **View Analysis** (/admin/view-analysis): Provides charts and graphs for deeper insights, including department performance, training participation rates, and assessment pass/fail rates.
   - **Mail** (/admin/mail): An inbox to view mail threads and send new mail to trainees or groups of trainees.
