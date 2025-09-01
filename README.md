@@ -34,6 +34,7 @@ This project is built with a modern, robust, and scalable technology stack:
     - **Coding Challenges:** Sharpen skills with practical coding exercises.
     - **Assignments:** Submit work and track feedback.
     - **Certifications:** View and download earned certificates.
+    - **Video Learning:** Watch relevant YouTube videos embedded directly in the onboarding plan.
 
 ## Getting Started
 
@@ -76,14 +77,28 @@ Follow these instructions to get a copy of the project up and running on your lo
     - Create a collection named `trainees`. Add a few documents with fields like `name` (string), `department` (string), `dob` (timestamp), `progress` (number), and `status` (string).
     - Create a collection named `quizzes`. Add documents with fields like `title` (string), `topic` (string), `isDailyQuiz` (boolean), and `questions` (array of objects).
 
-### Genkit (AI) Configuration
+### Genkit & YouTube (AI & Video) Configuration
 
-1.  In the Google AI Platform Console, enable the **Vertex AI API**.
-2.  Create an API key.
-3.  Add the API key to your `.env.local` file:
-    ```env
-    GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-    ```
+1.  **Google AI (Gemini):**
+    - In the Google AI Platform Console, enable the **Vertex AI API**.
+    - Create an API key.
+    - Add the API key to your `.env.local` file:
+      ```env
+      GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+      ```
+
+2.  **YouTube Data API:**
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    - Select your project.
+    - In the navigation menu, go to **APIs & Services > Library**.
+    - Search for "YouTube Data API v3" and enable it.
+    - Go to **APIs & Services > Credentials**.
+    - Click **Create credentials** and select **API key**.
+    - Copy the generated API key.
+    - Add the key to your `.env.local` file:
+      ```env
+      YOUTUBE_API_KEY="YOUR_YOUTUBE_API_KEY"
+      ```
 
 ### Installation & Running
 

@@ -1,3 +1,4 @@
+
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
@@ -53,3 +54,7 @@ env:
     availability:
     -   BUILD
     -   RUNTIME
+  - variable: YOUTUBE_API_KEY
+    secret: YOUTUBE_API_KEY
+    availability:
+      - RUNTIME

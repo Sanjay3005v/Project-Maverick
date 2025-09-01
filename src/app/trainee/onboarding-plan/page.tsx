@@ -4,15 +4,14 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle, Clock, ArrowRight, BookOpen, Code } from "lucide-react";
+import { Loader2, CheckCircle, Clock, ArrowRight, BookOpen, Code, Youtube } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from '@/hooks/use-auth';
 import { getTraineeByEmail, Trainee } from '@/services/trainee-service';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import type { Task } from '@/lib/plan-schema';
-
-export const dynamic = 'force-dynamic';
+import { searchVideo } from '@/services/youtube-service';
 
 function TaskAction({ task }: { task: Task }) {
     let href = '/trainee/assignments';
@@ -40,6 +39,54 @@ function TaskAction({ task }: { task: Task }) {
             </Button>
         </Link>
     );
+}
+
+function YouTubePlayer({ topic }: { topic: string }) {
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchVideo() {
+      setLoading(true);
+      const id = await searchVideo(`${topic} tutorial for beginners`);
+      setVideoId(id);
+      setLoading(false);
+    }
+    fetchVideo();
+  }, [topic]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center bg-muted/50 rounded-lg h-48 w-full">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <p className="ml-3">Loading Video...</p>
+      </div>
+    );
+  }
+  
+  if (!videoId) {
+     return (
+      <div className="flex items-center justify-center bg-muted/50 rounded-lg h-48 w-full">
+        <Youtube className="h-6 w-6 mr-3 text-red-500" />
+        <p>Could not load video. YouTube API key may be missing or invalid.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="aspect-video">
+      <iframe
+        width="100%"
+        height="100%"
+        src={`https://www.youtube.com/embed/${videoId}`}
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="rounded-lg"
+      ></iframe>
+    </div>
+  );
 }
 
 
@@ -73,18 +120,19 @@ export default function TraineeOnboardingPlanPage() {
     <div className="container mx-auto p-4 md:p-8">
       <header className="mb-8">
         <h1 className="text-4xl font-headline font-bold">My Onboarding Plan</h1>
-        <p className="text-muted-foreground">Your full learning journey. Click on any task to begin.</p>
+        <p className="text-muted-foreground">Your full learning journey with videos and tasks. Click on any item to begin.</p>
       </header>
       
       {trainee.onboardingPlan && trainee.onboardingPlan.length > 0 ? (
-        <div className="space-y-6">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
           {trainee.onboardingPlan.map((planItem, weekIndex) => (
-            <Card key={weekIndex}>
+            <Card key={weekIndex} className="break-inside-avoid">
               <CardHeader>
                 <CardTitle>{planItem.week}: {planItem.topic}</CardTitle>
-                <CardDescription>Expand to see your tasks for this section.</CardDescription>
+                <CardDescription>Video resource and tasks for this section.</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                <YouTubePlayer topic={planItem.topic} />
                 <Accordion type="single" collapsible className="w-full">
                    {planItem.tasks.map((task, taskIndex) => (
                      <AccordionItem value={`task-${taskIndex}`} key={taskIndex}>
