@@ -28,13 +28,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles, Box } from "lucide-react";
+import { Search, Wand2, UserCog, FilterX, BookOpenCheck, LoaderCircle, FileText, Users, UserPlus, Code, Sparkles, Box, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { ReportDialog } from "@/components/report-dialog";
 import { Trainee, getAllTrainees } from "@/services/trainee-service";
 import { GetOnTrackDialog } from "@/components/get-on-track-dialog";
 
 export const dynamic = 'force-dynamic';
+
+type SortableKeys = 'name' | 'email' | 'department' | 'batch' | 'status' | 'progress';
 
 export default function TraineeManagementPage() {
   const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
@@ -43,6 +45,7 @@ export default function TraineeManagementPage() {
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [batchFilter, setBatchFilter] = useState<string>("all");
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
   const fetchTrainees = async () => {
     setLoading(true);
@@ -55,20 +58,36 @@ export default function TraineeManagementPage() {
     fetchTrainees();
   }, []);
 
-  const formatUserId = (id: string) => {
-    const numericPart = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-    const letterPart = (id.replace(/[^a-zA-Z]/g, '').charCodeAt(0) || 0) % 100;
-    const combinedId = (numericPart + letterPart * 100000);
-    return combinedId.toString().padStart(7, '0');
+  const requestSort = (key: SortableKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
-  const uniqueBatches = useMemo(() => {
-    const batches = new Set(allTrainees.map(t => t.batch).filter(Boolean));
-    return ['all', ...Array.from(batches)];
-  }, [allTrainees]);
+  const sortedAndFilteredTrainees = useMemo(() => {
+    let sortableTrainees = [...allTrainees];
+    
+    if (sortConfig !== null) {
+      sortableTrainees.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
 
-  const filteredTrainees = useMemo(() => {
-    return allTrainees
+        if (aValue === undefined || aValue === null) return 1;
+        if (bValue === undefined || bValue === null) return -1;
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return sortableTrainees
       .filter(trainee => 
         trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
@@ -81,7 +100,7 @@ export default function TraineeManagementPage() {
       .filter(trainee => 
         batchFilter === 'all' || trainee.batch === batchFilter
       );
-  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter]);
+  }, [allTrainees, searchTerm, departmentFilter, statusFilter, batchFilter, sortConfig]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -101,7 +120,18 @@ export default function TraineeManagementPage() {
     setDepartmentFilter('all');
     setStatusFilter('all');
     setBatchFilter('all');
+    setSortConfig({ key: 'name', direction: 'ascending' });
   }
+
+  const getSortIcon = (key: SortableKeys) => {
+    if (!sortConfig || sortConfig.key !== key) {
+        return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    if (sortConfig.direction === 'ascending') {
+        return <ArrowUpDown className="ml-2 h-4 w-4" />; // Or an up arrow
+    }
+    return <ArrowUpDown className="ml-2 h-4 w-4" />; // Or a down arrow
+  };
 
   if (loading) {
       return (
@@ -124,7 +154,7 @@ export default function TraineeManagementPage() {
                 <div>
                     <CardTitle>
                     <Users className="mr-2 h-6 w-6" />
-                    All Trainees ({filteredTrainees.length})
+                    All Trainees ({sortedAndFilteredTrainees.length})
                     </CardTitle>
                     <CardDescription>
                         A complete list of all trainees in the system. Search, filter, and manage them from one place.
@@ -196,8 +226,8 @@ export default function TraineeManagementPage() {
                   <SelectValue placeholder="Filter by Batch" />
                 </SelectTrigger>
                 <SelectContent>
-                  {uniqueBatches.map(batch => (
-                    <SelectItem key={batch} value={batch}>
+                  {['all', ...new Set(allTrainees.map(t => t.batch).filter(Boolean))].map(batch => (
+                    <SelectItem key={batch} value={batch!}>
                       {batch === 'all' ? 'All Batches' : batch}
                     </SelectItem>
                   ))}
@@ -214,17 +244,37 @@ export default function TraineeManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => requestSort('name')}>
+                        Name {getSortIcon('name')}
+                      </Button>
+                    </TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Batch</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Progress</TableHead>
+                    <TableHead>
+                       <Button variant="ghost" onClick={() => requestSort('department')}>
+                        Department {getSortIcon('department')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                       <Button variant="ghost" onClick={() => requestSort('batch')}>
+                        Batch {getSortIcon('batch')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => requestSort('status')}>
+                        Status {getSortIcon('status')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                       <Button variant="ghost" onClick={() => requestSort('progress')}>
+                        Progress {getSortIcon('progress')}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTrainees.map((fresher) => (
+                  {sortedAndFilteredTrainees.map((fresher) => (
                     <TableRow key={fresher.id}>
                       <TableCell className="font-medium">{fresher.name}</TableCell>
                       <TableCell>{fresher.email}</TableCell>
