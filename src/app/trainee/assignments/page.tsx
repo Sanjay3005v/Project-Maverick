@@ -185,10 +185,8 @@ export default function AssignmentsPage() {
       ) : (
         <Card className="text-center p-8">
           <CardContent className="pt-6">
-            <p className="mb-4">You don't have a personalized onboarding plan yet.</p>
-            <Link href="/trainee/onboarding-plan">
-              <Button>Generate Your Plan</Button>
-            </Link>
+            <p className="text-muted-foreground">You don't have any assignments yet.</p>
+            <p className="text-sm text-muted-foreground mt-2">Your assigned tasks will appear here once your administrator creates an onboarding plan for you.</p>
           </CardContent>
         </Card>
       )}
