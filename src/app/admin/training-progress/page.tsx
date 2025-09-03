@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock, ListChecks, Circle, BarChart3, FilterX } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, ListChecks, Circle, BarChart3, FilterX, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { Input } from '@/components/ui/input';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,7 @@ export default function TrainingProgressPage() {
   const [trainees, setTrainees] = useState<(Trainee & { trainingStatus: TrainingStatus })[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<TrainingStatus | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const tableRef = useRef<HTMLDivElement>(null);
 
 
@@ -91,9 +93,10 @@ export default function TrainingProgressPage() {
   const clearFilter = () => setFilter(null);
 
   const filteredTrainees = useMemo(() => {
-    if (!filter) return trainees;
-    return trainees.filter(trainee => trainee.trainingStatus === filter);
-  }, [trainees, filter]);
+    return trainees
+      .filter(t => filter === null || t.trainingStatus === filter)
+      .filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [trainees, filter, searchTerm]);
 
 
   if (loading) {
@@ -141,21 +144,34 @@ export default function TrainingProgressPage() {
       <div ref={tableRef}>
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>
-                <ListChecks className="mr-2 h-6 w-6" />
-                {filter ? `${filter} Trainees` : 'All Trainees Status'}
-              </CardTitle>
-              {filter && (
-                <Button variant="ghost" onClick={clearFilter}>
-                  <FilterX className="mr-2 h-4 w-4" />
-                  Clear Filter
-                </Button>
-              )}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle>
+                  <ListChecks className="mr-2 h-6 w-6" />
+                  {filter ? `${filter} Trainees` : 'All Trainees Status'} ({filteredTrainees.length})
+                </CardTitle>
+                <CardDescription>
+                  This list shows whether each trainee has completed their assigned training modules. Note: Status is currently dummy data.
+                </CardDescription>
+              </div>
+               <div className="flex items-center gap-2 flex-wrap">
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by name..." 
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  {filter && (
+                    <Button variant="ghost" onClick={clearFilter}>
+                      <FilterX className="mr-2 h-4 w-4" />
+                      Clear Filter
+                    </Button>
+                  )}
+               </div>
             </div>
-            <CardDescription>
-              This list shows whether each trainee has completed their assigned training modules. Note: Status is currently dummy data.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="border rounded-lg">
@@ -168,6 +184,11 @@ export default function TrainingProgressPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                   {filteredTrainees.length === 0 && (
+                     <TableRow>
+                          <TableCell colSpan={3} className="text-center h-24">No trainees found.</TableCell>
+                      </TableRow>
+                  )}
                   {filteredTrainees.map((trainee) => (
                     <TableRow key={trainee.id}>
                       <TableCell className="font-medium">{trainee.name}</TableCell>

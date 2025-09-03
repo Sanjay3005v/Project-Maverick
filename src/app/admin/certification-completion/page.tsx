@@ -1,14 +1,16 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock, Award, Circle } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, Award, Circle, Search, FilterX } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +29,8 @@ const generateConsistentCompletion = (id: string): CompletionStatus => {
 export default function CertificationCompletionPage() {
   const [trainees, setTrainees] = useState<(Trainee & { certificationStatus: CompletionStatus })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     const fetchAndProcessTrainees = async () => {
@@ -42,6 +46,22 @@ export default function CertificationCompletionPage() {
 
     fetchAndProcessTrainees();
   }, []);
+
+  const filteredTrainees = useMemo(() => {
+    return trainees
+      .filter(trainee => 
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter(trainee => 
+        statusFilter === 'all' || trainee.certificationStatus === statusFilter
+      );
+  }, [trainees, searchTerm, statusFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+  }
+
 
   if (loading) {
     return (
@@ -60,13 +80,44 @@ export default function CertificationCompletionPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>
-            <Award className="mr-2 h-6 w-6" />
-            All Trainees Status
-          </CardTitle>
-          <CardDescription>
-            This list shows whether each trainee has completed their certification. Note: Status is currently dummy data.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                  <CardTitle>
+                    <Award className="mr-2 h-6 w-6" />
+                    All Trainees Status ({filteredTrainees.length})
+                  </CardTitle>
+                  <CardDescription>
+                    This list shows whether each trainee has completed their certification. Note: Status is currently dummy data.
+                  </CardDescription>
+              </div>
+               <div className="flex items-center gap-2 flex-wrap">
+                 <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by name..." 
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                 <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Not Started">Not Started</SelectItem>
+                  </SelectContent>
+                </Select>
+                {(searchTerm || statusFilter !== 'all') && (
+                  <Button variant="ghost" onClick={clearFilters}>
+                    <FilterX className="mr-2 h-4 w-4" /> Clear
+                  </Button>
+                )}
+              </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
@@ -79,7 +130,12 @@ export default function CertificationCompletionPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {trainees.map((trainee) => (
+                 {filteredTrainees.length === 0 && (
+                   <TableRow>
+                        <TableCell colSpan={3} className="text-center h-24">No trainees found.</TableCell>
+                    </TableRow>
+                )}
+                {filteredTrainees.map((trainee) => (
                   <TableRow key={trainee.id}>
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.department}</TableCell>

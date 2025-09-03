@@ -1,13 +1,15 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { LoaderCircle, ClipboardCheck } from 'lucide-react';
+import { LoaderCircle, ClipboardCheck, Search, FilterX } from 'lucide-react';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +19,8 @@ const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // Score 
 export default function AssessmentScoresPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
 
   useEffect(() => {
     const fetchAndProcessTrainees = async () => {
@@ -32,6 +36,21 @@ export default function AssessmentScoresPage() {
 
     fetchAndProcessTrainees();
   }, []);
+
+  const filteredTrainees = useMemo(() => {
+    return trainees
+      .filter(trainee => 
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter(trainee => 
+        departmentFilter === 'all' || trainee.department === departmentFilter
+      );
+  }, [trainees, searchTerm, departmentFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDepartmentFilter('all');
+  }
 
   if (loading) {
     return (
@@ -50,13 +69,44 @@ export default function AssessmentScoresPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>
-            <ClipboardCheck className="mr-2 h-6 w-6" />
-            All Trainees
-          </CardTitle>
-          <CardDescription>
-            This list shows the assessment scores for each trainee. Note: Scores are currently dummy data.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle>
+                  <ClipboardCheck className="mr-2 h-6 w-6" />
+                  All Trainees ({filteredTrainees.length})
+                </CardTitle>
+                <CardDescription>
+                  This list shows the assessment scores for each trainee. Note: Scores are currently dummy data.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                 <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by name..." 
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                 <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Departments</SelectItem>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Product">Product</SelectItem>
+                    <SelectItem value="Design">Design</SelectItem>
+                  </SelectContent>
+                </Select>
+                {(searchTerm || departmentFilter !== 'all') && (
+                  <Button variant="ghost" onClick={clearFilters}>
+                    <FilterX className="mr-2 h-4 w-4" /> Clear
+                  </Button>
+                )}
+              </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
@@ -69,7 +119,12 @@ export default function AssessmentScoresPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {trainees.map((trainee) => (
+                {filteredTrainees.length === 0 && (
+                   <TableRow>
+                        <TableCell colSpan={3} className="text-center h-24">No trainees found.</TableCell>
+                    </TableRow>
+                )}
+                {filteredTrainees.map((trainee) => (
                   <TableRow key={trainee.id}>
                     <TableCell className="font-medium">{trainee.name}</TableCell>
                     <TableCell>{trainee.department}</TableCell>

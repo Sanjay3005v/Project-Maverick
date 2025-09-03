@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trainee, getAllTrainees } from '@/services/trainee-service';
-import { Loader2, CheckCircle, Clock, Link as LinkIcon, Search, ClipboardList } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, Link as LinkIcon, Search, ClipboardList, FilterX } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +20,7 @@ export default function AssignmentStatusPage() {
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
 
   useEffect(() => {
     const fetchTrainees = async () => {
@@ -31,11 +34,20 @@ export default function AssignmentStatusPage() {
   }, []);
 
   const filteredTrainees = useMemo(() => {
-    return trainees.filter(trainee => 
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      trainee.onboardingPlan && trainee.onboardingPlan.length > 0
-    );
-  }, [trainees, searchTerm]);
+    return trainees
+      .filter(trainee => 
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        trainee.onboardingPlan && trainee.onboardingPlan.length > 0
+      )
+      .filter(trainee => 
+        departmentFilter === 'all' || trainee.department === departmentFilter
+      );
+  }, [trainees, searchTerm, departmentFilter]);
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDepartmentFilter('all');
+  }
 
   if (loading) {
     return (
@@ -58,20 +70,38 @@ export default function AssignmentStatusPage() {
                 <div>
                     <CardTitle>
                         <ClipboardList className="mr-2 h-6 w-6" />
-                        All Trainee Task Status
+                        All Trainee Task Status ({filteredTrainees.length})
                     </CardTitle>
                     <CardDescription>
                         This list shows the status of each task in every trainee's onboarding plan.
                     </CardDescription>
                 </div>
-                 <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search by name..." 
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                 <div className="flex items-center gap-2 flex-wrap">
+                    <div className="relative w-full sm:w-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by name..." 
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                     <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filter by Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Departments</SelectItem>
+                            <SelectItem value="Engineering">Engineering</SelectItem>
+                            <SelectItem value="Product">Product</SelectItem>
+                            <SelectItem value="Design">Design</SelectItem>
+                        </SelectContent>
+                    </Select>
+                     {(searchTerm || departmentFilter !== 'all') && (
+                        <Button variant="ghost" onClick={clearFilters}>
+                            <FilterX className="mr-2 h-4 w-4" /> Clear
+                        </Button>
+                    )}
                 </div>
             </div>
         </CardHeader>
