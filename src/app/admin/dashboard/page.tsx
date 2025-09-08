@@ -16,17 +16,8 @@ import { useAuth } from "@/hooks/use-auth";
 
 export const dynamic = 'force-dynamic';
 
-type TraineeWithCompletion = Trainee & { certificationCompleted?: boolean };
-
-// Function to generate a *consistent* random completion status for demonstration
-const generateConsistentCompletion = (id: string) => {
-  // Use the trainee's ID to create a stable "random" value
-  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  return (numericId % 2) === 0; // Even IDs are completed, odd are in progress
-};
-
 export default function AdminDashboard() {
-  const [allFreshers, setAllFreshers] = useState<TraineeWithCompletion[]>([]);
+  const [allFreshers, setAllFreshers] = useState<Trainee[]>([]);
   const { user, loading: authLoading } = useAuth();
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -36,11 +27,7 @@ export default function AdminDashboard() {
       const fetchTrainees = async () => {
         setDataLoading(true);
         const trainees = await getAllTrainees();
-        const traineesWithCompletion = trainees.map(t => ({
-          ...t,
-          certificationCompleted: generateConsistentCompletion(t.id),
-        }));
-        setAllFreshers(traineesWithCompletion);
+        setAllFreshers(trainees);
         setDataLoading(false);
       };
       fetchTrainees();
@@ -50,7 +37,7 @@ export default function AdminDashboard() {
   }, [user, authLoading]);
 
   const totalTrainees = allFreshers.length;
-  const completedCount = allFreshers.filter(f => f.certificationCompleted).length;
+  const completedCount = allFreshers.filter(t => t.progress === 100).length;
   const onboardingCompletionRate = totalTrainees > 0 ? Math.round((completedCount / totalTrainees) * 100) : 0;
   
   const averageProgress = allFreshers.length > 0
