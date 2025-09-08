@@ -29,7 +29,8 @@ export interface Trainee {
     completedChallengeIds?: string[];
 }
 
-const getStatusForProgress = (progress: number) => {
+const getStatusForProgress = (progress: number, planExists: boolean) => {
+    if (!planExists) return 'Not Started';
     if (progress >= 70) return 'On Track';
     if (progress >= 40) return 'At Risk';
     return 'Need Attention';
@@ -57,11 +58,12 @@ export async function getAllTrainees(): Promise<Trainee[]> {
     const traineeList = traineeSnapshot.docs.map(doc => {
         const data = doc.data();
         const progress = calculateProgress(data.onboardingPlan);
+        const planExists = data.onboardingPlan && data.onboardingPlan.length > 0;
         return {
             id: doc.id,
             ...data,
             progress: progress,
-            status: getStatusForProgress(progress),
+            status: getStatusForProgress(progress, planExists),
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
     }).filter(trainee => !trainee.email.includes('admin'));
@@ -75,11 +77,12 @@ export async function getTraineeById(id: string): Promise<Trainee | null> {
     }
     const data = traineeDoc.data();
      const progress = calculateProgress(data.onboardingPlan);
+     const planExists = data.onboardingPlan && data.onboardingPlan.length > 0;
     return {
         id: traineeDoc.id,
         ...data,
         progress: progress,
-        status: getStatusForProgress(progress),
+        status: getStatusForProgress(progress, planExists),
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
     } as Trainee;
 }
@@ -106,12 +109,13 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
      const progress = calculateProgress(data.onboardingPlan);
+     const planExists = data.onboardingPlan && data.onboardingPlan.length > 0;
     
     return {
         id: traineeDoc.id,
         ...data,
         progress: progress,
-        status: getStatusForProgress(progress),
+        status: getStatusForProgress(progress, planExists),
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         quizCompletions: data.quizCompletions || [],
         assignedQuizIds: data.assignedQuizIds || [],
@@ -130,7 +134,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
 
     const docRef = await addDoc(traineesCollection, {
         ...traineeData,
-        status: getStatusForProgress(traineeData.progress),
+        status: getStatusForProgress(traineeData.progress, false),
         dob: traineeData.dob ? new Date(traineeData.dob as string) : new Date(),
         assessmentScore: traineeData.assessmentScore || null,
         quizCompletions: [],
