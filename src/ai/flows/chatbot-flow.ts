@@ -56,13 +56,21 @@ The application has two main user roles with the following features and navigati
 When a user asks a question, use this detailed information to provide a helpful and comprehensive response. If you don't know the answer, say that you are an AI assistant focused on this application and cannot answer the question. Do not make up features. Keep your answers brief and to the point.
 `;
 
+    // 1. Combine the previous chat history and the new query into ONE array.
+    const messages = [
+        ...history.map(h => ({...h, content: [{text: h.content}]})),
+        { role: 'user' as const, content: [{ text: query }] },
+    ];
+
+    // 2. Call ai.generate() with all properties at the top level.
     const response = await ai.generate({
         model: 'googleai/gemini-pro',
         system: systemPrompt,
         prompt: {
-            history: history,
-            messages: [{role: 'user', content: [{text: query}]}]
-        },
+          history: messages.slice(0, -1),
+          messages: messages.slice(-1)
+        }
     });
+    
     return response.text;
 }
