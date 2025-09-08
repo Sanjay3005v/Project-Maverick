@@ -58,8 +58,8 @@ When a user asks a question, use this detailed information to provide a helpful 
 
     const response = await ai.generate({
         model: 'googleai/gemini-pro',
+        system: systemPrompt,
         prompt: {
-            system: systemPrompt,
             history: history,
             messages: [{role: 'user', content: [{text: query}]}]
         },
