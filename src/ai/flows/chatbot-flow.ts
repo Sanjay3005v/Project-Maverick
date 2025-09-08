@@ -29,7 +29,7 @@ The application has two main user roles with the following features and navigati
 - **Admin Dashboard** (at /admin/dashboard): The central hub for administrators. It provides an overview of key metrics and links to all management pages.
   - **Trainee Management** (/admin/trainee-management): A comprehensive list of all trainees. Admins can search, filter by department or status, add new trainees, or click to edit existing ones. They can also generate AI-powered performance reports for the entire cohort and access the AI Onboarding Planner, quiz management, and challenge management from here.
   - **Edit/Add Trainee** (/admin/trainees): A form to add a new trainee or edit the details of an existing one, including their name, email, department, and date of birth. If a trainee has an onboarding plan, it can be viewed and edited here.
-  - **Assessment Scores** (/admin/assessment-scores): Displays a table with the final assessment scores for every trainee.
+  - **Assessment Scores** (/admin/assessment-scores): Displays a historical table with all assessment scores for every trainee.
   - **Certification Completion** (/admin/certification-completion): Tracks and displays the certification status (Completed, In Progress, Not Started) for all trainees.
   - **Assignment Status** (/admin/assignment-status): A detailed breakdown of each trainee's onboarding plan, showing the status (Completed/Pending) for every task.
   - **Training Progress** (/admin/training-progress): A visual breakdown and list of trainee progress status (Completed, In Progress, Not Started). It includes a bar chart overview, and admins can click the chart to filter the list below.

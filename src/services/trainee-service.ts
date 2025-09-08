@@ -11,6 +11,12 @@ export interface QuizCompletion {
     score: number; // e.g., percentage score
 }
 
+export interface AssessmentRecord {
+    date: string; // ISO string for the date
+    score: number;
+}
+
+
 export interface Trainee {
     id: string;
     name: string;
@@ -20,7 +26,7 @@ export interface Trainee {
     status: string;
     dob: string | Date;
     batch?: string;
-    assessmentScore?: number;
+    assessmentHistory?: AssessmentRecord[];
     onboardingPlan?: OnboardingPlanItem[];
     quizCompletions?: QuizCompletion[];
     avatarUrl?: string;
@@ -136,7 +142,7 @@ export async function addTrainee(traineeData: Omit<Trainee, 'id'>): Promise<stri
         ...traineeData,
         status: getStatusForProgress(traineeData.progress, false),
         dob: traineeData.dob ? new Date(traineeData.dob as string) : new Date(),
-        assessmentScore: traineeData.assessmentScore || null,
+        assessmentHistory: [],
         quizCompletions: [],
         assignedQuizIds: [],
         assignedChallengeIds: [],

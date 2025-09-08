@@ -34,12 +34,7 @@ export default function ViewAnalysisPage() {
     const fetchAndProcessTrainees = async () => {
       setLoading(true);
       const fetchedTrainees = await getAllTrainees();
-       // Assign random scores for visualization as no real assessment feature exists
-      const traineesWithData = fetchedTrainees.map(t => ({
-        ...t,
-        assessmentScore: t.assessmentScore || Math.floor(Math.random() * 41) + 60,
-      }));
-      setTrainees(traineesWithData);
+      setTrainees(fetchedTrainees);
       setLoading(false);
     };
 
@@ -55,8 +50,10 @@ export default function ViewAnalysisPage() {
             departmentProgress: [],
         }
     }
-    const passCount = trainees.filter(t => (t.assessmentScore || 0) >= 70).length;
-    const failCount = trainees.length - passCount;
+    
+    const allScores = trainees.flatMap(t => t.assessmentHistory || []);
+    const passCount = allScores.filter(s => s.score >= 70).length;
+    const failCount = allScores.length - passCount;
     
     const completedTraining = trainees.filter(t => t.progress === 100).length;
 
@@ -150,19 +147,25 @@ export default function ViewAnalysisPage() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Assessment Pass/Fail Rate</CardTitle>
-            <CardDescription>Based on a 70% passing score for the final assessment (dummy data).</CardDescription>
+            <CardDescription>Based on a 70% passing score for all submitted assessments.</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <ChartContainer config={assessmentChartConfig} className="mx-auto aspect-square max-h-[300px]">
-                <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} />
-                    <Pie data={analysisData.assessmentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                       {analysisData.assessmentData.map((entry) => (
-                          <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                        ))}
-                    </Pie>
-                </PieChart>
-            </ChartContainer>
+            {analysisData.assessmentData.some(d => d.value > 0) ? (
+                <ChartContainer config={assessmentChartConfig} className="mx-auto aspect-square max-h-[300px]">
+                    <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} />
+                        <Pie data={analysisData.assessmentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                           {analysisData.assessmentData.map((entry) => (
+                              <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
+            ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                    No assessment scores recorded yet.
+                </div>
+            )}
           </CardContent>
         </Card>
         
