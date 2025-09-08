@@ -13,12 +13,6 @@ import type { ChartConfig } from '@/components/ui/chart';
 
 export const dynamic = 'force-dynamic';
 
-const generateRandomScore = () => Math.floor(Math.random() * 41) + 60; // 60-100
-const generateConsistentCompletion = (id: string) => {
-  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  return (numericId % 3) === 0;
-};
-
 const assessmentChartConfig = {
   passed: { label: 'Passed', color: 'hsl(var(--chart-1))' },
   failed: { label: 'Failed', color: 'hsl(var(--chart-2))' },
@@ -40,12 +34,11 @@ export default function ViewAnalysisPage() {
     const fetchAndProcessTrainees = async () => {
       setLoading(true);
       const fetchedTrainees = await getAllTrainees();
+       // Assign random scores for visualization as no real assessment feature exists
       const traineesWithData = fetchedTrainees.map(t => ({
         ...t,
-        assessmentScore: t.assessmentScore || generateRandomScore(),
-        trainingCompleted: generateConsistentCompletion(t.id),
+        assessmentScore: t.assessmentScore || Math.floor(Math.random() * 41) + 60,
       }));
-      // @ts-ignore
       setTrainees(traineesWithData);
       setLoading(false);
     };
@@ -65,7 +58,7 @@ export default function ViewAnalysisPage() {
     const passCount = trainees.filter(t => (t.assessmentScore || 0) >= 70).length;
     const failCount = trainees.length - passCount;
     
-    const completedTraining = trainees.filter(t => (t as any).trainingCompleted).length;
+    const completedTraining = trainees.filter(t => t.progress === 100).length;
 
     const departmentData: { [key: string]: { totalProgress: number; count: number } } = {
         Engineering: { totalProgress: 0, count: 0 },
@@ -93,7 +86,7 @@ export default function ViewAnalysisPage() {
         { name: 'Failed', value: failCount, fill: 'hsl(var(--chart-2))' },
       ],
       completedTraining,
-      participationRate: Math.round((completedTraining / trainees.length) * 100),
+      participationRate: trainees.length > 0 ? Math.round((completedTraining / trainees.length) * 100) : 0,
       departmentProgress,
     };
   }, [trainees]);
@@ -157,7 +150,7 @@ export default function ViewAnalysisPage() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Assessment Pass/Fail Rate</CardTitle>
-            <CardDescription>Based on a 70% passing score for the final assessment.</CardDescription>
+            <CardDescription>Based on a 70% passing score for the final assessment (dummy data).</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
             <ChartContainer config={assessmentChartConfig} className="mx-auto aspect-square max-h-[300px]">

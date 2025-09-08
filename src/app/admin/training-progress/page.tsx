@@ -17,12 +17,9 @@ export const dynamic = 'force-dynamic';
 
 type TrainingStatus = 'Completed' | 'In Progress' | 'Not Started';
 
-// Function to generate a *consistent* random completion status for demonstration
-const generateConsistentCompletion = (id: string): TrainingStatus => {
-  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  const statusIndex = numericId % 3;
-  if (statusIndex === 0) return 'Completed';
-  if (statusIndex === 1) return 'In Progress';
+const getTrainingStatus = (progress: number): TrainingStatus => {
+  if (progress === 100) return 'Completed';
+  if (progress > 0) return 'In Progress';
   return 'Not Started';
 };
 
@@ -40,7 +37,7 @@ export default function TrainingProgressPage() {
       const fetchedTrainees = await getAllTrainees();
       const traineesWithCompletion = fetchedTrainees.map(t => ({
         ...t,
-        trainingStatus: generateConsistentCompletion(t.id),
+        trainingStatus: getTrainingStatus(t.progress),
       }));
       setTrainees(traineesWithCompletion);
       setLoading(false);
@@ -151,7 +148,7 @@ export default function TrainingProgressPage() {
                   {filter ? `${filter} Trainees` : 'All Trainees Status'} ({filteredTrainees.length})
                 </CardTitle>
                 <CardDescription>
-                  This list shows whether each trainee has completed their assigned training modules. Note: Status is currently dummy data.
+                  This list shows whether each trainee has completed their assigned training modules.
                 </CardDescription>
               </div>
                <div className="flex items-center gap-2 flex-wrap">

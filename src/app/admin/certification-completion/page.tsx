@@ -16,15 +16,11 @@ export const dynamic = 'force-dynamic';
 
 type CompletionStatus = 'Completed' | 'In Progress' | 'Not Started';
 
-// Function to generate a *consistent* random completion status for demonstration
-const generateConsistentCompletion = (id: string): CompletionStatus => {
-  // Use the trainee's ID to create a stable "random" value
-  const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 5) || "0", 10);
-  const statusIndex = numericId % 3;
-  if (statusIndex === 0) return 'Completed';
-  if (statusIndex === 1) return 'In Progress';
+const getCertificationStatus = (progress: number): CompletionStatus => {
+  if (progress === 100) return 'Completed';
+  if (progress > 0) return 'In Progress';
   return 'Not Started';
-};
+}
 
 export default function CertificationCompletionPage() {
   const [trainees, setTrainees] = useState<(Trainee & { certificationStatus: CompletionStatus })[]>([]);
@@ -38,7 +34,7 @@ export default function CertificationCompletionPage() {
       const fetchedTrainees = await getAllTrainees();
       const traineesWithCompletion = fetchedTrainees.map(t => ({
         ...t,
-        certificationStatus: generateConsistentCompletion(t.id),
+        certificationStatus: getCertificationStatus(t.progress),
       }));
       setTrainees(traineesWithCompletion);
       setLoading(false);
@@ -87,7 +83,7 @@ export default function CertificationCompletionPage() {
                     All Trainees Status ({filteredTrainees.length})
                   </CardTitle>
                   <CardDescription>
-                    This list shows whether each trainee has completed their certification. Note: Status is currently dummy data.
+                    This list shows whether each trainee has completed their certification.
                   </CardDescription>
               </div>
                <div className="flex items-center gap-2 flex-wrap">

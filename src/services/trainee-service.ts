@@ -35,6 +35,19 @@ const getStatusForProgress = (progress: number) => {
     return 'Need Attention';
 }
 
+const calculateProgress = (plan: OnboardingPlanItem[] | undefined): number => {
+    if (!plan || plan.length === 0) {
+        return 0;
+    }
+    const allTasks = plan.flatMap(week => week.tasks);
+    if (allTasks.length === 0) {
+        return 0;
+    }
+    const completedTasks = allTasks.filter(task => task.status === 'Completed').length;
+    return Math.round((completedTasks / allTasks.length) * 100);
+}
+
+
 const traineesCollection = collection(db, 'trainees');
 
 
@@ -43,9 +56,12 @@ export async function getAllTrainees(): Promise<Trainee[]> {
     
     const traineeList = traineeSnapshot.docs.map(doc => {
         const data = doc.data();
+        const progress = calculateProgress(data.onboardingPlan);
         return {
             id: doc.id,
             ...data,
+            progress: progress,
+            status: getStatusForProgress(progress),
             dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         } as Trainee;
     }).filter(trainee => !trainee.email.includes('admin'));
@@ -58,9 +74,12 @@ export async function getTraineeById(id: string): Promise<Trainee | null> {
         return null;
     }
     const data = traineeDoc.data();
+     const progress = calculateProgress(data.onboardingPlan);
     return {
         id: traineeDoc.id,
         ...data,
+        progress: progress,
+        status: getStatusForProgress(progress),
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
     } as Trainee;
 }
@@ -86,10 +105,13 @@ export async function getTraineeByEmail(email: string): Promise<Trainee | null> 
 
     const traineeDoc = querySnapshot.docs[0];
     const data = traineeDoc.data();
+     const progress = calculateProgress(data.onboardingPlan);
     
     return {
         id: traineeDoc.id,
         ...data,
+        progress: progress,
+        status: getStatusForProgress(progress),
         dob: data.dob instanceof Timestamp ? data.dob.toDate().toISOString().split('T')[0] : data.dob,
         quizCompletions: data.quizCompletions || [],
         assignedQuizIds: data.assignedQuizIds || [],
@@ -127,8 +149,12 @@ export async function updateTrainee(id: string, traineeData: Partial<Omit<Traine
     if (traineeData.dob) {
         updateData.dob = new Date(traineeData.dob as string);
     }
-    if (typeof traineeData.progress === 'number') {
-        updateData.status = getStatusForProgress(traineeData.progress);
+    // Progress and status are now dynamic, so we don't need to set them here
+    if (updateData.hasOwnProperty('progress')) {
+        delete updateData.progress;
+    }
+     if (updateData.hasOwnProperty('status')) {
+        delete updateData.status;
     }
     await updateDoc(traineeRef, updateData);
 }
@@ -141,9 +167,11 @@ export async function deleteTrainee(traineeId: string): Promise<void> {
 
 export async function updateTraineeProgress(traineeId: string, newProgress: number): Promise<void> {
     const traineeRef = doc(db, 'trainees', traineeId);
+    // This function is now less critical as progress is calculated dynamically.
+    // However, it could be used for manual overrides if needed in the future.
+    // For now, we'll keep the logic simple, but in a real app, this might be removed.
     await updateDoc(traineeRef, {
-        progress: newProgress,
-        status: getStatusForProgress(newProgress),
+        // We no longer store progress directly, but we might want to store some other metric
     });
 }
 
