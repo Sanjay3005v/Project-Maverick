@@ -3,7 +3,8 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker, DropdownProps } from "react-day-picker"
+import { DayPicker, DropdownProps, useDayPicker } from "react-day-picker"
+import { format, setMonth } from 'date-fns';
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -122,9 +123,5 @@ function Calendar({
 }
 Calendar.displayName = "Calendar";
 
-import { useDayPicker, DateFormatter } from "react-day-picker";
-import { format, setMonth } from "date-fns";
-
 
 export { Calendar }
-
