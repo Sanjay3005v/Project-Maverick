@@ -57,10 +57,12 @@ When a user asks a question, use this detailed information to provide a helpful 
 `;
 
     const response = await ai.generate({
-        model: 'googleai/gemini-2.0-flash',
-        prompt: query,
-        system: systemPrompt,
-        history: history.map(m => ({...m, content: [{text: m.content}]})),
+        model: 'googleai/gemini-pro',
+        prompt: {
+            system: systemPrompt,
+            history: history,
+            messages: [{role: 'user', content: [{text: query}]}]
+        },
     });
     return response.text;
 }
