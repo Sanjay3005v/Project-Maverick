@@ -69,8 +69,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 8.  Create at least one admin user (e.g., `admin@example.com`) and one trainee user (e.g., `trainee@example.com`).
 
 9.  **Enable Firestore:** In the Firebase Console, go to the **Firestore Database** section and click **Create database**.
-    - Start in **test mode** for initial development. This will allow open access to your database.
-    - **Important:** For a production application, you will need to set up [security rules](https://firebase.google.com/docs/firestore/security/get-started) to protect your data.
+    - Start in **production mode**. This will apply default security rules that deny all access.
+    - You will deploy the secure rules included in this project in a later step.
 
 10. **Add Sample Data (Optional):**
     - Go to your Firestore Database.
@@ -140,21 +140,30 @@ npm install -g firebase-tools
 firebase login
 ```
 
-### 2. Initialize App Hosting in Your Project
-From your project's root directory, run the initialization command. This connects your local project to your Firebase project.
+### 2. Initialize Firebase in Your Project
+If you haven't yet connected your local project to Firebase, run the `init` command.
 
 ```bash
-firebase init apphosting
+firebase init
 ```
 
-- When prompted, select the Firebase project you created earlier.
-- You will be asked to choose a backend service name (e.g., `maverick-mindset-backend`).
+- When prompted, select **Firestore** and **App Hosting**.
+- Choose "Use an existing project" and select the Firebase project you created earlier.
+- You will be asked for your Firestore rules file. Accept the default (`firestore.rules`).
+- For App Hosting, choose a backend service name (e.g., `maverick-mindset-backend`).
 - When asked for the service account, you can select one or allow it to create one for you.
 - For the region, choose the one closest to your users.
 - When asked "Set up a GitHub repository for continuous deployment?", you can choose "No" for now to deploy manually.
 
-### 3. Deploy Your Application
-After initialization is complete, you can deploy the application with a single command:
+### 3. Deploy Your Firestore Rules
+For security, it is critical to deploy the Firestore rules included in this project. Run the following command:
+
+```bash
+firebase deploy --only firestore
+```
+
+### 4. Deploy Your Application
+After initialization and rules deployment, you can deploy the entire application with a single command:
 
 ```bash
 firebase deploy

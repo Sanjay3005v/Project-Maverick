@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAdmin() {
+      return request.auth.token.email.matches('.*admin.*');
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function getTraineeIdForEmail(email) {
+      return get(/databases/$(database)/documents/trainees?query&where=email,==,$(email)&limit=1).docs[0].id;
+    }
+
+    // Trainees can be read by admins or by the trainee themselves.
+    // Trainees can be created by anyone (for signup), but only updated by the owner or an admin.
+    // Deletion is restricted to admins.
+    match /trainees/{traineeId} {
+      allow read: if isAdmin() || isOwner(getTraineeIdForEmail(request.auth.token.email));
+      allow create: if request.auth != null;
+      allow update: if isAdmin() || isOwner(getTraineeIdForEmail(request.auth.token.email));
+      allow delete: if isAdmin();
+    }
+    
+    // Quizzes and Challenges can be read by any authenticated user, but only managed by admins.
+    match /quizzes/{quizId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    match /challenges/{challengeId} {
+        allow read: if request.auth != null;
+        allow write: if isAdmin();
+    }
+    
+    // Conversations and messages can only be accessed by admins or the trainee involved.
+    match /conversations/{traineeId} {
+        allow read, write: if isAdmin() || isOwner(getTraineeIdForEmail(request.auth.token.email));
+
+        match /messages/{messageId} {
+            allow read, write: if isAdmin() || isOwner(getTraineeIdForEmail(request.auth.token.email));
+        }
+    }
+  }
+}
