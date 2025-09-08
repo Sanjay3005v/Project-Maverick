@@ -7,7 +7,7 @@ const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 export async function searchVideo(query: string): Promise<string | null> {
   if (!YOUTUBE_API_KEY) {
     console.error('YOUTUBE_API_KEY environment variable is not set.');
-    return null;
+    throw new Error('YOUTUBE_API_KEY environment variable is not set.');
   }
 
   const url = `${YOUTUBE_API_URL}?part=snippet&q=${encodeURIComponent(
@@ -19,7 +19,7 @@ export async function searchVideo(query: string): Promise<string | null> {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('YouTube API Error:', errorData.error.message);
-      return null;
+      throw new Error(`YouTube API Error: ${errorData.error.message}`);
     }
 
     const data = await response.json();
@@ -27,8 +27,8 @@ export async function searchVideo(query: string): Promise<string | null> {
       return data.items[0].id.videoId;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch from YouTube API:', error);
-    return null;
+    throw new Error(error.message || 'Failed to fetch from YouTube API');
   }
 }

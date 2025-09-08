@@ -44,12 +44,23 @@ function TaskAction({ task }: { task: Task }) {
 function YouTubePlayer({ topic }: { topic: string }) {
   const [videoId, setVideoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchVideo() {
       setLoading(true);
-      const id = await searchVideo(`${topic} tutorial for beginners`);
-      setVideoId(id);
+      setError(null);
+      try {
+        const id = await searchVideo(`${topic} tutorial for beginners`);
+        if (id) {
+          setVideoId(id);
+        } else {
+          setError('Could not find a relevant video for this topic.');
+        }
+      } catch (e: any) {
+        setError(e.message || 'An unknown error occurred.');
+      }
       setLoading(false);
     }
     fetchVideo();
@@ -64,11 +75,14 @@ function YouTubePlayer({ topic }: { topic: string }) {
     );
   }
   
-  if (!videoId) {
+  if (error || !videoId) {
      return (
-      <div className="flex items-center justify-center bg-muted/50 rounded-lg h-48 w-full">
-        <Youtube className="h-6 w-6 mr-3 text-red-500" />
-        <p>Could not load video. YouTube API key may be missing or invalid.</p>
+      <div className="flex items-center justify-center bg-muted/50 rounded-lg h-48 w-full p-4 text-center">
+        <Youtube className="h-8 w-8 mr-3 text-red-500" />
+        <div>
+            <p className="font-semibold">Could not load video.</p>
+            <p className="text-sm text-muted-foreground">The YouTube API key is likely missing or invalid. Please check the setup instructions in README.md.</p>
+        </div>
       </div>
     );
   }
