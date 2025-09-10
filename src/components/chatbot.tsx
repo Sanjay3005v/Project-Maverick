@@ -43,17 +43,17 @@ export function Chatbot() {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: input };
+    const userMessage: ChatMessage = { role: 'user', content: [{ text: input }] };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
-        const response = await chat([...messages, userMessage], input, pathname);
-        const botMessage: ChatMessage = { role: 'model', content: response };
+        const responseText = await chat(messages, input, pathname);
+        const botMessage: ChatMessage = { role: 'model', content: [{ text: responseText }] };
         setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-        const errorMessage: ChatMessage = { role: 'model', content: "Sorry, I'm having trouble connecting. Please try again later." };
+        const errorMessage: ChatMessage = { role: 'model', content: [{ text: "Sorry, I'm having trouble connecting. Please try again later." }] };
         setMessages(prev => [...prev, errorMessage]);
     } finally {
         setLoading(false);
@@ -104,7 +104,7 @@ export function Chatbot() {
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm">{message.content[0].text}</p>
                   </div>
                    {message.role === 'user' && user && (
                      <Avatar className="border">
